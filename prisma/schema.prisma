@@ -42,3 +42,56 @@ enum ROLES {
   ADMIN
   USER
 }
+
+model Restaurant {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+  name String
+  category String
+  location String
+  expiryInfo String
+  artistInfo String
+  nftImageUrl String
+  about String
+  instruction String
+  benefits String
+  membershipCardId String
+  Card Card   @relation(fields: [membershipCardId], references: [id])
+}
+
+model Card {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+  // visitCount Int
+  // mintedAt DateTime
+  createdAt DateTime
+  tier String
+
+Restaurant Restaurant @relation("membershipCard")
+}
+
+model UserCard {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+  visitCount Int
+  mintedAt DateTime
+  createdAt DateTime
+  tier String
+  nftId String?
+
+// Restaurant Restaurant @relation("membershipCard")
+}
+model Bonus {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+  imageUrl String
+  name String
+  price Int
+  currency String
+
+}
+
+model UserBonus{
+  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+
+}
+
+model Notification {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+}
