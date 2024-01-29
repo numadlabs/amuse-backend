@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator kysely {
+  provider     = "prisma-kysely"
+  output       = "../src/types/db"
+  enumFileName = "enums.ts"
+  fileName     = "types.ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+  email                 String?   @unique
+  emailVerificationCode Int?
+  isEmailVerified       Boolean   @default(false)
+  emailVerifiedAt       DateTime?
+  password              String
+  nickname              String
+  firstName             String?
+  lastName              String?
+  role                  ROLES     @default(USER)
+  prefix                String
+  telNumber             String
+  telVerificationCode   Int?
+  isTelVerified         Boolean   @default(false)
+  profilePicture        String?
+  dateOfBirth           DateTime?
+  location              String?
+  createdAt             DateTime  @default(now())
+}
+
+enum ROLES {
+  ADMIN
+  USER
+}
