@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { db } from "../utils/db";
 import { Prisma } from "@prisma/client";
+import { Nullable } from "kysely";
 
 export const userRepository = {
   getUserByPhoneNumber: async (phoneNumber: string, prefix: string) => {
@@ -8,6 +9,15 @@ export const userRepository = {
       .selectFrom("User")
       .where("User.telNumber", "=", phoneNumber)
       .where("prefix", "=", prefix)
+      .selectAll()
+      .executeTakeFirst();
+
+    return user;
+  },
+  getUserById: async (id: string) => {
+    const user = await db
+      .selectFrom("User")
+      .where("User.id", "=", id)
       .selectAll()
       .executeTakeFirst();
 
@@ -27,6 +37,23 @@ export const userRepository = {
         telNumber: telNumber,
         password: password,
       })
+      .returningAll()
+      .executeTakeFirst();
+
+    return user;
+  },
+  setOTP: async (
+    id: string,
+    verificationCode: number | null,
+    status?: boolean
+  ) => {
+    const user = await db
+      .updateTable("User")
+      .set({
+        telVerificationCode: verificationCode,
+        isTelVerified: status,
+      })
+      .where("User.id", "=", id)
       .returningAll()
       .executeTakeFirst();
 

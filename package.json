@@ -14,6 +14,7 @@
     "@prisma/client": "^5.8.1",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.5",
+    "@types/twilio": "^3.19.3",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -23,7 +24,8 @@
     "jsonwebtoken": "^9.0.2",
     "kysely": "^0.27.2",
     "pg": "^8.11.3",
-    "prisma-kysely": "^1.7.1"
+    "prisma-kysely": "^1.7.1",
+    "twilio": "^4.21.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

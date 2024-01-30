@@ -3,8 +3,10 @@ import { db } from "../utils/db";
 import { userRepository } from "../repository/userRepository";
 import { comparePassword, encryptPassword } from "../lib/passwordHelper";
 import { generateTokens } from "../utils/jwt";
+import { sendOTP } from "../lib/otpHelper";
+import { userServices } from "../services/userServices";
 
-export const AuthenticationController = {
+export const UserController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
     const { prefix, telNumber, password } = req.body;
     if (!prefix || !telNumber || !password)
@@ -90,6 +92,46 @@ export const AuthenticationController = {
             accessToken,
             refreshToken,
           },
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  sendOTP: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { prefix, telNumber } = req.body;
+
+      if (!telNumber || !prefix)
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Please provide a phone number.",
+        });
+
+      const user = await userServices.setOTP(prefix, telNumber);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: user,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  verifyOTP: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const { verificationCode } = req.body;
+
+      const updatedUser = await userServices.verifyOTP(id, verificationCode);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          updatedUser,
         },
       });
     } catch (e) {
