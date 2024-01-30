@@ -1,7 +1,51 @@
 import { sendOTP } from "../lib/otpHelper";
+import { comparePassword, encryptPassword } from "../lib/passwordHelper";
 import { userRepository } from "../repository/userRepository";
 
 export const userServices = {
+  create: async (
+    prefix: string,
+    telNumber: string,
+    nickname: string,
+    password: string
+  ) => {
+    const user = await userRepository.getUserByPhoneNumber(telNumber, prefix);
+    if (user) throw new Error("User already exists with this phone number");
+
+    const hashedPassword = await encryptPassword(password);
+
+    const createdUser = await userRepository.create(
+      nickname,
+      prefix,
+      telNumber,
+      hashedPassword.toString()
+    );
+
+    if (!createdUser) {
+      throw new Error("Could not add user");
+    }
+
+    createdUser.password = "";
+    createdUser.emailVerificationCode = null;
+    createdUser.telVerificationCode = null;
+
+    return createdUser;
+  },
+  login: async (prefix: string, telNumber: string, password: string) => {
+    const user = await userRepository.getUserByPhoneNumber(telNumber, prefix);
+
+    if (!user) throw new Error("User not found");
+
+    const isUser = await comparePassword(password, user.password);
+
+    if (!isUser) throw new Error("Invalid login info.");
+
+    user.password = "";
+    user.emailVerificationCode = null;
+    user.telVerificationCode = null;
+
+    return user;
+  },
   setOTP: async (prefix: string, telNumber: string) => {
     const user = await userRepository.getUserByPhoneNumber(telNumber, prefix);
 

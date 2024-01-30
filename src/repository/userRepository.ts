@@ -1,7 +1,4 @@
-import { Request, Response } from "express";
 import { db } from "../utils/db";
-import { Prisma } from "@prisma/client";
-import { Nullable } from "kysely";
 
 export const userRepository = {
   getUserByPhoneNumber: async (phoneNumber: string, prefix: string) => {
