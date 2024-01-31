@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { db } from "../utils/db";
 
 export const userRepository = {
@@ -20,39 +21,26 @@ export const userRepository = {
 
     return user;
   },
-  create: async (
-    nickname: string,
-    prefix: string,
-    telNumber: string,
-    password: string
-  ) => {
+  create: async (data: Prisma.UserCreateInput) => {
     const user = await db
       .insertInto("User")
-      .values({
-        nickname: nickname,
-        prefix: prefix,
-        telNumber: telNumber,
-        password: password,
-      })
+      .values(data)
       .returningAll()
       .executeTakeFirst();
 
+    if (!user) throw new Error("Error inserting into DB");
+
     return user;
   },
-  setOTP: async (
-    id: string,
-    verificationCode: number | null,
-    status?: boolean
-  ) => {
+  update: async (id: string, data: Prisma.UserCreateInput) => {
     const user = await db
       .updateTable("User")
-      .set({
-        telVerificationCode: verificationCode,
-        isTelVerified: status,
-      })
+      .set(data)
       .where("User.id", "=", id)
       .returningAll()
       .executeTakeFirst();
+
+    if (!user) throw new Error("Error updating the DB");
 
     return user;
   },

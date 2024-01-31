@@ -1,42 +1,40 @@
+import { Prisma } from "@prisma/client";
 import { sendOTP } from "../lib/otpHelper";
 import { comparePassword, encryptPassword } from "../lib/passwordHelper";
 import { userRepository } from "../repository/userRepository";
+import { sendVerificationEmail } from "../lib/emailHelper";
+
+const MAX = 999999,
+  MIN = 100000;
 
 export const userServices = {
-  create: async (
-    prefix: string,
-    telNumber: string,
-    nickname: string,
-    password: string
-  ) => {
-    const user = await userRepository.getUserByPhoneNumber(telNumber, prefix);
-    if (user) throw new Error("User already exists with this phone number");
-
-    const hashedPassword = await encryptPassword(password);
-
-    const createdUser = await userRepository.create(
-      nickname,
-      prefix,
-      telNumber,
-      hashedPassword.toString()
+  create: async (data: Prisma.UserCreateInput) => {
+    const hasUser = await userRepository.getUserByPhoneNumber(
+      data.telNumber,
+      data.prefix
     );
+    if (hasUser) throw new Error("User already exists with this phone number");
 
-    if (!createdUser) {
-      throw new Error("Could not add user");
-    }
+    const hashedPassword = await encryptPassword(data.password);
+    data.password = hashedPassword;
 
-    createdUser.password = "";
-    createdUser.emailVerificationCode = null;
-    createdUser.telVerificationCode = null;
+    const user = await userRepository.create(data);
 
-    return createdUser;
+    user.password = "";
+    user.emailVerificationCode = null;
+    user.telVerificationCode = null;
+
+    return user;
   },
-  login: async (prefix: string, telNumber: string, password: string) => {
-    const user = await userRepository.getUserByPhoneNumber(telNumber, prefix);
+  login: async (data: Prisma.UserCreateInput) => {
+    const user = await userRepository.getUserByPhoneNumber(
+      data.telNumber,
+      data.prefix
+    );
 
     if (!user) throw new Error("User not found");
 
-    const isUser = await comparePassword(password, user.password);
+    const isUser = await comparePassword(data.password, user.password);
 
     if (!isUser) throw new Error("Invalid login info.");
 
@@ -46,35 +44,82 @@ export const userServices = {
 
     return user;
   },
-  setOTP: async (prefix: string, telNumber: string) => {
-    const user = await userRepository.getUserByPhoneNumber(telNumber, prefix);
+  setOTP: async (data: Prisma.UserCreateInput) => {
+    const hasUser = await userRepository.getUserByPhoneNumber(
+      data.telNumber,
+      data.prefix
+    );
 
-    if (!user) throw new Error("User does not exist!");
+    if (!hasUser) throw new Error("User does not exist!");
 
-    const randomNumber =
-      Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-
-    const isSent = await sendOTP(prefix, telNumber, randomNumber);
+    const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
+    const isSent = await sendOTP(data.prefix, data.telNumber, randomNumber);
 
     if (!isSent) throw new Error("Error has occured while sending the OTP.");
 
-    const updatedUser = await userRepository.setOTP(user.id, randomNumber);
+    hasUser.telVerificationCode = randomNumber;
+    const user = await userRepository.update(hasUser.id, hasUser);
 
-    return updatedUser;
+    return user;
   },
-  verifyOTP: async (id: string, verificationCode: number) => {
-    const user = await userRepository.getUserById(id);
+  verifyOTP: async (
+    id: string,
+    verificationCode: number | null | undefined
+  ) => {
+    const hasUser = await userRepository.getUserById(id);
 
-    if (!user) throw new Error("User does not exist!");
+    if (!hasUser) throw new Error("User does not exist!");
 
     if (
-      user.telVerificationCode !== verificationCode ||
-      user.telVerificationCode === null
+      hasUser.telVerificationCode !== verificationCode ||
+      hasUser.telVerificationCode === null
     )
       throw new Error("Invalid verification code!");
 
-    const updatedUser = await userRepository.setOTP(user.id, null, true);
+    hasUser.isTelVerified = true;
+    hasUser.telVerificationCode = null;
 
-    return updatedUser;
+    const user = await userRepository.update(hasUser.id, hasUser);
+
+    return user;
+  },
+  //consider using hooks for when email is updated setting the isEmailVerified to false
+  setEmailVerification: async (id: string) => {
+    const userById = await userRepository.getUserById(id);
+
+    if (!userById || !userById.email)
+      throw new Error("User does not exist or Has no email.");
+
+    if (userById.isEmailVerified)
+      throw new Error("User's email is already verified.");
+
+    const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
+    await sendVerificationEmail(randomNumber, userById.email);
+
+    userById.emailVerificationCode = randomNumber;
+    const user = await userRepository.update(userById.id, userById);
+
+    return user;
+  },
+  verifyEmailVerification: async (id: string, verificationCode: number) => {
+    const foundUser = await userRepository.getUserById(id);
+    if (!foundUser || !foundUser.email)
+      throw new Error("User does not exist or Has no email.");
+
+    if (!foundUser.emailVerificationCode || foundUser.isEmailVerified)
+      throw new Error(
+        "No verification code send/recorded or email is already verified."
+      );
+
+    if (foundUser.emailVerificationCode !== verificationCode)
+      throw new Error("Invalid verification code.");
+
+    foundUser.isEmailVerified = true;
+    foundUser.emailVerifiedAt = new Date();
+    foundUser.emailVerificationCode = null;
+
+    const user = await userRepository.update(foundUser.id, foundUser);
+
+    return user;
   },
 };
