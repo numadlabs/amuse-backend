@@ -122,4 +122,20 @@ export const userServices = {
 
     return user;
   },
+  update: async (id: string, data: Prisma.UserCreateInput) => {
+    const findUser = await userRepository.getUserById(id);
+    if (!findUser) throw new Error("User does not exist");
+
+    const user = await userRepository.update(findUser.id, data);
+
+    return user;
+  },
+  delete: async (id: string) => {
+    const findUser = await userRepository.getUserById(id);
+    if (!findUser) throw new Error("User does not exist");
+
+    const user = await userRepository.delete(findUser.id);
+
+    return user;
+  },
 };

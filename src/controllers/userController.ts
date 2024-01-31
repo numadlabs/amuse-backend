@@ -171,4 +171,53 @@ export const UserController = {
       next(e);
     }
   },
+  updateUser: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const data: Prisma.UserCreateInput = { ...req.body };
+
+    if (!req.user?.id)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Could retrieve id from the token.",
+      });
+
+    if (data.id || data.role)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Cannot change id and role.",
+      });
+
+    try {
+      const user = await userServices.update(req.user.id, data);
+
+      return res.status(200).json(user);
+    } catch (e) {
+      next(e);
+    }
+  },
+  deleteUser: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (!req.user?.id)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Could retrieve id from the token.",
+      });
+
+    try {
+      await userServices.delete(req.user.id);
+
+      return res.status(200).json({ success: true, data: null });
+    } catch (e) {
+      next(e);
+    }
+  },
 };

@@ -19,4 +19,7 @@ userRoutes.post(
   UserController.verifyEmailVerification
 );
 
+userRoutes.put("/users", authenticateToken, UserController.updateUser);
+userRoutes.delete("/users", authenticateToken, UserController.deleteUser);
+
 export = userRoutes;

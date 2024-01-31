@@ -44,4 +44,14 @@ export const userRepository = {
 
     return user;
   },
+  delete: async (id: string) => {
+    const deletedUser = await db
+      .deleteFrom("User")
+      .where("User.id", "=", id)
+      .returningAll()
+      .executeTakeFirst();
+
+    if (!deletedUser) throw new Error("Error updating the DB");
+    return deletedUser;
+  },
 };
