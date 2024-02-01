@@ -18,8 +18,12 @@ userRoutes.post(
   authenticateToken,
   UserController.verifyEmailVerification
 );
+userRoutes.post("/auth/refreshToken", UserController.refreshToken);
 
 userRoutes.put("/users", authenticateToken, UserController.updateUser);
 userRoutes.delete("/users", authenticateToken, UserController.deleteUser);
+
+userRoutes.get("/users/cards", authenticateToken, UserController.getUserCards);
+userRoutes.get("/users/taps", authenticateToken, UserController.getUserTaps);
 
 export = userRoutes;

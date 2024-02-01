@@ -20,10 +20,6 @@ export const userServices = {
 
     const user = await userRepository.create(data);
 
-    user.password = "";
-    user.emailVerificationCode = null;
-    user.telVerificationCode = null;
-
     return user;
   },
   login: async (data: Prisma.UserCreateInput) => {
@@ -37,10 +33,6 @@ export const userServices = {
     const isUser = await comparePassword(data.password, user.password);
 
     if (!isUser) throw new Error("Invalid login info.");
-
-    user.password = "";
-    user.emailVerificationCode = null;
-    user.telVerificationCode = null;
 
     return user;
   },
@@ -130,6 +122,7 @@ export const userServices = {
 
     return user;
   },
+  //add cascading effects
   delete: async (id: string) => {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new Error("User does not exist");

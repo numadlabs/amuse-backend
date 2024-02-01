@@ -3,7 +3,9 @@ import { generateTokens } from "../utils/jwt";
 import { userServices } from "../services/userServices";
 import { Prisma } from "@prisma/client";
 import { AuthenticatedRequest } from "../../custom";
-import { verify } from "crypto";
+import jwt from "jsonwebtoken";
+import { hideDataHelper } from "../lib/hideDataHelper";
+import { userRepository } from "../repository/userRepository";
 
 export const UserController = {
   //if not confirmed do not return Token
@@ -17,20 +19,23 @@ export const UserController = {
     try {
       const user = await userServices.login(data);
 
-      if (!user.isTelVerified)
+      //activate it when OTP starts working
+      /* if (!user.isTelVerified)
         return res.status(200).json({
           success: true,
           data: {
             user,
           },
-        });
+        }); */
 
       const { accessToken, refreshToken } = generateTokens(user);
+
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
 
       return res.status(200).json({
         success: true,
         data: {
-          user: user,
+          user: sanitizedUser,
           auth: {
             accessToken,
             refreshToken,
@@ -53,10 +58,12 @@ export const UserController = {
 
       const { accessToken, refreshToken } = generateTokens(createdUser);
 
+      const user = hideDataHelper.sanitizeUserData(createdUser);
+
       return res.status(200).json({
         success: true,
         data: {
-          user: createdUser,
+          user: user,
           auth: {
             accessToken,
             refreshToken,
@@ -79,11 +86,12 @@ export const UserController = {
         });
 
       const user = await userServices.setOTP(data);
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
 
       return res.status(200).json({
         success: true,
         data: {
-          user: user,
+          user: sanitizedUser,
         },
       });
     } catch (e) {
@@ -99,11 +107,12 @@ export const UserController = {
         id,
         data.telVerificationCode
       );
+      const sanitizedUser = hideDataHelper.sanitizeUserData(updatedUser);
 
       return res.status(200).json({
         success: true,
         data: {
-          updatedUser,
+          sanitizedUser,
         },
       });
     } catch (e) {
@@ -124,10 +133,11 @@ export const UserController = {
 
     try {
       const user = await userServices.setEmailVerification(req.user?.id);
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
       return res.status(200).json({
         success: true,
         data: {
-          user: user,
+          user: sanitizedUser,
         },
       });
     } catch (e) {
@@ -160,17 +170,53 @@ export const UserController = {
         req.user.id,
         emailVerificationCode
       );
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
 
       return res.status(200).json({
         success: true,
         data: {
-          user,
+          sanitizedUser,
         },
       });
     } catch (e) {
       next(e);
     }
   },
+  refreshToken: async (req: Request, res: Response) => {
+    const refreshToken = req.body.refreshToken;
+    const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
+
+    if (!refreshToken)
+      return res.status(401).json({
+        success: false,
+        data: null,
+        error: `Please provide a refresh token.`,
+      });
+    if (jwtRefreshSecret === undefined) {
+      return res.status(500).json({
+        success: false,
+        data: null,
+        error: `Internal server error.`,
+      });
+    }
+
+    jwt.verify(refreshToken, jwtRefreshSecret, (err: any, user: any) => {
+      if (err)
+        return res.status(403).json({
+          success: false,
+          data: null,
+          error: `Invalid refresh token.`,
+        });
+
+      const tokens = generateTokens(user);
+      return res.status(200).json({
+        success: true,
+        data: tokens,
+      });
+    });
+  },
+  //verification code-uudiig token bolgoj hadgalah
+  //forgot password -> check otpVerification -> ???
   updateUser: async (
     req: AuthenticatedRequest,
     res: Response,
@@ -185,17 +231,28 @@ export const UserController = {
         error: "Could retrieve id from the token.",
       });
 
-    if (data.id || data.role)
+    if (
+      data.id ||
+      data.role ||
+      data.telVerificationCode ||
+      data.emailVerificationCode
+    )
       return res.status(400).json({
         success: false,
         data: null,
-        error: "Cannot change id and role.",
+        error: "Cannot change id, role and verification codes.",
       });
 
     try {
       const user = await userServices.update(req.user.id, data);
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
 
-      return res.status(200).json(user);
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: sanitizedUser,
+        },
+      });
     } catch (e) {
       next(e);
     }
@@ -213,9 +270,54 @@ export const UserController = {
       });
 
     try {
-      await userServices.delete(req.user.id);
+      const deletedUser = await userServices.delete(req.user.id);
+      const sanitizedUser = hideDataHelper.sanitizeUserData(deletedUser);
 
-      return res.status(200).json({ success: true, data: null });
+      return res
+        .status(200)
+        .json({ success: true, data: { user: sanitizedUser } });
+    } catch (e) {
+      next(e);
+    }
+  },
+  //get user taps
+  //get user a-cards
+  getUserTaps: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (!req.user?.id)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Could retrieve id from the token.",
+      });
+
+    try {
+      const taps = await userRepository.getUserTaps(req.user.id);
+
+      return res.status(200).json({ success: true, data: { taps } });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getUserCards: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (!req.user?.id)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Could retrieve id from the token.",
+      });
+
+    try {
+      const cards = await userRepository.getUserCards(req.user.id);
+
+      return res.status(200).json({ success: true, data: { cards } });
     } catch (e) {
       next(e);
     }

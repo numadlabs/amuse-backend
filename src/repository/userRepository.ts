@@ -21,6 +21,24 @@ export const userRepository = {
 
     return user;
   },
+  getUserTaps: async (id: string) => {
+    const taps = await db
+      .selectFrom("Tap")
+      .where("Tap.userId", "=", id)
+      .selectAll()
+      .execute();
+
+    return taps;
+  },
+  getUserCards: async (id: string) => {
+    const cards = await db
+      .selectFrom("UserCard")
+      .where("UserCard.userId", "=", id)
+      .selectAll()
+      .execute();
+
+    return cards;
+  },
   create: async (data: Prisma.UserCreateInput) => {
     const user = await db
       .insertInto("User")
