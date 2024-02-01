@@ -36,6 +36,11 @@ model User {
   dateOfBirth           DateTime?
   location              String?
   createdAt             DateTime  @default(now())
+
+  UserCard     UserCard[]
+  UserBonus    UserBonus[]
+  Notification Notification[]
+  Tap          Tap[]
 }
 
 enum ROLES {
@@ -44,54 +49,89 @@ enum ROLES {
 }
 
 model Restaurant {
-  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
-  name String
-  category String
-  location String
-  expiryInfo String
-  artistInfo String
-  nftImageUrl String
-  about String
-  instruction String
-  benefits String
-  membershipCardId String
-  Card Card   @relation(fields: [membershipCardId], references: [id])
+  id               String  @id @default(dbgenerated("gen_random_uuid()"))
+  name             String
+  category         String
+  location         String
+  about            String
+  instruction      String
+  benefits         String
+  walletAddress    String?
+  // rating           Float?
+  membershipCardId String  @unique
+  Card             Card?   @relation(fields: [membershipCardId], references: [id])
+  // Cards Card[] @relation("restaurantCard")
 }
 
 model Card {
-  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
-  // visitCount Int
-  // mintedAt DateTime
-  createdAt DateTime
-  tier String
+  id        String    @id @default(dbgenerated("gen_random_uuid()"))
+  mintedAt  DateTime
+  createdAt DateTime?
+  expiryInfo String
+  artistInfo       String
+  nftImageUrl      String
 
-Restaurant Restaurant @relation("membershipCard")
+  // tier          TIER
+  // totalSupply   Int
+  // currentSupply Int
+
+  Restaurant Restaurant?
+  UserCard   UserCard[]
+}
+
+enum TIER {
+  BRONZE
+  SILVER
+  GOLD
 }
 
 model UserCard {
-  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+  id         String    @id @default(dbgenerated("gen_random_uuid()"))
   visitCount Int
-  mintedAt DateTime
-  createdAt DateTime
-  tier String
-  nftId String?
-
-// Restaurant Restaurant @relation("membershipCard")
+  mintedAt   DateTime?
+  ownedAt    DateTime
+  cardId     String
+  Card       Card      @relation(fields: [cardId], references: [id])
+  userId     String
+  User       User      @relation(fields: [userId], references: [id])
+  Tap        Tap[]
 }
+
+model Tap {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  tappedAt   DateTime
+  userId     String
+  User       User     @relation(fields: [userId], references: [id])
+  userCardId String
+  UserCard   UserCard @relation(fields: [userCardId], references: [id])
+}
+
 model Bonus {
-  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+  id       String @id @default(dbgenerated("gen_random_uuid()"))
   imageUrl String
-  name String
-  price Int
-  currency String
+  name     String
+  // price         Intx
+  // currency      String
+  // totalSupply   Int
+  // currentSupply Int
 
+  UserBonus UserBonus[]
 }
 
-model UserBonus{
-  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
-
+model UserBonus {
+  id      String  @id @default(dbgenerated("gen_random_uuid()"))
+  userId  String
+  User    User    @relation(fields: [userId], references: [id])
+  bonusId String
+  Bonus   Bonus   @relation(fields: [bonusId], references: [id])
+  isUsed  Boolean
 }
 
 model Notification {
-  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+  id      String  @id @default(dbgenerated("gen_random_uuid()"))
+  userId  String
+  User    User    @relation(fields: [userId], references: [id])
+  message String
+  type    String
+  isRead  Boolean
 }
