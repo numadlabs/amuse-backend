@@ -6,6 +6,8 @@ import { AuthenticatedRequest } from "../../custom";
 import jwt from "jsonwebtoken";
 import { hideDataHelper } from "../lib/hideDataHelper";
 import { userRepository } from "../repository/userRepository";
+import { User } from "../types/db/types";
+import { Insertable } from "kysely";
 
 export const UserController = {
   //if not confirmed do not return Token
@@ -98,21 +100,63 @@ export const UserController = {
       next(e);
     }
   },
+  checkOTP: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { telVerificationCode } = req.body;
+    try {
+      const isValidOTP = await userServices.checkOTP(id, telVerificationCode);
+      if (!isValidOTP)
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Invalid verification.",
+        });
+
+      const user = hideDataHelper.sanitizeUserData(isValidOTP);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: user,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  changePassword: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { telVerificationCode, password } = req.body;
+    try {
+      const user = await userServices.changePassword(
+        id,
+        telVerificationCode,
+        password
+      );
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: sanitizedUser,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
   verifyOTP: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const data: Prisma.UserCreateInput = { ...req.body };
+      const { telVerificationCode } = req.body;
 
-      const updatedUser = await userServices.verifyOTP(
-        id,
-        data.telVerificationCode
-      );
+      const updatedUser = await userServices.verifyOTP(id, telVerificationCode);
       const sanitizedUser = hideDataHelper.sanitizeUserData(updatedUser);
 
       return res.status(200).json({
         success: true,
         data: {
-          sanitizedUser,
+          user: sanitizedUser,
         },
       });
     } catch (e) {
@@ -215,8 +259,10 @@ export const UserController = {
       });
     });
   },
-  //verification code-uudiig token bolgoj hadgalah
-  //forgot password -> check otpVerification -> ???
+  //verification code-uud encrypt(jwt-exp)
+  //changePassword = enter valid password -> enter/update newPassword
+  //forgotPassword = get send new password by msg / send OTP,
+  //ene solij bolohgui ymnudiig yaha bodoh
   updateUser: async (
     req: AuthenticatedRequest,
     res: Response,
@@ -235,7 +281,10 @@ export const UserController = {
       data.id ||
       data.role ||
       data.telVerificationCode ||
-      data.emailVerificationCode
+      data.emailVerificationCode ||
+      data.telNumber ||
+      data.prefix ||
+      data.password
     )
       return res.status(400).json({
         success: false,
@@ -280,8 +329,6 @@ export const UserController = {
       next(e);
     }
   },
-  //get user taps
-  //get user a-cards
   getUserTaps: async (
     req: AuthenticatedRequest,
     res: Response,

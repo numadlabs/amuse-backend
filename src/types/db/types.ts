@@ -46,7 +46,7 @@ export type Tap = {
 export type User = {
     id: Generated<string>;
     email: string | null;
-    emailVerificationCode: number | null;
+    emailVerificationCode: string | null;
     isEmailVerified: Generated<boolean>;
     emailVerifiedAt: Timestamp | null;
     password: string;
@@ -56,7 +56,7 @@ export type User = {
     role: Generated<ROLES>;
     prefix: string;
     telNumber: string;
-    telVerificationCode: number | null;
+    telVerificationCode: string | null;
     isTelVerified: Generated<boolean>;
     profilePicture: string | null;
     dateOfBirth: Timestamp | null;

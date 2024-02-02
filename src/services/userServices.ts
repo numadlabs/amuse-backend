@@ -1,11 +1,13 @@
 import { Prisma } from "@prisma/client";
 import { sendOTP } from "../lib/otpHelper";
-import { comparePassword, encryptPassword } from "../lib/passwordHelper";
 import { userRepository } from "../repository/userRepository";
 import { sendVerificationEmail } from "../lib/emailHelper";
+import { encryptionHelper } from "../lib/encryptionHelper";
+import { extractVerification, generateVerificationToken } from "../utils/jwt";
+import jwt from "jsonwebtoken";
 
-const MAX = 999999,
-  MIN = 100000;
+const MAX = 9999,
+  MIN = 1000;
 
 export const userServices = {
   create: async (data: Prisma.UserCreateInput) => {
@@ -15,7 +17,7 @@ export const userServices = {
     );
     if (hasUser) throw new Error("User already exists with this phone number");
 
-    const hashedPassword = await encryptPassword(data.password);
+    const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;
 
     const user = await userRepository.create(data);
@@ -30,12 +32,13 @@ export const userServices = {
 
     if (!user) throw new Error("User not found");
 
-    const isUser = await comparePassword(data.password, user.password);
+    const isUser = await encryptionHelper.compare(data.password, user.password);
 
     if (!isUser) throw new Error("Invalid login info.");
 
     return user;
   },
+  //user return hiihiin orond dugaariin avj boloh ym
   setOTP: async (data: Prisma.UserCreateInput) => {
     const hasUser = await userRepository.getUserByPhoneNumber(
       data.telNumber,
@@ -45,11 +48,13 @@ export const userServices = {
     if (!hasUser) throw new Error("User does not exist!");
 
     const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
-    const isSent = await sendOTP(data.prefix, data.telNumber, randomNumber);
+    const telVerificationToken = generateVerificationToken(randomNumber, "5m");
+    //const encryptedToken = await encryptionHelper.encrypt(telVerificationToken);
 
+    const isSent = await sendOTP(data.prefix, data.telNumber, randomNumber);
     if (!isSent) throw new Error("Error has occured while sending the OTP.");
 
-    hasUser.telVerificationCode = randomNumber;
+    hasUser.telVerificationCode = telVerificationToken;
     const user = await userRepository.update(hasUser.id, hasUser);
 
     return user;
@@ -60,10 +65,15 @@ export const userServices = {
   ) => {
     const hasUser = await userRepository.getUserById(id);
 
-    if (!hasUser) throw new Error("User does not exist!");
+    if (!hasUser || !hasUser.telVerificationCode)
+      throw new Error("User does not exist!");
+
+    const telVerificationCode = extractVerification(
+      hasUser.telVerificationCode
+    );
 
     if (
-      hasUser.telVerificationCode !== verificationCode ||
+      telVerificationCode !== verificationCode ||
       hasUser.telVerificationCode === null
     )
       throw new Error("Invalid verification code!");
@@ -74,6 +84,37 @@ export const userServices = {
     const user = await userRepository.update(hasUser.id, hasUser);
 
     return user;
+  },
+  checkOTP: async (id: string, verificationCode: number) => {
+    const user = await userRepository.getUserById(id);
+
+    if (!user || !user.telVerificationCode)
+      throw new Error("User does not exist!");
+
+    const telVerificationCode = extractVerification(user.telVerificationCode);
+
+    if (
+      telVerificationCode !== verificationCode ||
+      user.telVerificationCode === null
+    )
+      throw new Error("Invalid verification code!");
+
+    return user;
+  },
+  changePassword: async (
+    id: string,
+    verificationCode: number,
+    password: string
+  ) => {
+    const user = await userServices.checkOTP(id, verificationCode);
+
+    const encryptedPassword = await encryptionHelper.encrypt(password);
+
+    user.password = encryptedPassword;
+    user.telVerificationCode = null;
+    const updatedUser = await userRepository.update(id, user);
+
+    return updatedUser;
   },
   //consider using hooks for when email is updated setting the isEmailVerified to false
   setEmailVerification: async (id: string) => {
@@ -86,9 +127,16 @@ export const userServices = {
       throw new Error("User's email is already verified.");
 
     const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
+    const emailVerificationToken = generateVerificationToken(
+      randomNumber,
+      "1m"
+    );
+    console.log("Email verification token: ", emailVerificationToken);
+    //const encryptedToken = await encryptionHelper.encrypt(emailVerificationToken);
+
     await sendVerificationEmail(randomNumber, userById.email);
 
-    userById.emailVerificationCode = randomNumber;
+    userById.emailVerificationCode = emailVerificationToken;
     const user = await userRepository.update(userById.id, userById);
 
     return user;
@@ -103,7 +151,16 @@ export const userServices = {
         "No verification code send/recorded or email is already verified."
       );
 
-    if (foundUser.emailVerificationCode !== verificationCode)
+    const emailVerificationCode = extractVerification(
+      foundUser.emailVerificationCode
+    );
+    console.log(
+      "Email verification token from DB: ",
+      foundUser.emailVerificationCode
+    );
+    console.log("Extracted email verification token: ", emailVerificationCode);
+
+    if (emailVerificationCode !== verificationCode)
       throw new Error("Invalid verification code.");
 
     foundUser.isEmailVerified = true;

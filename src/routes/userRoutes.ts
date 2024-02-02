@@ -19,6 +19,8 @@ userRoutes.post(
   UserController.verifyEmailVerification
 );
 userRoutes.post("/auth/refreshToken", UserController.refreshToken);
+userRoutes.post("/auth/:id/checkOTP", UserController.checkOTP);
+userRoutes.post("/auth/:id/changePassword", UserController.changePassword);
 
 userRoutes.put("/users", authenticateToken, UserController.updateUser);
 userRoutes.delete("/users", authenticateToken, UserController.deleteUser);

@@ -1,7 +1,8 @@
 require("dotenv").config();
 
-const accountSid = process.env.ACCOUNT_SID;
-const authToken = process.env.AUTH_TOKEN;
+const accountSid = process.env.TWILLIO_ACCOUNT_SID;
+const authToken = process.env.TWILLIO_AUTH_TOKEN;
+const fromPhoneNumber = process.env.TWILLIO_PHONE_NUMBER;
 
 const client = require("twilio")(accountSid, authToken);
 
@@ -13,7 +14,7 @@ export async function sendOTP(
   const message = await client.messages.create({
     body: `Hello, Here is your OTP: ${verificationCode}`,
     to: `+${prefix}${telNumber}`, // Text your number
-    from: "+13345185048", // From a valid Twilio number
+    from: `${fromPhoneNumber}`,
   });
 
   return message.sid;

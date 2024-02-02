@@ -20,7 +20,7 @@ datasource db {
 model User {
   id                    String    @id @default(dbgenerated("gen_random_uuid()"))
   email                 String?   @unique
-  emailVerificationCode Int?
+  emailVerificationCode String?
   isEmailVerified       Boolean   @default(false)
   emailVerifiedAt       DateTime?
   password              String
@@ -30,7 +30,7 @@ model User {
   role                  ROLES     @default(USER)
   prefix                String
   telNumber             String
-  telVerificationCode   Int?
+  telVerificationCode   String?
   isTelVerified         Boolean   @default(false)
   profilePicture        String?
   dateOfBirth           DateTime?
@@ -63,12 +63,12 @@ model Restaurant {
 }
 
 model Card {
-  id        String    @id @default(dbgenerated("gen_random_uuid()"))
-  mintedAt  DateTime
-  createdAt DateTime?
-  expiryInfo String
-  artistInfo       String
-  nftImageUrl      String
+  id          String    @id @default(dbgenerated("gen_random_uuid()"))
+  mintedAt    DateTime
+  createdAt   DateTime?
+  expiryInfo  String
+  artistInfo  String
+  nftImageUrl String
 
   // tier          TIER
   // totalSupply   Int

@@ -30,5 +30,4 @@ export async function sendVerificationEmail(
   });
 
   console.log("Sent successfully");
-  console.log(info);
 }
