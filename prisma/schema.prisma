@@ -48,16 +48,27 @@ enum ROLES {
   USER
 }
 
+enum CATEGORY {
+  JAPANESE
+  KOREAN
+  MEDITERRANEAN
+  BUFFET
+  FAST_FOOD
+  MONGOLIAN
+}
+
 model Restaurant {
-  id               String  @id @default(dbgenerated("gen_random_uuid()"))
-  name             String
-  category         String
-  location         String
-  about            String
-  instruction      String
-  benefits         String
-  walletAddress    String?
-  membershipCardId String  @unique
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  name        String
+  category    CATEGORY
+  description String
+  location    String
+  latitude    Float
+  longitude   Float
+  opensAt     String
+  closesAt    String
+
+  membershipCardId String? @unique
   Card             Card?   @relation(fields: [membershipCardId], references: [id])
   // Cards Card[] @relation("restaurantCard")
 }
@@ -69,6 +80,8 @@ model Card {
   expiryInfo  String
   artistInfo  String
   nftImageUrl String
+  instruction String
+  benefits    String
 
   // tier          TIER
   // totalSupply   Int

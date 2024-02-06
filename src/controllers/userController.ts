@@ -6,8 +6,6 @@ import { AuthenticatedRequest } from "../../custom";
 import jwt from "jsonwebtoken";
 import { hideDataHelper } from "../lib/hideDataHelper";
 import { userRepository } from "../repository/userRepository";
-import { User } from "../types/db/types";
-import { Insertable } from "kysely";
 
 export const UserController = {
   //if not confirmed do not return Token

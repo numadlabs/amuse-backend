@@ -4,7 +4,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-import type { ROLES, TIER } from "./enums";
+import type { ROLES, CATEGORY, TIER } from "./enums";
 
 export type Bonus = {
     id: Generated<string>;
@@ -18,6 +18,8 @@ export type Card = {
     expiryInfo: string;
     artistInfo: string;
     nftImageUrl: string;
+    instruction: string;
+    benefits: string;
 };
 export type Notification = {
     id: Generated<string>;
@@ -29,13 +31,14 @@ export type Notification = {
 export type Restaurant = {
     id: Generated<string>;
     name: string;
-    category: string;
+    category: CATEGORY;
+    description: string;
     location: string;
-    about: string;
-    instruction: string;
-    benefits: string;
-    walletAddress: string | null;
-    membershipCardId: string;
+    latitude: number;
+    longitude: number;
+    opensAt: string;
+    closesAt: string;
+    membershipCardId: string | null;
 };
 export type Tap = {
     id: Generated<string>;

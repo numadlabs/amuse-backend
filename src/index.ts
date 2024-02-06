@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import { notFound } from "./middlewares/notFound";
 import { errorHandler } from "./middlewares/errorHandler";
 import userRoutes from "./routes/userRoutes";
+import restaurantRoutes from "./routes/restaurantRoutes";
 
 require("dotenv").config();
 
@@ -24,6 +25,7 @@ app.use(helmet());
 app.use(bodyParser.json());
 
 app.use("/api", userRoutes);
+app.use("/api", restaurantRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

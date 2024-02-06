@@ -3,6 +3,15 @@ export const ROLES = {
     USER: "USER"
 } as const;
 export type ROLES = (typeof ROLES)[keyof typeof ROLES];
+export const CATEGORY = {
+    JAPANESE: "JAPANESE",
+    KOREAN: "KOREAN",
+    MEDITERRANEAN: "MEDITERRANEAN",
+    BUFFET: "BUFFET",
+    FAST_FOOD: "FAST_FOOD",
+    MONGOLIAN: "MONGOLIAN"
+} as const;
+export type CATEGORY = (typeof CATEGORY)[keyof typeof CATEGORY];
 export const TIER = {
     BRONZE: "BRONZE",
     SILVER: "SILVER",
