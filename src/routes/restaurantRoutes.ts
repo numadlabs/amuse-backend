@@ -9,4 +9,13 @@ restaurantRoutes.post(
   restaurantController.createRestaurant
 );
 restaurantRoutes.get("/restaurants", restaurantController.getRestaurant);
+restaurantRoutes.get(
+  "/restaurants/:id",
+  restaurantController.getRestaurantById
+);
+restaurantRoutes.put("/restaurants/:id", restaurantController.updateRestaurant);
+restaurantRoutes.delete(
+  "/restaurants/:id",
+  restaurantController.deleteRestaurant
+);
 export = restaurantRoutes;

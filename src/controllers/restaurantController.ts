@@ -1,13 +1,15 @@
-import { Expression, Insertable, sql } from "kysely";
+import { Expression, Insertable, Updateable, sql } from "kysely";
 import { Restaurant } from "../types/db/types";
 import { restaurantResposity } from "../repository/restaurantRepository";
 import { NextFunction, Request, Response } from "express";
 import { db } from "../utils/db";
 import { CATEGORY } from "../types/db/enums";
+import { to_tsquery, to_tsvector } from "../lib/queryHelper";
+import { userRepository } from "../repository/userRepository";
+import { userServices } from "../services/userServices";
+import { restaurantServices } from "../services/restaurantServices";
 
 export const restaurantController = {
-  //opens ex: 00:15, closes ex: 24:15 baih
-  //edge case: opens 09:00, closes 00:15
   createRestaurant: async (req: Request, res: Response, next: NextFunction) => {
     const data: Insertable<Restaurant> = { ...req.body };
     try {
@@ -20,18 +22,45 @@ export const restaurantController = {
       next(e);
     }
   },
-  //opensAt, closesAt dr joohon ajillah hereg bna
+  updateRestaurant: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const data: Updateable<Restaurant> = { ...req.body };
+
+    try {
+      if (data.id) throw new Error("You cannot change id.");
+
+      const restaurant = await restaurantServices.update(id, data);
+
+      return res.status(200).json({ success: true, restaurant: restaurant });
+    } catch (e) {
+      next(e);
+    }
+  },
+  deleteRestaurant: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    try {
+      const restaurant = await restaurantServices.delete(id);
+
+      return res.status(200).json({ success: true, restaurant: restaurant });
+    } catch (e) {
+      next(e);
+    }
+  },
   getRestaurant: async (req: Request, res: Response, next: NextFunction) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
     const distance = Number(req.query.distance) || 5000;
     const offset = (page - 1) * limit;
 
+    //optional -> page, limit, distance, search   categories, time
+    //must     -> latitude, longitude
+
     let search = req.query.search;
 
     const { latitude, longitude } = req.body;
     const categories: CATEGORY[] = req.body.categories || null;
-    const time: string = req.body.time;
+    const time: string = req.body.time || null;
 
     if (!latitude && !longitude)
       return res.status(400).json({
@@ -75,13 +104,25 @@ export const restaurantController = {
     }
 
     if (time) {
-      query = query
-        .where((eb) =>
-          eb(sql`CAST(${eb.ref("Restaurant.opensAt")} as time)`, "<=", time)
-        )
-        .where(
-          (eb) => sql`CAST(${eb.ref("Restaurant.closesAt")} as time) > ${time}`
-        );
+      query = query.where(
+        (eb) => sql`(case
+        when ((cast(${eb.ref("Restaurant.closesAt")} as time) < cast(${eb.ref(
+          "Restaurant.opensAt"
+        )}  as time)) and ((${time} > cast(${eb.ref(
+          "Restaurant.closesAt"
+        )} as time)) and (${time} < cast(${eb.ref(
+          "Restaurant.opensAt"
+        )} as time)))) then false
+        when ((cast(${eb.ref("Restaurant.closesAt")} as time) > cast(${eb.ref(
+          "Restaurant.opensAt"
+        )}  as time)) and ((${time} > cast(${eb.ref(
+          "Restaurant.closesAt"
+        )} as time)) or (${time} < cast(${eb.ref(
+          "Restaurant.opensAt"
+        )} as time)))) then false
+        else true
+      end)`
+      );
     }
 
     query = query.offset(offset).limit(limit);
@@ -92,20 +133,18 @@ export const restaurantController = {
       .status(200)
       .json({ success: true, data: { restaurants: restaurants } });
   },
+  getRestaurantById: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { id } = req.params;
+    try {
+      const restaurant = await restaurantResposity.getById(id);
+
+      return res.status(200).json({ success: true, restaurant: restaurant });
+    } catch (e) {
+      next(e);
+    }
+  },
 };
-
-function dateBuilder(date: Date) {
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
-
-  return `${year}-${month}-${day}`;
-}
-
-export function to_tsvector(expr: Expression<string> | string) {
-  return sql`to_tsvector(${sql.lit("english")}, ${expr})`;
-}
-
-export function to_tsquery(expr: Expression<string> | string) {
-  return sql`to_tsquery(${sql.lit("english")}, ${expr} || ':*')`;
-}
