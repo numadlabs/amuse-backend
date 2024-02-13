@@ -6,6 +6,7 @@ import { notFound } from "./middlewares/notFound";
 import { errorHandler } from "./middlewares/errorHandler";
 import userRoutes from "./routes/userRoutes";
 import restaurantRoutes from "./routes/restaurantRoutes";
+import cardRoutes from "./routes/cardRoutes";
 
 require("dotenv").config();
 
@@ -26,6 +27,7 @@ app.use(bodyParser.json());
 
 app.use("/api", userRoutes);
 app.use("/api", restaurantRoutes);
+app.use("/api", cardRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

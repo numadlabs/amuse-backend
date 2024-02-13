@@ -10,16 +10,18 @@ export type Bonus = {
     id: Generated<string>;
     imageUrl: string;
     name: string;
+    cardId: string;
 };
 export type Card = {
     id: Generated<string>;
-    mintedAt: Timestamp;
-    createdAt: Timestamp | null;
-    expiryInfo: string;
-    artistInfo: string;
-    nftImageUrl: string;
+    mintedAt: Timestamp | null;
+    createdAt: Generated<Timestamp>;
+    expiryInfo: string | null;
+    artistInfo: string | null;
+    nftImageUrl: string | null;
     instruction: string;
     benefits: string;
+    restaurantId: string;
 };
 export type Notification = {
     id: Generated<string>;
@@ -38,7 +40,6 @@ export type Restaurant = {
     longitude: number;
     opensAt: string;
     closesAt: string;
-    membershipCardId: string | null;
 };
 export type Tap = {
     id: Generated<string>;

@@ -1,5 +1,10 @@
-import { Insertable, Updateable, isNoResultErrorConstructor } from "kysely";
-import { Restaurant } from "../types/db/types";
+import {
+  Insertable,
+  Transaction,
+  Updateable,
+  isNoResultErrorConstructor,
+} from "kysely";
+import { DB, Restaurant } from "../types/db/types";
 import { db } from "../utils/db";
 
 export const restaurantResposity = {

@@ -68,18 +68,19 @@ model Restaurant {
   opensAt     String
   closesAt    String
 
-  membershipCardId String? @unique
-  Card             Card?   @relation(fields: [membershipCardId], references: [id])
+  //membershipCardId String? @unique
+  //Card             Card?   @relation(fields: [membershipCardId], references: [id])
+  Card Card[]
   // Cards Card[] @relation("restaurantCard")
 }
 
 model Card {
   id          String    @id @default(dbgenerated("gen_random_uuid()"))
-  mintedAt    DateTime
-  createdAt   DateTime?
-  expiryInfo  String
-  artistInfo  String
-  nftImageUrl String
+  mintedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  expiryInfo  String?
+  artistInfo  String?
+  nftImageUrl String?
   instruction String
   benefits    String
 
@@ -87,8 +88,11 @@ model Card {
   // totalSupply   Int
   // currentSupply Int
 
-  Restaurant Restaurant?
-  UserCard   UserCard[]
+  restaurantId String
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  Bonus    Bonus[]
+  UserCard UserCard[]
 }
 
 enum TIER {
@@ -122,11 +126,14 @@ model Bonus {
   id       String @id @default(dbgenerated("gen_random_uuid()"))
   imageUrl String
   name     String
-  // price         Intx
+  // price         Int
   // currency      String
   // totalSupply   Int
   // currentSupply Int
 
+  cardId String
+
+  Card      Card        @relation(fields: [cardId], references: [id])
   UserBonus UserBonus[]
 }
 
