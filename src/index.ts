@@ -7,6 +7,7 @@ import { errorHandler } from "./middlewares/errorHandler";
 import userRoutes from "./routes/userRoutes";
 import restaurantRoutes from "./routes/restaurantRoutes";
 import cardRoutes from "./routes/cardRoutes";
+import authRoutes from "./routes/authRoutes";
 
 require("dotenv").config();
 
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(bodyParser.json());
 
+app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", restaurantRoutes);
 app.use("/api", cardRoutes);
