@@ -39,6 +39,24 @@ export const userRepository = {
 
     return cards;
   },
+  getUserBonuses: async (id: string) => {
+    const userBonuses = await db
+      .selectFrom("UserBonus")
+      .where("UserBonus.userId", "=", id)
+      .selectAll()
+      .execute();
+
+    return userBonuses;
+  },
+  getUserBonusesByUserCardId: async (userCardId: string) => {
+    const userBonuses = await db
+      .selectFrom("UserBonus")
+      .where("UserBonus.userCardId", "=", userCardId)
+      .selectAll()
+      .execute();
+
+    return userBonuses;
+  },
   create: async (data: Prisma.UserCreateInput) => {
     const user = await db
       .insertInto("User")

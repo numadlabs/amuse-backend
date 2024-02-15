@@ -5,9 +5,8 @@ import { NextFunction, Request, Response } from "express";
 import { db } from "../utils/db";
 import { CATEGORY } from "../types/db/enums";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
-import { userRepository } from "../repository/userRepository";
-import { userServices } from "../services/userServices";
 import { restaurantServices } from "../services/restaurantServices";
+import { json } from "body-parser";
 
 export const restaurantController = {
   createRestaurant: async (req: Request, res: Response, next: NextFunction) => {
@@ -59,9 +58,12 @@ export const restaurantController = {
 
       let search = req.query.search;
 
-      const { latitude, longitude } = req.body;
+      /* const { latitude, longitude } = req.body;
       const categories: CATEGORY[] = req.body.categories || null;
-      const time: string = req.body.time || null;
+      const time: string = req.body.time || null; */
+
+      const categories = req.query.categories;
+      const { latitude, longitude, time } = req.query;
 
       if (!latitude && !longitude)
         return res.status(400).json({
@@ -91,7 +93,9 @@ export const restaurantController = {
         );
 
       if (categories) {
-        query = query.where("Restaurant.category", "in", categories);
+        const parsedCategories: CATEGORY[] = JSON.parse(categories.toString());
+        console.log(parsedCategories);
+        query = query.where("Restaurant.category", "in", parsedCategories);
       }
 
       if (search) {

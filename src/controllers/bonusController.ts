@@ -1,0 +1,54 @@
+import { NextFunction, Request, Response } from "express";
+import { Insertable, Updateable } from "kysely";
+import { Bonus } from "../types/db/types";
+import { bonusReposity } from "../repository/bonusRepository";
+
+export const bonusController = {
+  createBonus: async (req: Request, res: Response, next: NextFunction) => {
+    const data: Insertable<Bonus> = { ...req.body };
+    try {
+      //different creating options such as creating UserBonus for every user, or with conditions
+      const createdBonus = await bonusReposity.create(data);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          bonus: createdBonus,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  updateBonus: async (req: Request, res: Response, next: NextFunction) => {
+    const data: Updateable<Bonus> = { ...req.body };
+
+    if (data.id)
+      return res
+        .status(400)
+        .json({ success: false, data: null, error: "Cannot update id field." });
+
+    try {
+      const updatedBonus = await bonusReposity.update(data);
+
+      return res
+        .status(200)
+        .json({ success: true, data: { bonus: updatedBonus } });
+    } catch (e) {
+      next(e);
+    }
+  },
+  deleteBonus: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    try {
+      const deletedBonus = await bonusReposity.delete(id);
+
+      return res
+        .status(200)
+        .json({ success: true, data: { bonus: deletedBonus } });
+    } catch (e) {
+      next(e);
+    }
+  },
+};

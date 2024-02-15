@@ -69,9 +69,10 @@ export type User = {
 };
 export type UserBonus = {
     id: Generated<string>;
-    userId: string;
-    bonusId: string;
     isUsed: boolean;
+    userId: string;
+    userCardId: string;
+    bonusId: string;
 };
 export type UserCard = {
     id: Generated<string>;

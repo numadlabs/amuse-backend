@@ -44,6 +44,7 @@ model User {
 }
 
 enum ROLES {
+  SUPER_ADMIN
   ADMIN
   USER
 }
@@ -89,7 +90,7 @@ model Card {
   // currentSupply Int
 
   restaurantId String
-  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   Bonus    Bonus[]
   UserCard UserCard[]
@@ -107,19 +108,21 @@ model UserCard {
   mintedAt   DateTime?
   ownedAt    DateTime
   cardId     String
-  Card       Card      @relation(fields: [cardId], references: [id])
+  Card       Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
   userId     String
-  User       User      @relation(fields: [userId], references: [id])
+  User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   Tap        Tap[]
+  UserBonus UserBonus[]
 }
 
 model Tap {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
   tappedAt   DateTime
   userId     String
-  User       User     @relation(fields: [userId], references: [id])
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userCardId String
-  UserCard   UserCard @relation(fields: [userCardId], references: [id])
+  UserCard   UserCard @relation(fields: [userCardId], references: [id], onDelete: Cascade)
 }
 
 model Bonus {
@@ -133,23 +136,28 @@ model Bonus {
 
   cardId String
 
-  Card      Card        @relation(fields: [cardId], references: [id])
+  Card      Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
   UserBonus UserBonus[]
 }
 
 model UserBonus {
   id      String  @id @default(dbgenerated("gen_random_uuid()"))
-  userId  String
-  User    User    @relation(fields: [userId], references: [id])
-  bonusId String
-  Bonus   Bonus   @relation(fields: [bonusId], references: [id])
   isUsed  Boolean
+
+  userId  String
+  User    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  userCardId String
+  UserCard UserCard @relation(fields: [userCardId], references: [id], onDelete: Cascade)
+
+  bonusId String
+  Bonus   Bonus   @relation(fields: [bonusId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
   id      String  @id @default(dbgenerated("gen_random_uuid()"))
   userId  String
-  User    User    @relation(fields: [userId], references: [id])
+  User    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   message String
   type    String
   isRead  Boolean

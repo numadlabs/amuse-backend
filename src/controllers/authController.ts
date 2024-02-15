@@ -46,10 +46,14 @@ export const authController = {
   },
   register: async (req: Request, res: Response, next: NextFunction) => {
     const data: Prisma.UserCreateInput = { ...req.body };
-    if (!data.prefix || !data.telNumber || !data.password || !data.nickname)
-      return res
-        .status(400)
-        .json({ success: false, data: null, error: "Bad request" });
+    if (
+      !data.prefix ||
+      !data.telNumber ||
+      !data.password ||
+      !data.nickname ||
+      data.role
+    )
+      return res.status(400).json({ success: false, error: "Bad request" });
 
     try {
       const createdUser = await userServices.create(data);

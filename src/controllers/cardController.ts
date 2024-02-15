@@ -3,6 +3,8 @@ import { Insertable, Updateable } from "kysely";
 import { Card } from "../types/db/types";
 import { cardRepository } from "../repository/cardRepository";
 import { cardServices } from "../services/cardServices";
+import { AuthenticatedRequest } from "../../custom";
+import { UserCard } from "@prisma/client";
 
 export const cardController = {
   createCard: async (req: Request, res: Response, next: NextFunction) => {
@@ -37,6 +39,7 @@ export const cardController = {
       next(e);
     }
   },
+  //cascade delete
   deleteCard: async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
 

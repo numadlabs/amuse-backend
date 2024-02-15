@@ -1,17 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import { userServices } from "../services/userServices";
-import { Prisma } from "@prisma/client";
+import { Prisma, UserCard } from "@prisma/client";
 import { AuthenticatedRequest } from "../../custom";
 
 import { hideDataHelper } from "../lib/hideDataHelper";
 import { userRepository } from "../repository/userRepository";
+import { Insertable } from "kysely";
+import { cardServices } from "../services/cardServices";
+import { bonusReposity } from "../repository/bonusRepository";
 
 export const UserController = {
-  //if not confirmed do not return Token
-  //verification code-uud encrypt(jwt-exp)
-  //changePassword = enter valid password -> enter/update newPassword
-  //forgotPassword = get send new password by msg / send OTP,
-  //ene solij bolohgui ymnudiig yaha bodoh
   updateUser: async (
     req: AuthenticatedRequest,
     res: Response,
@@ -114,6 +112,37 @@ export const UserController = {
       const cards = await userRepository.getUserCards(req.user.id);
 
       return res.status(200).json({ success: true, data: { cards } });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getUserBonuses: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    try {
+      const userBonuses = await userRepository.getUserBonuses(id);
+
+      return res
+        .status(200)
+        .json({ success: true, data: { userBonuses: userBonuses } });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getUserBonusesByUserCardId: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { userCardId } = req.params;
+    try {
+      const userBonuses = await userRepository.getUserBonusesByUserCardId(
+        userCardId
+      );
+
+      return res
+        .status(200)
+        .json({ success: true, data: { userBonuses: userBonuses } });
     } catch (e) {
       next(e);
     }

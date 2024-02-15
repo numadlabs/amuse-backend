@@ -1,6 +1,7 @@
-import { Updateable } from "kysely";
+import { Insertable, Updateable } from "kysely";
 import { cardRepository } from "../repository/cardRepository";
-import { Card } from "../types/db/types";
+import { Card, UserCard } from "../types/db/types";
+import { restaurantResposity } from "../repository/restaurantRepository";
 
 export const cardServices = {
   update: async (id: string, data: Updateable<Card>) => {

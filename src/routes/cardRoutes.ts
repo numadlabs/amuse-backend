@@ -1,5 +1,7 @@
 import express from "express";
 import { cardController } from "../controllers/cardController";
+import { authenticateToken } from "../middlewares/authenticateToken";
+import { authorize } from "../middlewares/authorization";
 const cardRoutes = express.Router();
 
 cardRoutes.get("/cards/:id", cardController.getCardById);
@@ -9,8 +11,23 @@ cardRoutes.get(
 );
 cardRoutes.get("/cards", cardController.getCards);
 
-cardRoutes.post("/cards", cardController.createCard);
-cardRoutes.put("/cards/:id", cardController.updateCard);
-cardRoutes.delete("/cards/:id", cardController.deleteCard);
+cardRoutes.post(
+  "/cards",
+  authenticateToken,
+  authorize("ADMIN", "SUPER_ADMIN"),
+  cardController.createCard
+);
+cardRoutes.put(
+  "/cards/:id",
+  authenticateToken,
+  authorize("ADMIN", "SUPER_ADMIN"),
+  cardController.updateCard
+);
+cardRoutes.delete(
+  "/cards/:id",
+  authenticateToken,
+  authorize("ADMIN", "SUPER_ADMIN"),
+  cardController.deleteCard
+);
 
 export = cardRoutes;
