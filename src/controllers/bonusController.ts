@@ -1,14 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { Insertable, Updateable } from "kysely";
 import { Bonus } from "../types/db/types";
-import { bonusReposity } from "../repository/bonusRepository";
+import { bonusRepository } from "../repository/bonusRepository";
 
 export const bonusController = {
   createBonus: async (req: Request, res: Response, next: NextFunction) => {
     const data: Insertable<Bonus> = { ...req.body };
     try {
       //different creating options such as creating UserBonus for every user, or with conditions
-      const createdBonus = await bonusReposity.create(data);
+      const createdBonus = await bonusRepository.create(data);
 
       return res.status(200).json({
         success: true,
@@ -29,7 +29,7 @@ export const bonusController = {
         .json({ success: false, data: null, error: "Cannot update id field." });
 
     try {
-      const updatedBonus = await bonusReposity.update(data);
+      const updatedBonus = await bonusRepository.update(data);
 
       return res
         .status(200)
@@ -42,7 +42,7 @@ export const bonusController = {
     const { id } = req.params;
 
     try {
-      const deletedBonus = await bonusReposity.delete(id);
+      const deletedBonus = await bonusRepository.delete(id);
 
       return res
         .status(200)

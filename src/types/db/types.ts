@@ -43,7 +43,7 @@ export type Restaurant = {
 };
 export type Tap = {
     id: Generated<string>;
-    tappedAt: Timestamp;
+    tappedAt: Generated<Timestamp>;
     userId: string;
     userCardId: string;
 };

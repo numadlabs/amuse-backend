@@ -1,6 +1,6 @@
 import { Expression, Insertable, Updateable, sql } from "kysely";
 import { Restaurant } from "../types/db/types";
-import { restaurantResposity } from "../repository/restaurantRepository";
+import { restaurantRepository } from "../repository/restaurantRepository";
 import { NextFunction, Request, Response } from "express";
 import { db } from "../utils/db";
 import { CATEGORY } from "../types/db/enums";
@@ -12,7 +12,7 @@ export const restaurantController = {
   createRestaurant: async (req: Request, res: Response, next: NextFunction) => {
     const data: Insertable<Restaurant> = { ...req.body };
     try {
-      const restaurant = await restaurantResposity.create(data);
+      const restaurant = await restaurantRepository.create(data);
 
       return res
         .status(200)
@@ -58,10 +58,6 @@ export const restaurantController = {
 
       let search = req.query.search;
 
-      /* const { latitude, longitude } = req.body;
-      const categories: CATEGORY[] = req.body.categories || null;
-      const time: string = req.body.time || null; */
-
       const categories = req.query.categories;
       const { latitude, longitude, time } = req.query;
 
@@ -94,7 +90,6 @@ export const restaurantController = {
 
       if (categories) {
         const parsedCategories: CATEGORY[] = JSON.parse(categories.toString());
-        console.log(parsedCategories);
         query = query.where("Restaurant.category", "in", parsedCategories);
       }
 
@@ -148,7 +143,7 @@ export const restaurantController = {
   ) => {
     const { id } = req.params;
     try {
-      const restaurant = await restaurantResposity.getById(id);
+      const restaurant = await restaurantRepository.getById(id);
 
       return res.status(200).json({ success: true, restaurant: restaurant });
     } catch (e) {

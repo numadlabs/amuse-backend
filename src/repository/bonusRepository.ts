@@ -2,7 +2,7 @@ import { Insertable, Updateable } from "kysely";
 import { Bonus } from "../types/db/types";
 import { db } from "../utils/db";
 
-export const bonusReposity = {
+export const bonusRepository = {
   create: async (data: Insertable<Bonus>) => {
     const bonus = await db
       .insertInto("Bonus")

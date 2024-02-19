@@ -27,7 +27,15 @@ export const userBonusController = {
   ) => {
     const { encryptedData } = req.body;
 
+    if (!encryptedData)
+      return res
+        .status(400)
+        .json({ success: false, data: null, error: "Passed no data ." });
+
     try {
+      const userBonus = await userBonusServices.redeem(encryptedData);
+
+      return res.status(200).json({ success: true, data: userBonus });
     } catch (e) {
       next(e);
     }

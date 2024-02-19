@@ -1,13 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { userServices } from "../services/userServices";
-import { Prisma, UserCard } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { AuthenticatedRequest } from "../../custom";
 
 import { hideDataHelper } from "../lib/hideDataHelper";
 import { userRepository } from "../repository/userRepository";
-import { Insertable } from "kysely";
-import { cardServices } from "../services/cardServices";
-import { bonusReposity } from "../repository/bonusRepository";
 
 export const UserController = {
   updateUser: async (
@@ -15,6 +12,7 @@ export const UserController = {
     res: Response,
     next: NextFunction
   ) => {
+    const { id } = req.params;
     const data: Prisma.UserCreateInput = { ...req.body };
 
     if (!req.user?.id)
@@ -22,6 +20,13 @@ export const UserController = {
         success: false,
         data: null,
         error: "Could retrieve id from the token.",
+      });
+
+    if (req.user.role !== "SUPER_ADMIN" && req.user.id !== id)
+      return res.status(200).json({
+        success: false,
+        data: null,
+        error: "You are not allowed to update this user.",
       });
 
     if (

@@ -68,4 +68,22 @@ export const userCardReposity = {
 
     return userCards;
   },
+  getByUserIdRestaurantId: async (userId: string, restaurantId: string) => {
+    const userCards = await db
+      .selectFrom("UserCard")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .where("Card.restaurantId", "=", restaurantId)
+      .where("UserCard.userId", "=", userId)
+      .select([
+        "UserCard.id",
+        "UserCard.cardId",
+        "UserCard.mintedAt",
+        "UserCard.userId",
+        "UserCard.ownedAt",
+        "UserCard.visitCount",
+      ])
+      .executeTakeFirst();
+
+    return userCards;
+  },
 };

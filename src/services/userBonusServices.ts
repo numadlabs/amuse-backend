@@ -9,14 +9,16 @@ export const userBonusServices = {
     */
     const userBonus = await userBonusRepository.getById(id);
 
+    if (!userBonus) throw new Error("No corresponding userBonus found.");
+
     if (userBonus?.userId !== userId)
       throw new Error("You are not allowed to use this bonus.");
 
     if (userBonus.isUsed) throw new Error("This bonus is used already.");
 
     const data = {
-      //token: accessToken,
       userBonusId: userBonus.id,
+      issuedAt: Date.now(),
     };
 
     const encryptedData = encryptionHelper.encryptData(JSON.stringify(data));
@@ -25,6 +27,8 @@ export const userBonusServices = {
   },
   redeem: async (encryptedData: string) => {
     const data = encryptionHelper.decryptData(encryptedData);
+
+    if (Date.now() - data.issuedAt > 30000) throw new Error("Expired QR");
 
     const userBonusId: string = data.userBonusId;
 

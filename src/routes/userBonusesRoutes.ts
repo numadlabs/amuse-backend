@@ -13,3 +13,5 @@ userBonusesRouter.post(
   authenticateToken,
   userBonusController.redeemUserBonus
 );
+
+export = userBonusesRouter;

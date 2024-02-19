@@ -7,7 +7,7 @@ import {
 import { DB, Restaurant } from "../types/db/types";
 import { db } from "../utils/db";
 
-export const restaurantResposity = {
+export const restaurantRepository = {
   create: async (data: Insertable<Restaurant>) => {
     const restaurant = await db
       .insertInto("Restaurant")

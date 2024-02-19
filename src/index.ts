@@ -8,6 +8,8 @@ import userRoutes from "./routes/userRoutes";
 import restaurantRoutes from "./routes/restaurantRoutes";
 import cardRoutes from "./routes/cardRoutes";
 import authRoutes from "./routes/authRoutes";
+import userBonusesRouter from "./routes/userBonusesRoutes";
+import tapRouter from "./routes/tapRoutes";
 
 require("dotenv").config();
 
@@ -30,6 +32,8 @@ app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", restaurantRoutes);
 app.use("/api", cardRoutes);
+app.use("/api", userBonusesRouter);
+app.use("/api/taps", tapRouter);
 
 app.use(notFound);
 app.use(errorHandler);
