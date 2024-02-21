@@ -1,3 +1,5 @@
+import { CustomError } from "../exceptions/CustomError";
+import { BONUS_REDEEM_EXPIRATION_TIME } from "../lib/constants";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { userBonusRepository } from "../repository/userBonusRepository";
 
@@ -9,12 +11,14 @@ export const userBonusServices = {
     */
     const userBonus = await userBonusRepository.getById(id);
 
-    if (!userBonus) throw new Error("No corresponding userBonus found.");
+    if (!userBonus)
+      throw new CustomError("No corresponding userBonus found.", 400);
 
     if (userBonus?.userId !== userId)
-      throw new Error("You are not allowed to use this bonus.");
+      throw new CustomError("You are not allowed to use this bonus.", 400);
 
-    if (userBonus.isUsed) throw new Error("This bonus is used already.");
+    if (userBonus.isUsed)
+      throw new CustomError("This bonus is used already.", 400);
 
     const data = {
       userBonusId: userBonus.id,
@@ -28,12 +32,13 @@ export const userBonusServices = {
   redeem: async (encryptedData: string) => {
     const data = encryptionHelper.decryptData(encryptedData);
 
-    if (Date.now() - data.issuedAt > 60000) throw new Error("Expired QR");
+    if (Date.now() - data.issuedAt > BONUS_REDEEM_EXPIRATION_TIME * 1000)
+      throw new CustomError("The QR has expired.", 400);
 
     const userBonusId: string = data.userBonusId;
 
     const userBonus = await userBonusRepository.getById(userBonusId);
-    if (!userBonus) throw new Error("Invalid userBonus.");
+    if (!userBonus) throw new CustomError("Invalid userBonus.", 400);
 
     userBonus.isUsed = true;
 

@@ -8,7 +8,7 @@ export const cardRepository = {
       .insertInto("Card")
       .values(data)
       .returningAll()
-      .executeTakeFirstOrThrow(() => new Error("Error creating card."));
+      .executeTakeFirstOrThrow(() => new Error("Couldn't create the card."));
 
     return card;
   },
@@ -18,7 +18,7 @@ export const cardRepository = {
       .set(data)
       .where("Card.id", "=", id)
       .returningAll()
-      .executeTakeFirstOrThrow(() => new Error("Error updating card."));
+      .executeTakeFirstOrThrow(() => new Error("Couldn't update the card."));
 
     return card;
   },
@@ -27,7 +27,7 @@ export const cardRepository = {
       .deleteFrom("Card")
       .where("Card.id", "=", id)
       .returningAll()
-      .executeTakeFirstOrThrow(() => new Error("Error deleting card."));
+      .executeTakeFirstOrThrow(() => new Error("Couldn't delete the card."));
 
     return card;
   },

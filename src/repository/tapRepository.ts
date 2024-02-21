@@ -8,9 +8,7 @@ export const tapRepository = {
       .insertInto("Tap")
       .values(data)
       .returningAll()
-      .executeTakeFirstOrThrow(
-        () => new Error("Had an error during the create.")
-      );
+      .executeTakeFirstOrThrow(() => new Error("Could not create the tap."));
 
     return tap;
   },
@@ -28,9 +26,7 @@ export const tapRepository = {
       .updateTable("Tap")
       .where("Tap.id", "=", id)
       .set(data)
-      .executeTakeFirstOrThrow(
-        () => new Error("Had an error during the update.")
-      );
+      .executeTakeFirstOrThrow(() => new Error("Could not update the tap."));
 
     return tap;
   },

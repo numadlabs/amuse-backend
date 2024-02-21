@@ -18,7 +18,9 @@ export const userBonusRepository = {
       .set(data)
       .where("UserBonus.id", "=", id)
       .returningAll()
-      .executeTakeFirst();
+      .executeTakeFirstOrThrow(
+        () => new Error("Could not update the userBonus.")
+      );
 
     return updatedUserBonus;
   },

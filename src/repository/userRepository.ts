@@ -62,9 +62,7 @@ export const userRepository = {
       .insertInto("User")
       .values(data)
       .returningAll()
-      .executeTakeFirst();
-
-    if (!user) throw new Error("Error inserting into DB");
+      .executeTakeFirstOrThrow(() => new Error("Could not create the user."));
 
     return user;
   },
@@ -74,9 +72,7 @@ export const userRepository = {
       .set(data)
       .where("User.id", "=", id)
       .returningAll()
-      .executeTakeFirst();
-
-    if (!user) throw new Error("Error updating the DB");
+      .executeTakeFirstOrThrow(() => new Error("Could not update the user."));
 
     return user;
   },
@@ -85,9 +81,8 @@ export const userRepository = {
       .deleteFrom("User")
       .where("User.id", "=", id)
       .returningAll()
-      .executeTakeFirst();
+      .executeTakeFirstOrThrow(() => new Error("Could not delete the user."));
 
-    if (!deletedUser) throw new Error("Error updating the DB");
     return deletedUser;
   },
 };

@@ -4,10 +4,11 @@ import { userRepository } from "../repository/userRepository";
 import { sendVerificationEmail } from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { extractVerification, generateVerificationToken } from "../utils/jwt";
-import jwt from "jsonwebtoken";
+import { CustomError } from "../exceptions/CustomError";
+import { verificationCodeConstants } from "../lib/constants";
 
-const MAX = 9999,
-  MIN = 1000;
+const MAX = verificationCodeConstants.MAX_VALUE,
+  MIN = verificationCodeConstants.MIN_VALUE;
 
 export const userServices = {
   create: async (data: Prisma.UserCreateInput) => {
@@ -15,7 +16,8 @@ export const userServices = {
       data.telNumber,
       data.prefix
     );
-    if (hasUser) throw new Error("User already exists with this phone number");
+    if (hasUser)
+      throw new CustomError("User already exists with this phone number", 400);
 
     const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;
@@ -30,11 +32,11 @@ export const userServices = {
       data.prefix
     );
 
-    if (!user) throw new Error("User not found");
+    if (!user) throw new CustomError("User not found", 400);
 
     const isUser = await encryptionHelper.compare(data.password, user.password);
 
-    if (!isUser) throw new Error("Invalid login info.");
+    if (!isUser) throw new CustomError("Invalid login info.", 400);
 
     return user;
   },
@@ -45,11 +47,13 @@ export const userServices = {
       data.prefix
     );
 
-    if (!hasUser) throw new Error("User does not exist!");
+    if (!hasUser) throw new CustomError("User does not exist!", 400);
 
     const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
-    const telVerificationToken = generateVerificationToken(randomNumber, "5m");
-    //const encryptedToken = await encryptionHelper.encrypt(telVerificationToken);
+    const telVerificationToken = generateVerificationToken(
+      randomNumber,
+      verificationCodeConstants.TEL_EXPIRATION_TIME
+    );
 
     const isSent = await sendOTP(data.prefix, data.telNumber, randomNumber);
     if (!isSent) throw new Error("Error has occured while sending the OTP.");
@@ -66,7 +70,7 @@ export const userServices = {
     const hasUser = await userRepository.getUserById(id);
 
     if (!hasUser || !hasUser.telVerificationCode)
-      throw new Error("User does not exist!");
+      throw new CustomError("User does not exist!", 400);
 
     const telVerificationCode = extractVerification(
       hasUser.telVerificationCode
@@ -76,7 +80,7 @@ export const userServices = {
       telVerificationCode !== verificationCode ||
       hasUser.telVerificationCode === null
     )
-      throw new Error("Invalid verification code!");
+      throw new CustomError("Invalid verification code!", 400);
 
     hasUser.isTelVerified = true;
     hasUser.telVerificationCode = null;
@@ -89,7 +93,7 @@ export const userServices = {
     const user = await userRepository.getUserById(id);
 
     if (!user || !user.telVerificationCode)
-      throw new Error("User does not exist!");
+      throw new CustomError("User does not exist!", 400);
 
     const telVerificationCode = extractVerification(user.telVerificationCode);
 
@@ -97,7 +101,7 @@ export const userServices = {
       telVerificationCode !== verificationCode ||
       user.telVerificationCode === null
     )
-      throw new Error("Invalid verification code!");
+      throw new CustomError("Invalid verification code!", 400);
 
     return user;
   },
@@ -112,6 +116,7 @@ export const userServices = {
 
     user.password = encryptedPassword;
     user.telVerificationCode = null;
+
     const updatedUser = await userRepository.update(id, user);
 
     return updatedUser;
@@ -121,18 +126,16 @@ export const userServices = {
     const userById = await userRepository.getUserById(id);
 
     if (!userById || !userById.email)
-      throw new Error("User does not exist or Has no email.");
+      throw new CustomError("User does not exist or Has no email.", 400);
 
     if (userById.isEmailVerified)
-      throw new Error("User's email is already verified.");
+      throw new CustomError("User's email is already verified.", 400);
 
     const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
     const emailVerificationToken = generateVerificationToken(
       randomNumber,
-      "1m"
+      verificationCodeConstants.EMAIL_EXPIRATION_TIME
     );
-    console.log("Email verification token: ", emailVerificationToken);
-    //const encryptedToken = await encryptionHelper.encrypt(emailVerificationToken);
 
     await sendVerificationEmail(randomNumber, userById.email);
 
@@ -144,24 +147,20 @@ export const userServices = {
   verifyEmailVerification: async (id: string, verificationCode: number) => {
     const foundUser = await userRepository.getUserById(id);
     if (!foundUser || !foundUser.email)
-      throw new Error("User does not exist or Has no email.");
+      throw new CustomError("User does not exist or Has no email.", 400);
 
     if (!foundUser.emailVerificationCode || foundUser.isEmailVerified)
-      throw new Error(
-        "No verification code send/recorded or email is already verified."
+      throw new CustomError(
+        "No verification code send/recorded or email is already verified.",
+        400
       );
 
     const emailVerificationCode = extractVerification(
       foundUser.emailVerificationCode
     );
-    console.log(
-      "Email verification token from DB: ",
-      foundUser.emailVerificationCode
-    );
-    console.log("Extracted email verification token: ", emailVerificationCode);
 
     if (emailVerificationCode !== verificationCode)
-      throw new Error("Invalid verification code.");
+      throw new CustomError("Invalid verification code.", 400);
 
     foundUser.isEmailVerified = true;
     foundUser.emailVerifiedAt = new Date();
@@ -173,7 +172,7 @@ export const userServices = {
   },
   update: async (id: string, data: Prisma.UserCreateInput) => {
     const findUser = await userRepository.getUserById(id);
-    if (!findUser) throw new Error("User does not exist");
+    if (!findUser) throw new CustomError("User does not exist.", 400);
 
     const user = await userRepository.update(findUser.id, data);
 
@@ -182,7 +181,7 @@ export const userServices = {
   //add cascading effects
   delete: async (id: string) => {
     const findUser = await userRepository.getUserById(id);
-    if (!findUser) throw new Error("User does not exist");
+    if (!findUser) throw new CustomError("User does not exist.", 400);
 
     const user = await userRepository.delete(findUser.id);
 

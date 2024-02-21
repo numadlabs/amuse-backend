@@ -4,12 +4,14 @@ import { restaurantRepository } from "../repository/restaurantRepository";
 import { tapRepository } from "../repository/tapRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { Tap } from "../types/db/types";
+import { CustomError } from "../exceptions/CustomError";
+import { TAP_EXPIRATION_TIME } from "../lib/constants";
 
 export const tapServices = {
   generateTap: async (restaurantId: string) => {
     const restaurant = await restaurantRepository.getById(restaurantId);
 
-    if (!restaurant) throw new Error("Invalid restaurantId");
+    if (!restaurant) throw new CustomError("Invalid restaurantId", 400);
 
     const data = {
       restaurantId: restaurantId,
@@ -23,10 +25,11 @@ export const tapServices = {
   redeemTap: async (hashedData: string, userId: string) => {
     const data = encryptionHelper.decryptData(hashedData);
 
-    if (Date.now() - data.issuedAt > 300000) throw new Error("Expired QR");
+    if (Date.now() - data.issuedAt > TAP_EXPIRATION_TIME * 1000)
+      throw new CustomError("The QR has expired.", 400);
 
     const restaurant = await restaurantRepository.getById(data.restaurantId);
-    if (!restaurant) throw new Error("Invalid restaurantId.");
+    if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
     const userCard = await userCardReposity.getByUserIdRestaurantId(
       userId,
@@ -34,7 +37,10 @@ export const tapServices = {
     );
 
     if (!userCard)
-      throw new Error("You do not have membership card for this restaurant.");
+      throw new CustomError(
+        "You do not have membership card for this restaurant.",
+        400
+      );
 
     const tapData: Insertable<Tap> = {
       userCardId: userCard.id,

@@ -13,7 +13,9 @@ export const restaurantRepository = {
       .insertInto("Restaurant")
       .values(data)
       .returningAll()
-      .executeTakeFirstOrThrow(() => new Error("Error creating restaurant"));
+      .executeTakeFirstOrThrow(
+        () => new Error("Could not create the restaurant.")
+      );
 
     return restaurant;
   },
@@ -33,7 +35,7 @@ export const restaurantRepository = {
       .set(data)
       .returningAll()
       .executeTakeFirstOrThrow(
-        () => new Error("Error updating the restaurant")
+        () => new Error("Could not update the restaurant.")
       );
 
     return restaurant;
@@ -44,7 +46,7 @@ export const restaurantRepository = {
       .where("Restaurant.id", "=", id)
       .returningAll()
       .executeTakeFirstOrThrow(
-        () => new Error("Error deleting the restaurant")
+        () => new Error("Could not delete the restaurant.")
       );
 
     return restaurant;

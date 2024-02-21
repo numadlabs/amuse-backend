@@ -2,13 +2,16 @@ import { sign, verify } from "jsonwebtoken";
 import { Secret } from "jsonwebtoken"; // Import the Secret type
 import { Prisma } from "@prisma/client";
 
+const ACCESS_TOKEN_EXPIRATION_TIME = process.env.JWT_ACCESS_EXPIRATION_TIME;
+const REFRESH_TOKEN_EXPIRATION_TIME = process.env.JWT_REFRESH_EXPIRATION_TIME;
+
 export function generateAccessToken(user: Prisma.UserCreateInput) {
   const jwtAccesSecret: Secret | undefined = process.env.JWT_ACCESS_SECRET;
   if (!jwtAccesSecret) {
     throw new Error("JWT_REFRESH_SECRET is not defined.");
   }
   return sign({ id: user.id, role: user.role }, jwtAccesSecret, {
-    expiresIn: "30m",
+    expiresIn: ACCESS_TOKEN_EXPIRATION_TIME,
   });
 }
 
@@ -24,7 +27,7 @@ export function generateVerificationToken(
     expiresIn: duration,
   });
 }
-
+//turn it into function that just returns JWT-payload
 export function extractVerification(token: string) {
   const jwtVerificationSecret = process.env.JWT_VERIFICATION_SECRET;
   if (!jwtVerificationSecret) {
@@ -44,7 +47,7 @@ export function generateRefreshToken(user: Prisma.UserCreateInput) {
     throw new Error("JWT_REFRESH_SECRET is not defined.");
   }
   return sign({ id: user.id, role: user.role }, jwtRefreshSecret, {
-    expiresIn: "8h",
+    expiresIn: REFRESH_TOKEN_EXPIRATION_TIME,
   });
 }
 

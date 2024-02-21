@@ -8,7 +8,7 @@ export const bonusRepository = {
       .insertInto("Bonus")
       .values(data)
       .returningAll()
-      .executeTakeFirstOrThrow(() => new Error("Error on creating bonus."));
+      .executeTakeFirstOrThrow(() => new Error("Couldn't create the bonus."));
 
     return bonus;
   },
@@ -17,7 +17,7 @@ export const bonusRepository = {
       .updateTable("Bonus")
       .set(data)
       .returningAll()
-      .executeTakeFirstOrThrow(() => new Error("Error on updating bonus."));
+      .executeTakeFirstOrThrow(() => new Error("Couldn't update the bonus."));
 
     return bonus;
   },
@@ -26,7 +26,7 @@ export const bonusRepository = {
       .deleteFrom("Bonus")
       .where("Bonus.id", "=", id)
       .returningAll()
-      .executeTakeFirstOrThrow(() => new Error("Error on deleting bonus."));
+      .executeTakeFirstOrThrow(() => new Error("Couldn't delete the bonus."));
 
     return bonus;
   },

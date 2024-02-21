@@ -8,7 +8,9 @@ export const userCardReposity = {
       .insertInto("UserCard")
       .values(data)
       .returningAll()
-      .executeTakeFirstOrThrow(() => new Error("Error creating userCard."));
+      .executeTakeFirstOrThrow(
+        () => new Error("Could not create the userCard.")
+      );
 
     return userCard;
   },
@@ -16,7 +18,9 @@ export const userCardReposity = {
     const deletedUserCard = await db
       .deleteFrom("UserCard")
       .returningAll()
-      .executeTakeFirstOrThrow(() => new Error("Error deleting userCard."));
+      .executeTakeFirstOrThrow(
+        () => new Error("Could not delete the userCard.")
+      );
 
     return deletedUserCard;
   },
