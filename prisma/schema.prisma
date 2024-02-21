@@ -104,9 +104,9 @@ enum TIER {
 
 model UserCard {
   id         String    @id @default(dbgenerated("gen_random_uuid()"))
-  visitCount Int
+  visitCount Int      @default(0)
   mintedAt   DateTime?
-  ownedAt    DateTime
+  ownedAt    DateTime @default(now())
   cardId     String
   Card       Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
   userId     String
@@ -127,7 +127,7 @@ model Tap {
 
 model Bonus {
   id       String @id @default(dbgenerated("gen_random_uuid()"))
-  imageUrl String
+  imageUrl String?
   name     String
   // price         Int
   // currency      String

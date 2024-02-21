@@ -8,7 +8,7 @@ import type { ROLES, CATEGORY, TIER } from "./enums";
 
 export type Bonus = {
     id: Generated<string>;
-    imageUrl: string;
+    imageUrl: string | null;
     name: string;
     cardId: string;
 };
@@ -76,9 +76,9 @@ export type UserBonus = {
 };
 export type UserCard = {
     id: Generated<string>;
-    visitCount: number;
+    visitCount: Generated<number>;
     mintedAt: Timestamp | null;
-    ownedAt: Timestamp;
+    ownedAt: Generated<Timestamp>;
     cardId: string;
     userId: string;
 };

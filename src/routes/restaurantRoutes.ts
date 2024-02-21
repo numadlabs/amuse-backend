@@ -5,24 +5,21 @@ import { authorize } from "../middlewares/authorization";
 const restaurantRoutes = express.Router();
 
 restaurantRoutes.post(
-  "/restaurants",
+  "/",
   authenticateToken,
   authorize("SUPER_ADMIN"),
   restaurantController.createRestaurant
 );
-restaurantRoutes.get("/restaurants", restaurantController.getRestaurant);
-restaurantRoutes.get(
-  "/restaurants/:id",
-  restaurantController.getRestaurantById
-);
+restaurantRoutes.get("/", restaurantController.getRestaurant);
+restaurantRoutes.get("/:id", restaurantController.getRestaurantById);
 restaurantRoutes.put(
-  "/restaurants/:id",
+  "/:id",
   authenticateToken,
   authorize("SUPER_ADMIN", "ADMIN"),
   restaurantController.updateRestaurant
 );
 restaurantRoutes.delete(
-  "/restaurants/:id",
+  "/:id",
   authenticateToken,
   authorize("ADMIN"),
   restaurantController.deleteRestaurant

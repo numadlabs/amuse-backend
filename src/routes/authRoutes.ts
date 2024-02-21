@@ -4,27 +4,27 @@ import { authenticateToken } from "../middlewares/authenticateToken";
 import { authorize } from "../middlewares/authorization";
 const authRoutes = express.Router();
 
-authRoutes.post("/auth/login", authController.login);
-authRoutes.post("/auth/register", authController.register);
+authRoutes.post("/login", authController.login);
+authRoutes.post("/register", authController.register);
 //rate limit it 1 per 30sec
-authRoutes.post("/auth/otp", authController.sendOTP);
-authRoutes.post("/auth/verifyOTP/:id", authController.verifyOTP);
+authRoutes.post("/otp", authController.sendOTP);
+authRoutes.post("/verifyOTP/:id", authController.verifyOTP);
 authRoutes.post(
-  "/auth/email",
+  "/email",
   authenticateToken,
   authController.sendVerificationEmail
 );
 authRoutes.post(
-  "/auth/verifyEmail",
+  "/verifyEmail",
   authenticateToken,
   authController.verifyEmailVerification
 );
-authRoutes.post("/auth/refreshToken", authController.refreshToken);
-authRoutes.post("/auth/:id/checkOTP", authController.checkOTP);
-authRoutes.post("/auth/:id/changePassword", authController.changePassword);
+authRoutes.post("/refreshToken", authController.refreshToken);
+authRoutes.post("/:id/checkOTP", authController.checkOTP);
+authRoutes.post("/:id/changePassword", authController.changePassword);
 
 /* authRoutes.post(
-  "/auth/authorization",
+  "/authorization",
   authenticateToken,
   authorize("USER", "ADMIN"),
   authController.testAuthorization

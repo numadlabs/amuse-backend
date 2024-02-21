@@ -26,7 +26,7 @@ export const userCardReposity = {
       .where("UserCard.cardId", "=", cardId)
       .where("UserCard.userId", "=", userId)
       .selectAll()
-      .execute();
+      .executeTakeFirst();
 
     return userCards;
   },

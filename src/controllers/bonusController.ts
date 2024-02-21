@@ -6,6 +6,11 @@ import { bonusRepository } from "../repository/bonusRepository";
 export const bonusController = {
   createBonus: async (req: Request, res: Response, next: NextFunction) => {
     const data: Insertable<Bonus> = { ...req.body };
+    if (!data.cardId || !data.imageUrl || !data.name || data.id)
+      return res
+        .status(400)
+        .json({ success: false, data: null, error: "Bad request." });
+
     try {
       //different creating options such as creating UserBonus for every user, or with conditions
       const createdBonus = await bonusRepository.create(data);

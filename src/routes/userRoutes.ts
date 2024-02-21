@@ -4,10 +4,10 @@ import { UserController } from "../controllers/userController";
 import { authenticateToken } from "../middlewares/authenticateToken";
 import { authController } from "../controllers/authController";
 
-userRoutes.put("/users", authenticateToken, UserController.updateUser);
-userRoutes.delete("/users", authenticateToken, UserController.deleteUser);
+userRoutes.put("/", authenticateToken, UserController.updateUser);
+userRoutes.delete("/", authenticateToken, UserController.deleteUser);
 
-userRoutes.get("/users/cards", authenticateToken, UserController.getUserCards);
-userRoutes.get("/users/taps", authenticateToken, UserController.getUserTaps);
+userRoutes.get("/cards", authenticateToken, UserController.getUserCards);
+userRoutes.get("/taps", authenticateToken, UserController.getUserTaps);
 
 export = userRoutes;

@@ -28,7 +28,7 @@ export const userBonusServices = {
   redeem: async (encryptedData: string) => {
     const data = encryptionHelper.decryptData(encryptedData);
 
-    if (Date.now() - data.issuedAt > 30000) throw new Error("Expired QR");
+    if (Date.now() - data.issuedAt > 60000) throw new Error("Expired QR");
 
     const userBonusId: string = data.userBonusId;
 

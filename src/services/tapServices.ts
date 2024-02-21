@@ -23,9 +23,7 @@ export const tapServices = {
   redeemTap: async (hashedData: string, userId: string) => {
     const data = encryptionHelper.decryptData(hashedData);
 
-    console.log(Date.now() - data.issuedAt);
-
-    if (Date.now() - data.issuedAt > 30000) throw new Error("Expired QR");
+    if (Date.now() - data.issuedAt > 300000) throw new Error("Expired QR");
 
     const restaurant = await restaurantRepository.getById(data.restaurantId);
     if (!restaurant) throw new Error("Invalid restaurantId.");

@@ -1,17 +1,17 @@
 import express from "express";
 import { authenticateToken } from "../middlewares/authenticateToken";
 import { userBonusController } from "../controllers/userBonusController";
-const userBonusesRouter = express.Router();
+const userBonusesRoutes = express.Router();
 
-userBonusesRouter.post(
-  "/userBonuses/:id/use",
+userBonusesRoutes.post(
+  "/:id/use",
   authenticateToken,
   userBonusController.useUserBonus
 );
-userBonusesRouter.post(
-  "/userBonuses/:id/redeem",
+userBonusesRoutes.post(
+  "/redeem",
   authenticateToken,
   userBonusController.redeemUserBonus
 );
 
-export = userBonusesRouter;
+export = userBonusesRoutes;
