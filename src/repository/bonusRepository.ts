@@ -1,6 +1,7 @@
 import { Insertable, Updateable } from "kysely";
 import { Bonus } from "../types/db/types";
 import { db } from "../utils/db";
+import { CustomError } from "../exceptions/CustomError";
 
 export const bonusRepository = {
   create: async (data: Insertable<Bonus>) => {
@@ -47,6 +48,18 @@ export const bonusRepository = {
       .where("Restaurant.id", "=", restaurantId)
       .select(["Bonus.id", "Bonus.cardId", "Bonus.name", "Bonus.imageUrl"])
       .execute();
+
+    return bonus;
+  },
+  getFirstTapBonus: async () => {
+    const bonus = await db
+      .selectFrom("Bonus")
+      /* .where("Bonus.cardId", "=", null) */
+      .where("Bonus.name", "=", "Free Drink")
+      .selectAll()
+      .executeTakeFirstOrThrow(
+        () => new CustomError("No Global free drink bonus found.", 500)
+      );
 
     return bonus;
   },

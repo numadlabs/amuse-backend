@@ -3,9 +3,11 @@ import { encryptionHelper } from "../lib/encryptionHelper";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { tapRepository } from "../repository/tapRepository";
 import { userCardReposity } from "../repository/userCardRepository";
-import { Tap } from "../types/db/types";
+import { Tap, UserBonus } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
 import { TAP_EXPIRATION_TIME } from "../lib/constants";
+import { bonusRepository } from "../repository/bonusRepository";
+import { userBonusRepository } from "../repository/userBonusRepository";
 
 export const tapServices = {
   generateTap: async (restaurantId: string) => {
@@ -41,6 +43,24 @@ export const tapServices = {
         "You do not have membership card for this restaurant.",
         400
       );
+
+    //if firstTap field is false
+    if (!userCard.isFirstTap) {
+      const bonus = await bonusRepository.getFirstTapBonus();
+
+      const userBonus: Insertable<UserBonus> = {
+        bonusId: bonus.id,
+        userId: userId,
+        userCardId: userCard.id,
+      };
+
+      await userBonusRepository.create(userBonus);
+    }
+
+    userCard.isFirstTap = true;
+    userCard.visitCount += 1;
+
+    await userCardReposity.update(userCard, userCard.id);
 
     const tapData: Insertable<Tap> = {
       userCardId: userCard.id,

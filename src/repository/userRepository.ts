@@ -43,6 +43,7 @@ export const userRepository = {
     const userBonuses = await db
       .selectFrom("UserBonus")
       .where("UserBonus.userId", "=", id)
+      .where("UserBonus.isUsed", "=", false)
       .selectAll()
       .execute();
 
@@ -52,6 +53,7 @@ export const userRepository = {
     const userBonuses = await db
       .selectFrom("UserBonus")
       .where("UserBonus.userCardId", "=", userCardId)
+      .where("UserBonus.isUsed", "=", false)
       .selectAll()
       .execute();
 

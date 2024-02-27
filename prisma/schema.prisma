@@ -104,15 +104,16 @@ enum TIER {
 
 model UserCard {
   id         String    @id @default(dbgenerated("gen_random_uuid()"))
-  visitCount Int      @default(0)
+  visitCount Int       @default(0)
   mintedAt   DateTime?
-  ownedAt    DateTime @default(now())
+  ownedAt    DateTime  @default(now())
   cardId     String
   Card       Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
   userId     String
   User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isFirstTap Boolean   @default(false)
 
-  Tap        Tap[]
+  Tap       Tap[]
   UserBonus UserBonus[]
 }
 
@@ -126,7 +127,7 @@ model Tap {
 }
 
 model Bonus {
-  id       String @id @default(dbgenerated("gen_random_uuid()"))
+  id       String  @id @default(dbgenerated("gen_random_uuid()"))
   imageUrl String?
   name     String
   // price         Int
@@ -134,24 +135,24 @@ model Bonus {
   // totalSupply   Int
   // currentSupply Int
 
-  cardId String
+  cardId String?
 
-  Card      Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  Card      Card?       @relation(fields: [cardId], references: [id], onDelete: Cascade)
   UserBonus UserBonus[]
 }
 
 model UserBonus {
-  id      String  @id @default(dbgenerated("gen_random_uuid()"))
-  isUsed  Boolean
+  id     String  @id @default(dbgenerated("gen_random_uuid()"))
+  isUsed Boolean @default(false)
 
-  userId  String
-  User    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   userCardId String
-  UserCard UserCard @relation(fields: [userCardId], references: [id], onDelete: Cascade)
+  UserCard   UserCard @relation(fields: [userCardId], references: [id], onDelete: Cascade)
 
   bonusId String
-  Bonus   Bonus   @relation(fields: [bonusId], references: [id], onDelete: Cascade)
+  Bonus   Bonus  @relation(fields: [bonusId], references: [id], onDelete: Cascade)
 }
 
 model Notification {

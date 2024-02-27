@@ -1,8 +1,17 @@
-import { Updateable } from "kysely";
+import { Insertable, Updateable } from "kysely";
 import { db } from "../utils/db";
-import { UserBonus } from "@prisma/client";
+import { UserBonus } from "../types/db/types";
 
 export const userBonusRepository = {
+  create: async (data: Insertable<UserBonus>) => {
+    const userBonus = await db
+      .insertInto("UserBonus")
+      .values(data)
+      .returningAll()
+      .executeTakeFirstOrThrow(() => new Error("Couldn't create userBonus."));
+
+    return userBonus;
+  },
   getById: async (id: string) => {
     const userBonus = await db
       .selectFrom("UserBonus")

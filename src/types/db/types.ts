@@ -10,7 +10,7 @@ export type Bonus = {
     id: Generated<string>;
     imageUrl: string | null;
     name: string;
-    cardId: string;
+    cardId: string | null;
 };
 export type Card = {
     id: Generated<string>;
@@ -69,7 +69,7 @@ export type User = {
 };
 export type UserBonus = {
     id: Generated<string>;
-    isUsed: boolean;
+    isUsed: Generated<boolean>;
     userId: string;
     userCardId: string;
     bonusId: string;
@@ -81,6 +81,7 @@ export type UserCard = {
     ownedAt: Generated<Timestamp>;
     cardId: string;
     userId: string;
+    isFirstTap: Generated<boolean>;
 };
 export type DB = {
     Bonus: Bonus;

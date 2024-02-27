@@ -1,6 +1,6 @@
-import { UserCard } from "@prisma/client";
-import { Insertable } from "kysely";
+import { Insertable, Updateable } from "kysely";
 import { db } from "../utils/db";
+import { UserCard } from "../types/db/types";
 
 export const userCardReposity = {
   create: async (data: Insertable<UserCard>) => {
@@ -10,6 +10,18 @@ export const userCardReposity = {
       .returningAll()
       .executeTakeFirstOrThrow(
         () => new Error("Could not create the userCard.")
+      );
+
+    return userCard;
+  },
+  update: async (data: Updateable<UserCard>, id: string) => {
+    const userCard = await db
+      .updateTable("UserCard")
+      .set(data)
+      .where("UserCard.id", "=", id)
+      .returningAll()
+      .executeTakeFirstOrThrow(
+        () => new Error("Could not update the userCard.")
       );
 
     return userCard;
@@ -85,6 +97,7 @@ export const userCardReposity = {
         "UserCard.userId",
         "UserCard.ownedAt",
         "UserCard.visitCount",
+        "UserCard.isFirstTap",
       ])
       .executeTakeFirst();
 
