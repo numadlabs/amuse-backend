@@ -10,7 +10,11 @@ restaurantRoutes.post(
   authorize("SUPER_ADMIN"),
   restaurantController.createRestaurant
 );
-restaurantRoutes.get("/", restaurantController.getRestaurant);
+restaurantRoutes.get(
+  "/",
+  authenticateToken,
+  restaurantController.getRestaurants
+);
 restaurantRoutes.get("/:id", restaurantController.getRestaurantById);
 restaurantRoutes.put(
   "/:id",
