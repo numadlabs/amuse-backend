@@ -81,6 +81,30 @@ export const UserController = {
       next(e);
     }
   },
+  getUserById: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { id } = req.params;
+
+    try {
+      const user = await userRepository.getUserById(id);
+
+      if (!user)
+        return res
+          .status(200)
+          .json({ success: false, data: null, error: "User does not exist." });
+
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
+
+      return res
+        .status(200)
+        .json({ success: true, data: { user: sanitizedUser } });
+    } catch (e) {
+      next(e);
+    }
+  },
   getUserTaps: async (
     req: AuthenticatedRequest,
     res: Response,
