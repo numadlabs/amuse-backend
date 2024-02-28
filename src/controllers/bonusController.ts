@@ -27,6 +27,7 @@ export const bonusController = {
   },
   updateBonus: async (req: Request, res: Response, next: NextFunction) => {
     const data: Updateable<Bonus> = { ...req.body };
+    const { id } = req.params;
 
     if (data.id)
       return res
@@ -34,7 +35,7 @@ export const bonusController = {
         .json({ success: false, data: null, error: "Cannot update id field." });
 
     try {
-      const updatedBonus = await bonusRepository.update(data);
+      const updatedBonus = await bonusRepository.update(data, id);
 
       return res
         .status(200)

@@ -29,6 +29,7 @@ export const userCardReposity = {
   delete: async (id: string) => {
     const deletedUserCard = await db
       .deleteFrom("UserCard")
+      .where("UserCard.id", "=", id)
       .returningAll()
       .executeTakeFirstOrThrow(
         () => new Error("Could not delete the userCard.")

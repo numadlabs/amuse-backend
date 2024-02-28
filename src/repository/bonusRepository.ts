@@ -13,9 +13,10 @@ export const bonusRepository = {
 
     return bonus;
   },
-  update: async (data: Updateable<Bonus>) => {
+  update: async (data: Updateable<Bonus>, id: string) => {
     const bonus = await db
       .updateTable("Bonus")
+      .where("Bonus.id", "=", id)
       .set(data)
       .returningAll()
       .executeTakeFirstOrThrow(() => new Error("Couldn't update the bonus."));
