@@ -33,6 +33,8 @@ export const userRepository = {
   getUserCards: async (id: string) => {
     const cards = await db
       .selectFrom("UserCard")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
       .where("UserCard.userId", "=", id)
       .selectAll()
       .execute();
