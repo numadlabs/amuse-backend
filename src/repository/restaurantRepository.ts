@@ -1,9 +1,4 @@
-import {
-  Insertable,
-  Transaction,
-  Updateable,
-  isNoResultErrorConstructor,
-} from "kysely";
+import { Insertable, Updateable } from "kysely";
 import { DB, Restaurant } from "../types/db/types";
 import { db } from "../utils/db";
 

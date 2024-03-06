@@ -68,6 +68,7 @@ model Restaurant {
   longitude   Float
   opensAt     String
   closesAt    String
+  logo        String?   @default("s3-key")
 
   //membershipCardId String? @unique
   //Card             Card?   @relation(fields: [membershipCardId], references: [id])

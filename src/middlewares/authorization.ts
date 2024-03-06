@@ -9,9 +9,6 @@ export function authorize(...roles: ROLES[]) {
         "Not authenticated/No role provided for authorization check"
       );
 
-    console.log(roles);
-    console.log(req.user.role);
-
     if (!roles.includes(req.user.role)) {
       throw new Error("You are not allowed to do this action.");
     }

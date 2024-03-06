@@ -11,8 +11,10 @@ import { AuthenticatedRequest } from "../../custom";
 export const restaurantController = {
   createRestaurant: async (req: Request, res: Response, next: NextFunction) => {
     const data: Insertable<Restaurant> = { ...req.body };
+    const file = req.file as Express.Multer.File;
+
     try {
-      const restaurant = await restaurantRepository.create(data);
+      const restaurant = await restaurantServices.create(data, file);
 
       return res
         .status(200)
@@ -24,11 +26,12 @@ export const restaurantController = {
   updateRestaurant: async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const data: Updateable<Restaurant> = { ...req.body };
+    const file = req.file as Express.Multer.File;
 
     try {
       if (data.id) throw new Error("You cannot change id.");
 
-      const restaurant = await restaurantServices.update(id, data);
+      const restaurant = await restaurantServices.update(id, data, file);
 
       return res.status(200).json({ success: true, restaurant: restaurant });
     } catch (e) {
@@ -112,6 +115,7 @@ export const restaurantController = {
           "Restaurant.longitude",
           "Restaurant.opensAt",
           "Restaurant.closesAt",
+          "Restaurant.logo",
           "Card.id as cardId",
           db
             .selectFrom("UserCard")

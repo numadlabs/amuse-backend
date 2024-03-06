@@ -13,7 +13,7 @@ export const userCardController = {
     const data: Insertable<UserCard> = { ...req.body };
 
     if (req.user?.id !== data.userId)
-      res.status(400).json("Different authenticatedUser and userId.");
+      return res.status(400).json("Different authenticatedUser and userId.");
 
     try {
       const userCard = await userCardServices.buy(data);

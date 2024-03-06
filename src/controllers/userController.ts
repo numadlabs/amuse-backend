@@ -5,6 +5,9 @@ import { AuthenticatedRequest } from "../../custom";
 
 import { hideDataHelper } from "../lib/hideDataHelper";
 import { userRepository } from "../repository/userRepository";
+import { db } from "../utils/db";
+import { to_tsquery, to_tsvector } from "../lib/queryHelper";
+import { sql } from "kysely";
 
 export const UserController = {
   updateUser: async (
@@ -130,15 +133,63 @@ export const UserController = {
     res: Response,
     next: NextFunction
   ) => {
+    let { search } = req.query;
+    const { latitude, longitude } = req.query;
+
     if (!req.user?.id)
       return res.status(400).json({
         success: false,
         data: null,
-        error: "HAHA.",
+        error: "Error on parsing id from the token.",
+      });
+
+    if (!latitude || !longitude)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Please provide location.",
       });
 
     try {
-      const cards = await userRepository.getUserCards(req.user.id);
+      /* const cards = await userRepository.getUserCards(req.user.id); */
+      let query = db
+        .selectFrom("UserCard")
+        .innerJoin("Card", "Card.id", "UserCard.cardId")
+        .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+        .where("UserCard.userId", "=", req.user.id)
+        .select(({ eb, fn }) => [
+          "UserCard.id",
+          "Card.benefits",
+          "Card.artistInfo",
+          "Card.expiryInfo",
+          "Card.instruction",
+          "Card.nftImageUrl",
+          "UserCard.cardId",
+          "Restaurant.location",
+          "Restaurant.latitude",
+          "Restaurant.location",
+          "Restaurant.category",
+          "Restaurant.name",
+          "UserCard.visitCount",
+          sql`ST_Distance(ST_MakePoint(${eb.ref(
+            "Restaurant.latitude"
+          )}, ${eb.ref(
+            "Restaurant.longitude"
+          )}), ST_MakePoint(${latitude}, ${longitude})::geography)`.as(
+            "distance"
+          ),
+        ]);
+
+      if (search)
+        query = query.where((eb) =>
+          eb(
+            to_tsvector(eb.ref("Restaurant.name")),
+            "@@",
+            to_tsquery(`${search}`)
+          )
+        );
+
+      const cards = await query.execute();
 
       return res.status(200).json({ success: true, data: { cards } });
     } catch (e) {

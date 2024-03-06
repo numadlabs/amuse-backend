@@ -40,6 +40,7 @@ export type Restaurant = {
     longitude: number;
     opensAt: string;
     closesAt: string;
+    logo: Generated<string | null>;
 };
 export type Tap = {
     id: Generated<string>;
