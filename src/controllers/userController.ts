@@ -17,6 +17,7 @@ export const UserController = {
   ) => {
     const { id } = req.params;
     const data: Prisma.UserCreateInput = { ...req.body };
+    const file = req.file as Express.Multer.File;
 
     if (!req.user?.id)
       return res.status(400).json({
@@ -48,7 +49,7 @@ export const UserController = {
       });
 
     try {
-      const user = await userServices.update(req.user.id, data);
+      const user = await userServices.update(req.user.id, data, file);
       const sanitizedUser = hideDataHelper.sanitizeUserData(user);
 
       return res.status(200).json({

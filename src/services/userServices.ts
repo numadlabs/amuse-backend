@@ -5,7 +5,9 @@ import { sendVerificationEmail } from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { extractVerification, generateVerificationToken } from "../utils/jwt";
 import { CustomError } from "../exceptions/CustomError";
-import { verificationCodeConstants } from "../lib/constants";
+import { s3BucketName, verificationCodeConstants } from "../lib/constants";
+import { s3 } from "../utils/aws";
+import { randomUUID } from "crypto";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
@@ -170,9 +172,32 @@ export const userServices = {
 
     return user;
   },
-  update: async (id: string, data: Prisma.UserCreateInput) => {
+  update: async (
+    id: string,
+    data: Prisma.UserCreateInput,
+    file: Express.Multer.File
+  ) => {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
+
+    if (file && findUser.profilePicture) {
+      await s3
+        .deleteObject({ Bucket: s3BucketName, Key: findUser.profilePicture })
+        .promise();
+    }
+
+    if (file) {
+      const s3Response = await s3
+        .upload({
+          Bucket: s3BucketName,
+          Key: randomUUID(),
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        })
+        .promise();
+
+      data.profilePicture = s3Response.Key;
+    }
 
     const user = await userRepository.update(findUser.id, data);
 
@@ -182,6 +207,12 @@ export const userServices = {
   delete: async (id: string) => {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
+
+    if (findUser.profilePicture) {
+      await s3
+        .deleteObject({ Bucket: s3BucketName, Key: findUser.profilePicture })
+        .promise();
+    }
 
     const user = await userRepository.delete(findUser.id);
 
