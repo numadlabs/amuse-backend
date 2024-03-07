@@ -117,6 +117,11 @@ export const restaurantController = {
           "Restaurant.closesAt",
           "Restaurant.logo",
           "Card.id as cardId",
+          "Card.benefits",
+          "Card.artistInfo",
+          "Card.expiryInfo",
+          "Card.instruction",
+          "Card.nftImageUrl",
           db
             .selectFrom("UserCard")
             .select(({ eb, fn }) => [
