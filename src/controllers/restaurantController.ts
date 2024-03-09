@@ -105,6 +105,7 @@ export const restaurantController = {
       let query = db
         .selectFrom("Restaurant")
         .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
+        .leftJoin("UserCard", "UserCard.cardId", "Card.id")
         .select(({ eb }) => [
           "Restaurant.id",
           "Restaurant.name",
@@ -130,6 +131,7 @@ export const restaurantController = {
             .where("UserCard.cardId", "=", eb.ref("Card.id"))
             .where("UserCard.userId", "=", userId)
             .as("isOwned"),
+          "UserCard.visitCount",
         ])
         .orderBy("Restaurant.name asc");
 
