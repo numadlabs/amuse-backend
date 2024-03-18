@@ -160,6 +160,7 @@ export const UserController = {
         .where("UserCard.userId", "=", req.user.id)
         .select(({ eb, fn }) => [
           "UserCard.id",
+          "Card.id",
           "Card.benefits",
           "Card.artistInfo",
           "Card.expiryInfo",
