@@ -21,6 +21,9 @@ export const encryptionHelper = {
     if (!algorithm || !secretKey || !iv)
       throw new Error("No env provided to encryptData.");
 
+    console.log("secretKey: ", secretKey.length);
+    console.log("iv: ", iv.length);
+
     const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
     let encryptedData = cipher.update(data, "utf-8", "hex");
 
