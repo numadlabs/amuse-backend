@@ -4,6 +4,7 @@ import { tapServices } from "../services/tapServices";
 import { AuthenticatedRequest } from "../../custom";
 
 export const tapController = {
+  //z
   generateTap: async (req: Request, res: Response, next: NextFunction) => {
     const { restaurantId } = req.body;
 
