@@ -7,6 +7,8 @@ import { CATEGORY } from "../types/db/enums";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
 import { restaurantServices } from "../services/restaurantServices";
 import { AuthenticatedRequest } from "../../custom";
+import { cardServices } from "../services/cardServices";
+import { cardRepository } from "../repository/cardRepository";
 
 export const restaurantController = {
   createRestaurant: async (req: Request, res: Response, next: NextFunction) => {
@@ -16,9 +18,15 @@ export const restaurantController = {
     try {
       const restaurant = await restaurantServices.create(data, file);
 
+      const card = await cardRepository.create({
+        restaurantId: restaurant.id,
+        instruction: `${restaurant.name} card instructions.`,
+        benefits: `${restaurant.name} card benefits.`,
+      });
+
       return res
         .status(200)
-        .json({ success: true, data: { restaurant: restaurant } });
+        .json({ success: true, data: { restaurant: restaurant, card: card } });
     } catch (e) {
       next(e);
     }
@@ -122,7 +130,7 @@ export const restaurantController = {
           "Card.artistInfo",
           "Card.expiryInfo",
           "Card.instruction",
-          "Card.nftImageUrl",
+          /* "Card.nftImageUrl", */
           db
             .selectFrom("UserCard")
             .select(({ eb, fn }) => [
@@ -132,6 +140,7 @@ export const restaurantController = {
             .where("UserCard.userId", "=", userId)
             .as("isOwned"),
           "UserCard.visitCount",
+          "UserCard.userId as sep",
         ])
         .orderBy("Restaurant.name asc");
 
@@ -174,7 +183,19 @@ export const restaurantController = {
 
       query = query.offset(offset).limit(limit);
 
-      const restaurants = await query.execute();
+      let restaurants = await query.execute();
+
+      /* restaurants = restaurants.filter((restaurant) => {
+        if (restaurant.isOwned === true && restaurant.sep === userId)
+          return restaurant;
+        else if (restaurant.isOwned === false) return restaurant;
+      }); */
+
+      /* for (let i = 0; i < restaurants.length; i++) {
+        if (restaurants[i].userId != userId) restaurants.splice(i, 1);
+      }
+
+      console.log(userId); */
 
       return res
         .status(200)

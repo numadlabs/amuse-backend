@@ -172,6 +172,7 @@ export const UserController = {
           "Restaurant.location",
           "Restaurant.category",
           "Restaurant.name",
+          "Restaurant.logo",
           "UserCard.visitCount",
           sql`ST_Distance(ST_MakePoint(${eb.ref(
             "Restaurant.latitude"
