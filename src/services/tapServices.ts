@@ -25,6 +25,28 @@ export const tapServices = {
 
     return hashedData;
   },
+  verifyTap: async (hashedData: string, userId: string) => {
+    const user = await userRepository.getUserById(userId);
+
+    if (!user) throw new CustomError("Invalid user.", 400);
+
+    const data = encryptionHelper.decryptData(hashedData);
+
+    if (Date.now() - data.issuedAt > TAP_EXPIRATION_TIME * 1000)
+      throw new CustomError("The QR has expired.", 400);
+
+    const restaurant = await restaurantRepository.getById(data.restaurantId);
+    if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
+
+    const userCard = await userCardReposity.getByUserIdRestaurantId(
+      userId,
+      data.restaurantId
+    );
+
+    if (!userCard) return { isOwned: false, userCard };
+
+    return { isOwned: true, userCard };
+  },
   redeemTap: async (hashedData: string, userId: string) => {
     const user = await userRepository.getUserById(userId);
 
@@ -50,7 +72,7 @@ export const tapServices = {
       );
 
     //if firstTap field is false
-    if (!userCard.isFirstTap) {
+    /* if (!userCard.isFirstTap) {
       const bonus = await bonusRepository.getFirstTapBonus();
 
       const userBonus: Insertable<UserBonus> = {
@@ -60,7 +82,17 @@ export const tapServices = {
       };
 
       await userBonusRepository.create(userBonus);
-    }
+    } */
+
+    const bonus = await bonusRepository.getFirstTapBonus();
+
+    const userBonus: Insertable<UserBonus> = {
+      bonusId: bonus.id,
+      userId: userId,
+      userCardId: userCard.id,
+    };
+
+    await userBonusRepository.create(userBonus);
 
     userCard.isFirstTap = true;
     userCard.visitCount += 1;
@@ -78,6 +110,6 @@ export const tapServices = {
 
     const tap = await tapRepository.create(tapData);
 
-    return tap;
+    return { tap: tap, increment: 0.0012, bonus: bonus };
   },
 };
