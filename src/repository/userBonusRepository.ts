@@ -33,4 +33,14 @@ export const userBonusRepository = {
 
     return updatedUserBonus;
   },
+  getByUserCardId: async (userCardId: string) => {
+    const userBonus = await db
+      .selectFrom("UserBonus")
+      .selectAll()
+      .where("UserBonus.userCardId", "=", userCardId)
+      .where("UserBonus.isUsed", "=", false)
+      .execute();
+
+    return userBonus;
+  },
 };

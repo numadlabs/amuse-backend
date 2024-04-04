@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import { userBonusServices } from "../services/userBonusServices";
+import { userBonusRepository } from "../repository/userBonusRepository";
 
 export const userBonusController = {
   useUserBonus: async (
@@ -36,6 +37,28 @@ export const userBonusController = {
       const userBonus = await userBonusServices.redeem(encryptedData);
 
       return res.status(200).json({ success: true, data: userBonus });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getByUserCardId: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { userCardId } = req.body;
+
+    if (!userCardId)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Please provide a userCard.",
+      });
+
+    try {
+      const bonus = await userBonusRepository.getByUserCardId(userCardId);
+
+      return res.status(200).json({ success: true, data: bonus });
     } catch (e) {
       next(e);
     }

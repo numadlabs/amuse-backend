@@ -3,6 +3,11 @@ import { authenticateToken } from "../middlewares/authenticateToken";
 import { userBonusController } from "../controllers/userBonusController";
 const userBonusesRoutes = express.Router();
 
+userBonusesRoutes.get(
+  "/",
+  authenticateToken,
+  userBonusController.getByUserCardId
+);
 userBonusesRoutes.post(
   "/:id/use",
   authenticateToken,
