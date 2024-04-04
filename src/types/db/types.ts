@@ -67,6 +67,7 @@ export type User = {
     dateOfBirth: Timestamp | null;
     location: string | null;
     createdAt: Generated<Timestamp>;
+    balance: Generated<number>;
 };
 export type UserBonus = {
     id: Generated<string>;

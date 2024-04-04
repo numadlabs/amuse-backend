@@ -36,6 +36,7 @@ model User {
   dateOfBirth           DateTime?
   location              String?
   createdAt             DateTime  @default(now())
+  balance               Float     @default(0)
 
   UserCard     UserCard[]
   UserBonus    UserBonus[]
@@ -68,7 +69,7 @@ model Restaurant {
   longitude   Float
   opensAt     String
   closesAt    String
-  logo        String?   @default("s3-key")
+  logo        String?  @default("s3-key")
 
   //membershipCardId String? @unique
   //Card             Card?   @relation(fields: [membershipCardId], references: [id])

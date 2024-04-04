@@ -8,6 +8,7 @@ import { CustomError } from "../exceptions/CustomError";
 import { TAP_EXPIRATION_TIME } from "../lib/constants";
 import { bonusRepository } from "../repository/bonusRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
+import { userRepository } from "../repository/userRepository";
 
 export const tapServices = {
   generateTap: async (restaurantId: string) => {
@@ -25,6 +26,10 @@ export const tapServices = {
     return hashedData;
   },
   redeemTap: async (hashedData: string, userId: string) => {
+    const user = await userRepository.getUserById(userId);
+
+    if (!user) throw new CustomError("Invalid user.", 400);
+
     const data = encryptionHelper.decryptData(hashedData);
 
     if (Date.now() - data.issuedAt > TAP_EXPIRATION_TIME * 1000)
@@ -60,6 +65,10 @@ export const tapServices = {
     userCard.isFirstTap = true;
     userCard.visitCount += 1;
 
+    //user balance increment
+    user.balance = user.balance + 0.0012;
+
+    await userRepository.update(user.id, user);
     await userCardReposity.update(userCard, userCard.id);
 
     const tapData: Insertable<Tap> = {

@@ -9,6 +9,7 @@ import { restaurantServices } from "../services/restaurantServices";
 import { AuthenticatedRequest } from "../../custom";
 import { cardServices } from "../services/cardServices";
 import { cardRepository } from "../repository/cardRepository";
+import { Rbin } from "aws-sdk";
 
 export const restaurantController = {
   createRestaurant: async (req: Request, res: Response, next: NextFunction) => {
@@ -110,10 +111,10 @@ export const restaurantController = {
             )}), ST_MakePoint(${latitude}, ${longitude})::geography) asc`
         ); */
 
-      let query = db
+      let ownedQuery = db
         .selectFrom("Restaurant")
         .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
-        .leftJoin("UserCard", "UserCard.cardId", "Card.id")
+        .innerJoin("UserCard", "UserCard.cardId", "Card.id")
         .select(({ eb }) => [
           "Restaurant.id",
           "Restaurant.name",
@@ -130,27 +131,67 @@ export const restaurantController = {
           "Card.artistInfo",
           "Card.expiryInfo",
           "Card.instruction",
-          /* "Card.nftImageUrl", */
-          db
-            .selectFrom("UserCard")
-            .select(({ eb, fn }) => [
-              eb(fn.count<number>("UserCard.id"), ">", 0).as("count"),
-            ])
-            .where("UserCard.cardId", "=", eb.ref("Card.id"))
-            .where("UserCard.userId", "=", userId)
-            .as("isOwned"),
+          eb(eb.val(false), "=", false).as("isOwned"),
           "UserCard.visitCount",
-          "UserCard.userId as sep",
         ])
+        .where("UserCard.userId", "=", userId)
+        .orderBy("Restaurant.name asc");
+
+      let query = db
+        .selectFrom("Restaurant")
+        .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
+        .select(({ eb }) => [
+          "Restaurant.id",
+          "Restaurant.name",
+          "Restaurant.description",
+          "Restaurant.category",
+          "Restaurant.location",
+          "Restaurant.latitude",
+          "Restaurant.longitude",
+          "Restaurant.opensAt",
+          "Restaurant.closesAt",
+          "Restaurant.logo",
+          "Card.id as cardId",
+          "Card.benefits",
+          "Card.artistInfo",
+          "Card.expiryInfo",
+          "Card.instruction",
+          eb(eb.val(false), "!=", false).as("isOwned"),
+          eb.val(0).as("visitCount"),
+        ])
+        .where((eb) =>
+          eb(
+            "Restaurant.id",
+            "not in",
+            eb
+              .selectFrom("Restaurant")
+              .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
+              .leftJoin("UserCard", "UserCard.cardId", "Card.id")
+              .select(["Restaurant.id"])
+              .where("UserCard.userId", "=", userId)
+          )
+        )
         .orderBy("Restaurant.name asc");
 
       if (categories) {
         const parsedCategories: CATEGORY[] = JSON.parse(categories.toString());
         query = query.where("Restaurant.category", "in", parsedCategories);
+        ownedQuery = ownedQuery.where(
+          "Restaurant.category",
+          "in",
+          parsedCategories
+        );
       }
 
       if (search) {
         query = query.where((eb) =>
+          eb(
+            to_tsvector(eb.ref("Restaurant.name")),
+            "@@",
+            to_tsquery(`${search}`)
+          )
+        );
+        ownedQuery = ownedQuery.where((eb) =>
           eb(
             to_tsvector(eb.ref("Restaurant.name")),
             "@@",
@@ -179,11 +220,40 @@ export const restaurantController = {
           else true
         end)`
         );
+
+        ownedQuery = ownedQuery.where(
+          (eb) => sql`(case
+          when ((cast(${eb.ref("Restaurant.closesAt")} as time) < cast(${eb.ref(
+            "Restaurant.opensAt"
+          )}  as time)) and ((${time} > cast(${eb.ref(
+            "Restaurant.closesAt"
+          )} as time)) and (${time} < cast(${eb.ref(
+            "Restaurant.opensAt"
+          )} as time)))) then false
+          when ((cast(${eb.ref("Restaurant.closesAt")} as time) > cast(${eb.ref(
+            "Restaurant.opensAt"
+          )}  as time)) and ((${time} > cast(${eb.ref(
+            "Restaurant.closesAt"
+          )} as time)) or (${time} < cast(${eb.ref(
+            "Restaurant.opensAt"
+          )} as time)))) then false
+          else true
+        end)`
+        );
       }
 
       query = query.offset(offset).limit(limit);
+      ownedQuery = ownedQuery.offset(offset).limit(limit);
 
-      let restaurants = await query.execute();
+      let ownedRestaurants = await ownedQuery.execute();
+      let notOwnedRestaurants = await query.execute();
+
+      let restaurants = [...ownedRestaurants, ...notOwnedRestaurants];
+
+      restaurants = restaurants.map((restaurant) => {
+        restaurant.visitCount = Number(restaurant.visitCount);
+        return restaurant;
+      });
 
       /* restaurants = restaurants.filter((restaurant) => {
         if (restaurant.isOwned === true && restaurant.sep === userId)
