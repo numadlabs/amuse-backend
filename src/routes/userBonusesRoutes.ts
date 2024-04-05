@@ -4,7 +4,7 @@ import { userBonusController } from "../controllers/userBonusController";
 const userBonusesRoutes = express.Router();
 
 userBonusesRoutes.get(
-  "/",
+  "/:userCardId/userCard",
   authenticateToken,
   userBonusController.getByUserCardId
 );

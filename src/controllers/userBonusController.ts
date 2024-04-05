@@ -46,7 +46,7 @@ export const userBonusController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { userCardId } = req.body;
+    const { userCardId } = req.params;
 
     if (!userCardId)
       return res.status(400).json({

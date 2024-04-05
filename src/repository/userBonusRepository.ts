@@ -36,6 +36,7 @@ export const userBonusRepository = {
   getByUserCardId: async (userCardId: string) => {
     const userBonus = await db
       .selectFrom("UserBonus")
+      .innerJoin("Bonus", "Bonus.id", "UserBonus.bonusId")
       .selectAll()
       .where("UserBonus.userCardId", "=", userCardId)
       .where("UserBonus.isUsed", "=", false)

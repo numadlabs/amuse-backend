@@ -10,7 +10,15 @@ export const CATEGORY = {
     MEDITERRANEAN: "MEDITERRANEAN",
     BUFFET: "BUFFET",
     FAST_FOOD: "FAST_FOOD",
-    MONGOLIAN: "MONGOLIAN"
+    MONGOLIAN: "MONGOLIAN",
+    PAN_ASIAN: "PAN_ASIAN",
+    CAFE: "CAFE",
+    LEBANESE: "LEBANESE",
+    BEACH_CLUB: "BEACH_CLUB",
+    CHINESE: "CHINESE",
+    GEORGIAN: "GEORGIAN",
+    CUBAN: "CUBAN",
+    MEXICAN: "MEXICAN"
 } as const;
 export type CATEGORY = (typeof CATEGORY)[keyof typeof CATEGORY];
 export const TIER = {

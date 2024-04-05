@@ -57,6 +57,14 @@ enum CATEGORY {
   BUFFET
   FAST_FOOD
   MONGOLIAN
+  PAN_ASIAN
+  CAFE
+  LEBANESE
+  BEACH_CLUB
+  CHINESE
+  GEORGIAN
+  CUBAN
+  MEXICAN
 }
 
 model Restaurant {
@@ -69,7 +77,7 @@ model Restaurant {
   longitude   Float
   opensAt     String
   closesAt    String
-  logo        String?  @default("s3-key")
+  logo        String?
 
   //membershipCardId String? @unique
   //Card             Card?   @relation(fields: [membershipCardId], references: [id])
