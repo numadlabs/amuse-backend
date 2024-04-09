@@ -9,6 +9,7 @@ import { TAP_EXPIRATION_TIME } from "../lib/constants";
 import { bonusRepository } from "../repository/bonusRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userRepository } from "../repository/userRepository";
+import { getBtcPrice } from "../lib/btcPriceHelper";
 
 export const tapServices = {
   generateTap: async (restaurantId: string) => {
@@ -71,9 +72,12 @@ export const tapServices = {
         400
       );
 
-    //if firstTap field is false
-    /* if (!userCard.isFirstTap) {
-      const bonus = await bonusRepository.getFirstTapBonus();
+    userCard.isFirstTap = true;
+    userCard.visitCount += 1;
+
+    let bonus;
+    if (userCard.visitCount % 10 === 0) {
+      bonus = await bonusRepository.getFirstTapBonus();
 
       const userBonus: Insertable<UserBonus> = {
         bonusId: bonus.id,
@@ -82,23 +86,12 @@ export const tapServices = {
       };
 
       await userBonusRepository.create(userBonus);
-    } */
-
-    const bonus = await bonusRepository.getFirstTapBonus();
-
-    const userBonus: Insertable<UserBonus> = {
-      bonusId: bonus.id,
-      userId: userId,
-      userCardId: userCard.id,
-    };
-
-    await userBonusRepository.create(userBonus);
-
-    userCard.isFirstTap = true;
-    userCard.visitCount += 1;
+    }
 
     //user balance increment
-    user.balance = user.balance + 0.0012;
+    const btcPrice = await getBtcPrice();
+    const incrementBtc = 1 / btcPrice;
+    user.balance = user.balance + incrementBtc;
 
     await userRepository.update(user.id, user);
     await userCardReposity.update(userCard, userCard.id);
@@ -110,6 +103,6 @@ export const tapServices = {
 
     const tap = await tapRepository.create(tapData);
 
-    return { tap: tap, increment: 0.0012, bonus: bonus };
+    return { tap: tap, increment: incrementBtc, bonus: bonus };
   },
 };
