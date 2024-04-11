@@ -89,7 +89,8 @@ export const tapServices = {
     }
 
     //user balance increment
-    const btcPrice = await getBtcPrice();
+    /* const btcPrice = await getBtcPrice(); */
+    const btcPrice = 70635;
     const incrementBtc = 1 / btcPrice;
     user.balance = user.balance + incrementBtc;
 
