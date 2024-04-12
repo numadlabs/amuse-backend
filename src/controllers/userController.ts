@@ -158,7 +158,7 @@ export const UserController = {
         .innerJoin("Card", "Card.id", "UserCard.cardId")
         .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
         .where("UserCard.userId", "=", req.user.id)
-        .select(({ eb, fn }) => [
+        .select(({ eb }) => [
           "UserCard.id",
           "Card.benefits",
           "Card.artistInfo",
@@ -181,6 +181,14 @@ export const UserController = {
           )}), ST_MakePoint(${latitude}, ${longitude})::geography)`.as(
             "distance"
           ),
+          db
+            .selectFrom("UserBonus")
+            .select(({ eb, fn }) => [
+              eb(fn.count<number>("UserBonus.id"), ">", 0).as("count"),
+            ])
+            .where("UserBonus.userCardId", "=", eb.ref("UserCard.id"))
+            .where("UserBonus.isUsed", "=", false)
+            .as("hasBonus"),
         ]);
 
       if (search)

@@ -73,7 +73,6 @@ export const tapServices = {
       );
 
     userCard.isFirstTap = true;
-    userCard.visitCount += 1;
 
     let bonus;
     if (userCard.visitCount % 10 === 0) {
@@ -87,6 +86,7 @@ export const tapServices = {
 
       await userBonusRepository.create(userBonus);
     }
+    userCard.visitCount += 1;
 
     //user balance increment
     /* const btcPrice = await getBtcPrice(); */
