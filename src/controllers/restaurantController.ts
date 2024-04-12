@@ -275,13 +275,24 @@ export const restaurantController = {
     }
   },
   getRestaurantById: async (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
     const { id } = req.params;
+
+    if (!req.user?.id)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Could not retrieve data from the token.",
+      });
+
     try {
-      const restaurant = await restaurantRepository.getById(id);
+      const restaurant = await restaurantRepository.getByIdWithCardInfo(
+        id,
+        req.user.id
+      );
 
       return res.status(200).json({ success: true, restaurant: restaurant });
     } catch (e) {

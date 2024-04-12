@@ -17,7 +17,11 @@ restaurantRoutes.get(
   authenticateToken,
   restaurantController.getRestaurants
 );
-restaurantRoutes.get("/:id", restaurantController.getRestaurantById);
+restaurantRoutes.get(
+  "/:id",
+  authenticateToken,
+  restaurantController.getRestaurantById
+);
 restaurantRoutes.put(
   "/:id",
   authenticateToken,

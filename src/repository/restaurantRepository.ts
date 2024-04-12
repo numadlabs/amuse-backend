@@ -23,6 +23,45 @@ export const restaurantRepository = {
 
     return restaurant;
   },
+  getByIdWithCardInfo: async (id: string, userId: string) => {
+    const restaurant = await db
+      .selectFrom("Restaurant")
+      .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
+      .where("Restaurant.id", "=", id)
+      .select(({ eb }) => [
+        "Restaurant.id",
+        "Restaurant.name",
+        "Restaurant.description",
+        "Restaurant.category",
+        "Restaurant.location",
+        "Restaurant.latitude",
+        "Restaurant.longitude",
+        "Restaurant.opensAt",
+        "Restaurant.closesAt",
+        "Restaurant.logo",
+        "Card.id as cardId",
+        "Card.benefits",
+        "Card.artistInfo",
+        "Card.expiryInfo",
+        "Card.instruction",
+        db
+          .selectFrom("UserCard")
+          .select(["UserCard.visitCount"])
+          .where("UserCard.cardId", "=", eb.ref("Card.id"))
+          .where("UserCard.userId", "=", userId)
+          .limit(1)
+          .as("visitCount"),
+        /* db
+          .selectFrom("UserCard")
+          .select(({ eb, fn }) => [
+            eb(fn.count<number>("UserCard.id"), ">", 0).as("count"),
+          ])
+          .as("isOwned"), */
+      ])
+      .executeTakeFirstOrThrow(() => new Error("Restaurant does not exists"));
+
+    return restaurant;
+  },
   update: async (id: string, data: Updateable<Restaurant>) => {
     const restaurant = await db
       .updateTable("Restaurant")
