@@ -3,7 +3,7 @@ import { currencyRepository } from "../repository/currencyRepository";
 import cron from "node-cron";
 
 export async function updateCurrencyPrice() {
-  cron.schedule("*/2 * * * *", async () => {
+  cron.schedule("* * * * *", async () => {
     await getAndUpdateBitcoinPrice();
   });
 }
