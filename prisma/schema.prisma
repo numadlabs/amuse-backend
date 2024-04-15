@@ -173,3 +173,9 @@ model Notification {
   type    String
   isRead  Boolean
 }
+
+model Currency {
+  id    String @id @default(dbgenerated("gen_random_uuid()"))
+  name  String
+  price Float
+}

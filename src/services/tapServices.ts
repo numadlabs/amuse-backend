@@ -10,6 +10,7 @@ import { bonusRepository } from "../repository/bonusRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userRepository } from "../repository/userRepository";
 import { getBtcPrice } from "../lib/btcPriceHelper";
+import { currencyRepository } from "../repository/currencyRepository";
 
 export const tapServices = {
   generateTap: async (restaurantId: string) => {
@@ -75,7 +76,7 @@ export const tapServices = {
     userCard.isFirstTap = true;
 
     let bonus;
-    if (userCard.visitCount % 10 === 0) {
+    if (userCard.visitCount % 3 === 0) {
       bonus = await bonusRepository.getFirstTapBonus();
 
       const userBonus: Insertable<UserBonus> = {
@@ -88,10 +89,8 @@ export const tapServices = {
     }
     userCard.visitCount += 1;
 
-    //user balance increment
-    /* const btcPrice = await getBtcPrice(); */
-    const btcPrice = 70635;
-    const incrementBtc = 1 / btcPrice;
+    const btc = await currencyRepository.getByName("Bitcoin");
+    const incrementBtc = 1 / btc.price;
     user.balance = user.balance + incrementBtc;
 
     await userRepository.update(user.id, user);

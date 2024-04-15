@@ -23,6 +23,11 @@ export type Card = {
     benefits: string;
     restaurantId: string;
 };
+export type Currency = {
+    id: Generated<string>;
+    name: string;
+    price: number;
+};
 export type Notification = {
     id: Generated<string>;
     userId: string;
@@ -88,6 +93,7 @@ export type UserCard = {
 export type DB = {
     Bonus: Bonus;
     Card: Card;
+    Currency: Currency;
     Notification: Notification;
     Restaurant: Restaurant;
     Tap: Tap;

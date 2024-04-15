@@ -13,6 +13,7 @@ import tapRouter from "./routes/tapRoutes";
 import userCardRoutes from "./routes/userCardRoutes";
 import userBonusesRoutes from "./routes/userBonusesRoutes";
 import bonusRoutes from "./routes/bonusRoutes";
+import { updateCurrencyPrice } from "./cron/updateBtcPrice";
 
 const app = express();
 
@@ -38,5 +39,7 @@ app.use("/api/taps", tapRouter);
 
 app.use(notFound);
 app.use(errorHandler);
+
+updateCurrencyPrice();
 
 export = app;
