@@ -4,7 +4,7 @@ import cron from "node-cron";
 
 export async function updateCurrencyPrice() {
   console.log("Cron working inside updateCurrencyPrice()");
-  cron.schedule("* * * * *", async () => {
+  cron.schedule("*/10 * * * *", async () => {
     console.log("Cron working inside cron.schedule()");
     await getAndUpdateBitcoinPrice();
   });
