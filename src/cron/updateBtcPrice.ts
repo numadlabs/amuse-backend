@@ -3,9 +3,7 @@ import { currencyRepository } from "../repository/currencyRepository";
 import cron from "node-cron";
 
 export async function updateCurrencyPrice() {
-  console.log("Cron working inside updateCurrencyPrice()");
   cron.schedule("*/10 * * * *", async () => {
-    console.log("Cron working inside cron.schedule()");
     await getAndUpdateBitcoinPrice();
   });
 }
@@ -13,9 +11,7 @@ export async function updateCurrencyPrice() {
 export async function getAndUpdateBitcoinPrice() {
   try {
     const price = await getBtcPrice();
-    console.log(price);
     const bitcoin = await currencyRepository.getByName("Bitcoin");
-    console.log(bitcoin);
 
     bitcoin.price = price;
 
