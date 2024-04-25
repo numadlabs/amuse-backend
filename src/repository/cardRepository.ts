@@ -31,11 +31,29 @@ export const cardRepository = {
 
     return card;
   },
-  getByRestaurantId: async (restaurantId: string) => {
+  getByRestaurantId: async (restaurantId: string, userId: string) => {
     const cards = await db
       .selectFrom("Card")
       .where("Card.restaurantId", "=", restaurantId)
-      .selectAll()
+      .select(({ eb }) => [
+        "Card.id",
+        "Card.artistInfo",
+        "Card.benefits",
+        "Card.createdAt",
+        "Card.expiryInfo",
+        "Card.instruction",
+        "Card.mintedAt",
+        "Card.nftImageUrl",
+        "Card.restaurantId",
+        db
+          .selectFrom("UserCard")
+          .select(({ eb, fn }) => [
+            eb(fn.count<number>("UserCard.id"), ">", 0).as("count"),
+          ])
+          .where("UserCard.cardId", "=", eb.ref("Card.id"))
+          .where("UserCard.userId", "=", userId)
+          .as("isOwned"),
+      ])
       .execute();
 
     return cards;

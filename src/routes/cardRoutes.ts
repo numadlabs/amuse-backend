@@ -7,6 +7,7 @@ const cardRoutes = express.Router();
 cardRoutes.get("/:id", cardController.getCardById);
 cardRoutes.get(
   "/:restaurantId/restaurants",
+  authenticateToken,
   cardController.getCardsByRestaurantId
 );
 cardRoutes.get("/", cardController.getCards);

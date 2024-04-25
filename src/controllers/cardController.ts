@@ -3,6 +3,7 @@ import { Insertable, Updateable } from "kysely";
 import { Card } from "../types/db/types";
 import { cardRepository } from "../repository/cardRepository";
 import { cardServices } from "../services/cardServices";
+import { AuthenticatedRequest } from "../../custom";
 
 export const cardController = {
   createCard: async (req: Request, res: Response, next: NextFunction) => {
@@ -51,14 +52,24 @@ export const cardController = {
     }
   },
   getCardsByRestaurantId: async (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
     const restaurantId = req.params.restaurantId;
 
+    if (!req.user?.id)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Could not retrieve id from the token.",
+      });
+
     try {
-      const cards = await cardRepository.getByRestaurantId(restaurantId);
+      const cards = await cardRepository.getByRestaurantId(
+        restaurantId,
+        req.user.id
+      );
 
       return res.status(200).json({
         success: true,
