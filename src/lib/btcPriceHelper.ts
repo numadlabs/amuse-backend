@@ -3,8 +3,6 @@ import axios from "axios";
 const apiUrl = process.env.BITCOIN_API_URL;
 const apiKey = process.env.BITCOIN_API_KEY;
 
-console.log(apiKey, apiUrl);
-
 export async function getBtcPrice() {
   if (!apiUrl) throw new Error("Error retrieving BTC price.");
 

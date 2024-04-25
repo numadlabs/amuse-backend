@@ -189,7 +189,8 @@ export const UserController = {
             .where("UserBonus.userCardId", "=", eb.ref("UserCard.id"))
             .where("UserBonus.isUsed", "=", false)
             .as("hasBonus"),
-        ]);
+        ])
+        .orderBy("UserCard.mintedAt desc");
 
       if (search)
         query = query.where((eb) =>
