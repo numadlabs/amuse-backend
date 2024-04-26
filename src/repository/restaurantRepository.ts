@@ -51,12 +51,12 @@ export const restaurantRepository = {
           .where("UserCard.userId", "=", userId)
           .limit(1)
           .as("visitCount"),
-        /* db
+        db
           .selectFrom("UserCard")
           .select(({ eb, fn }) => [
             eb(fn.count<number>("UserCard.id"), ">", 0).as("count"),
           ])
-          .as("isOwned"), */
+          .as("isOwned"),
       ])
       .executeTakeFirstOrThrow(() => new Error("Restaurant does not exists"));
 
