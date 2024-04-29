@@ -294,6 +294,9 @@ export const restaurantController = {
         req.user.id
       );
 
+      if (restaurant.visitCount === null && restaurant.isOwned === true)
+        restaurant.visitCount = 0;
+
       return res.status(200).json({ success: true, restaurant: restaurant });
     } catch (e) {
       next(e);
