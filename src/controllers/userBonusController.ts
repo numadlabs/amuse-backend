@@ -63,4 +63,32 @@ export const userBonusController = {
       next(e);
     }
   },
+  getByRestaurantId: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { restaurantId } = req.params;
+
+    if (!req.user?.id)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Error on parsing id from the token.",
+      });
+
+    try {
+      const userBonuses =
+        await userBonusRepository.getUserBonusesByRestaurantId(
+          restaurantId,
+          req.user.id
+        );
+
+      return res
+        .status(200)
+        .json({ success: true, data: { userBonuses: userBonuses } });
+    } catch (e) {
+      next(e);
+    }
+  },
 };

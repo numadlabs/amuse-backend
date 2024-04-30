@@ -8,6 +8,11 @@ userBonusesRoutes.get(
   authenticateToken,
   userBonusController.getByUserCardId
 );
+userBonusesRoutes.get(
+  "/:restaurantId/restaurant",
+  authenticateToken,
+  userBonusController.getByRestaurantId
+);
 userBonusesRoutes.post(
   "/:id/use",
   authenticateToken,
