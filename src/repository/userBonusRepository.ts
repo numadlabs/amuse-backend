@@ -51,6 +51,7 @@ export const userBonusRepository = {
     const userBonuses = await db
       .selectFrom("UserBonus")
       .innerJoin("UserCard", "UserCard.id", "UserBonus.userCardId")
+      .innerJoin("Bonus", "Bonus.id", "UserBonus.bonusId")
       .innerJoin("Card", "Card.id", "UserCard.cardId")
       .where("Card.restaurantId", "=", restaurantId)
       .where("UserBonus.userId", "=", userId)
@@ -60,6 +61,7 @@ export const userBonusRepository = {
         "UserBonus.userId",
         "UserBonus.userCardId",
         "UserBonus.isUsed",
+        "Bonus.name",
       ])
       .execute();
 
