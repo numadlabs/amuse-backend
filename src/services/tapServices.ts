@@ -75,10 +75,13 @@ export const tapServices = {
 
     userCard.isFirstTap = true;
 
+    const bonuses = await bonusRepository.getByCardId(userCard.cardId);
     let bonus;
-    bonus = await bonusRepository.getFirstTapBonus();
 
     if (userCard.visitCount % 3 === 0) {
+      const index = (userCard.visitCount / 3) % bonuses.length;
+      bonus = bonuses[index];
+
       const userBonus: Insertable<UserBonus> = {
         bonusId: bonus.id,
         userId: userId,
