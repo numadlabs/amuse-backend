@@ -56,7 +56,7 @@ export const bonusRepository = {
     const bonus = await db
       .selectFrom("Bonus")
       /* .where("Bonus.cardId", "=", null) */
-      .where("Bonus.name", "=", "Free Drink")
+      .where("Bonus.name", "=", "Free drink on the house")
       .selectAll()
       .executeTakeFirstOrThrow(
         () => new CustomError("No Global free drink bonus found.", 500)
