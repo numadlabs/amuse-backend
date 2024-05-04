@@ -44,6 +44,7 @@ export const restaurantRepository = {
         "Card.artistInfo",
         "Card.expiryInfo",
         "Card.instruction",
+        "Card.nftImageUrl",
         db
           .selectFrom("UserCard")
           .select(["UserCard.visitCount"])

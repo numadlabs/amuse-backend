@@ -150,6 +150,7 @@ export const restaurantController = {
           "Card.artistInfo",
           "Card.expiryInfo",
           "Card.instruction",
+          "Card.nftImageUrl",
           eb(eb.val(false), "!=", false).as("isOwned"),
           eb.val(0).as("visitCount"),
         ])
