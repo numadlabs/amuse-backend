@@ -8,13 +8,15 @@ import { AuthenticatedRequest } from "../../custom";
 export const cardController = {
   createCard: async (req: Request, res: Response, next: NextFunction) => {
     const data: Insertable<Card> = { ...req.body };
+    const file = req.file as Express.Multer.File;
+
     if (data.id)
       return res
         .status(400)
         .json({ success: false, data: null, error: "Cannot set id field" });
 
     try {
-      const card = await cardRepository.create(data);
+      const card = await cardServices.create(data, file);
 
       return res.status(200).json({ success: true, data: { card: card } });
     } catch (e) {

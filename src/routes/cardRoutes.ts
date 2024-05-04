@@ -2,6 +2,7 @@ import express from "express";
 import { cardController } from "../controllers/cardController";
 import { authenticateToken } from "../middlewares/authenticateToken";
 import { authorize } from "../middlewares/authorization";
+import { parseFile } from "../middlewares/fileParser";
 const cardRoutes = express.Router();
 
 cardRoutes.get("/:id", cardController.getCardById);
@@ -16,6 +17,7 @@ cardRoutes.post(
   "/",
   authenticateToken,
   authorize("ADMIN", "SUPER_ADMIN"),
+  parseFile("nftImage"),
   cardController.createCard
 );
 cardRoutes.put(

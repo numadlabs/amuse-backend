@@ -8,7 +8,7 @@ const restaurantRoutes = express.Router();
 restaurantRoutes.post(
   "/",
   authenticateToken,
-  /* authorize("SUPER_ADMIN"), */
+  authorize("SUPER_ADMIN"),
   parseFile("logo"),
   restaurantController.createRestaurant
 );
@@ -25,14 +25,14 @@ restaurantRoutes.get(
 restaurantRoutes.put(
   "/:id",
   authenticateToken,
-  /* authorize("SUPER_ADMIN", "ADMIN"), */
+  authorize("SUPER_ADMIN"),
   parseFile("logo"),
   restaurantController.updateRestaurant
 );
 restaurantRoutes.delete(
   "/:id",
   authenticateToken,
-  authorize("ADMIN"),
+  authorize("SUPER_ADMIN"),
   restaurantController.deleteRestaurant
 );
 export = restaurantRoutes;

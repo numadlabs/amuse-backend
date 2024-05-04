@@ -19,15 +19,9 @@ export const restaurantController = {
     try {
       const restaurant = await restaurantServices.create(data, file);
 
-      const card = await cardRepository.create({
-        restaurantId: restaurant.id,
-        instruction: `${restaurant.name} card instructions.`,
-        benefits: `${restaurant.name} card benefits.`,
-      });
-
       return res
         .status(200)
-        .json({ success: true, data: { restaurant: restaurant, card: card } });
+        .json({ success: true, data: { restaurant: restaurant } });
     } catch (e) {
       next(e);
     }
