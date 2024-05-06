@@ -78,6 +78,7 @@ export const tapServices = {
     const bonuses = await bonusRepository.getByCardId(userCard.cardId);
     let bonus;
 
+    userCard.visitCount += 1;
     if (userCard.visitCount % 3 === 0) {
       const index = (userCard.visitCount / 3) % bonuses.length;
       bonus = bonuses[index];
@@ -90,7 +91,6 @@ export const tapServices = {
 
       await userBonusRepository.create(userBonus);
     }
-    userCard.visitCount += 1;
 
     const btc = await currencyRepository.getByName("Bitcoin");
     const incrementBtc = 1 / btc.price;
