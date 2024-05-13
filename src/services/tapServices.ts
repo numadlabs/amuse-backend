@@ -79,7 +79,7 @@ export const tapServices = {
     let bonus;
 
     if (userCard.visitCount === 0) {
-      const index = (userCard.visitCount / 3) % bonuses.length;
+      const index = Math.floor(userCard.visitCount / 3) % bonuses.length;
       bonus = bonuses[index];
 
       const userBonus: Insertable<UserBonus> = {
@@ -93,7 +93,7 @@ export const tapServices = {
 
     userCard.visitCount += 1;
     if (userCard.visitCount % 3 === 0) {
-      const index = (userCard.visitCount / 3) % bonuses.length;
+      const index = Math.floor(userCard.visitCount / 3) % bonuses.length;
       bonus = bonuses[index];
 
       const userBonus: Insertable<UserBonus> = {

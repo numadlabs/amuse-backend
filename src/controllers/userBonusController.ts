@@ -78,15 +78,20 @@ export const userBonusController = {
       });
 
     try {
-      const userBonuses =
-        await userBonusRepository.getUserBonusesByRestaurantId(
-          restaurantId,
-          req.user.id
-        );
+      const userBonuses = await userBonusServices.getByRestaurantId(
+        restaurantId,
+        req.user.id
+      );
 
       return res
         .status(200)
-        .json({ success: true, data: { userBonuses: userBonuses } });
+        .json({
+          success: true,
+          data: {
+            userBonuses: userBonuses.userBonuses,
+            followingBonus: userBonuses.followingBonus,
+          },
+        });
     } catch (e) {
       next(e);
     }

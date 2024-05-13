@@ -1,7 +1,10 @@
 import { CustomError } from "../exceptions/CustomError";
 import { BONUS_REDEEM_EXPIRATION_TIME } from "../lib/constants";
 import { encryptionHelper } from "../lib/encryptionHelper";
+import { bonusRepository } from "../repository/bonusRepository";
+import { cardRepository } from "../repository/cardRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
+import { userCardReposity } from "../repository/userCardRepository";
 
 export const userBonusServices = {
   use: async (id: string, userId: string) => {
@@ -48,5 +51,25 @@ export const userBonusServices = {
     );
 
     return updatedUserBonus;
+  },
+  getByRestaurantId: async (restaurantId: string, userId: string) => {
+    const userBonuses = await userBonusRepository.getUserBonusesByRestaurantId(
+      restaurantId,
+      userId
+    );
+
+    const userCard = await userCardReposity.getByUserIdRestaurantId(
+      userId,
+      restaurantId
+    );
+
+    if (!userCard) throw new CustomError("No usercard found.", 400);
+
+    const bonuses = await bonusRepository.getByRestaurantId(restaurantId);
+    let index = Math.floor(userCard.visitCount / 3) % bonuses.length;
+    if (index + 1 === bonuses.length) index = 0;
+    const followingBonus = bonuses[index];
+
+    return { userBonuses, followingBonus };
   },
 };

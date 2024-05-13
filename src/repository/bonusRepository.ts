@@ -45,7 +45,7 @@ export const bonusRepository = {
     const bonus = await db
       .selectFrom("Bonus")
       .innerJoin("Card", "Card.id", "Bonus.cardId")
-      .innerJoin("Restaurant", "Restaurant.id", "Card.id")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
       .where("Restaurant.id", "=", restaurantId)
       .select(["Bonus.id", "Bonus.cardId", "Bonus.name", "Bonus.imageUrl"])
       .execute();
