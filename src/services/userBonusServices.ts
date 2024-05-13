@@ -68,6 +68,8 @@ export const userBonusServices = {
     const bonuses = await bonusRepository.getByRestaurantId(restaurantId);
     let index = Math.floor(userCard.visitCount / 3) % bonuses.length;
     if (index + 1 === bonuses.length) index = 0;
+    else index++;
+
     const followingBonus = bonuses[index];
 
     return { userBonuses, followingBonus };
