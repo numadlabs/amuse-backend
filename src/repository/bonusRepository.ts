@@ -47,7 +47,13 @@ export const bonusRepository = {
       .innerJoin("Card", "Card.id", "Bonus.cardId")
       .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
       .where("Restaurant.id", "=", restaurantId)
-      .select(["Bonus.id", "Bonus.cardId", "Bonus.name", "Bonus.imageUrl"])
+      .select([
+        "Bonus.id",
+        "Bonus.cardId",
+        "Bonus.name",
+        "Bonus.imageUrl",
+        "Bonus.price",
+      ])
       .execute();
 
     return bonus;

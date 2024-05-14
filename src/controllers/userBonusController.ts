@@ -4,6 +4,28 @@ import { userBonusServices } from "../services/userBonusServices";
 import { userBonusRepository } from "../repository/userBonusRepository";
 
 export const userBonusController = {
+  buy: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const { bonusId, userCardId } = req.body;
+
+    if (!req.user?.id)
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: "Error on parsing id from the token.",
+      });
+
+    try {
+      const userBonus = await userBonusServices.buy(
+        req.user.id,
+        userCardId,
+        bonusId
+      );
+
+      return res.status(200).json({ success: true, data: userBonus });
+    } catch (e) {
+      next(e);
+    }
+  },
   useUserBonus: async (
     req: AuthenticatedRequest,
     res: Response,
@@ -41,7 +63,7 @@ export const userBonusController = {
       next(e);
     }
   },
-  getByUserCardId: async (
+  getUnusedByUserCardId: async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
@@ -63,7 +85,7 @@ export const userBonusController = {
       next(e);
     }
   },
-  getByRestaurantId: async (
+  getUnusedByRestaurantId: async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction

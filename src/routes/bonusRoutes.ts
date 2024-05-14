@@ -22,5 +22,10 @@ bonusRoutes.delete(
   authorize("SUPER_ADMIN"),
   bonusController.deleteBonus
 );
+bonusRoutes.get(
+  "/:restaurantId/restaurant",
+  authenticateToken,
+  bonusController.getByRestaurantId
+);
 
 export = bonusRoutes;

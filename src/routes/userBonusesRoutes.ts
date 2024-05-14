@@ -6,12 +6,12 @@ const userBonusesRoutes = express.Router();
 userBonusesRoutes.get(
   "/:userCardId/userCard",
   authenticateToken,
-  userBonusController.getByUserCardId
+  userBonusController.getUnusedByRestaurantId
 );
 userBonusesRoutes.get(
   "/:restaurantId/restaurant",
   authenticateToken,
-  userBonusController.getByRestaurantId
+  userBonusController.getUnusedByRestaurantId
 );
 userBonusesRoutes.post(
   "/:id/use",
@@ -23,5 +23,6 @@ userBonusesRoutes.post(
   authenticateToken,
   userBonusController.redeemUserBonus
 );
+userBonusesRoutes.post("/buy", authenticateToken, userBonusController.buy);
 
 export = userBonusesRoutes;

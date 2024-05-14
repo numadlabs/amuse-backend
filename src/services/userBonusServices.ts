@@ -5,13 +5,36 @@ import { bonusRepository } from "../repository/bonusRepository";
 import { cardRepository } from "../repository/cardRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userCardReposity } from "../repository/userCardRepository";
+import { userRepository } from "../repository/userRepository";
 
 export const userBonusServices = {
+  buy: async (userId: string, userCardId: string, bonusId: string) => {
+    const user = await userRepository.getUserById(userId);
+    if (!user) throw new CustomError("No user found.", 400);
+
+    const userCard = await userCardReposity.getById(userCardId);
+    if (!userCard) throw new CustomError("No userCard found.", 400);
+    if (userCard.userId !== userId)
+      throw new CustomError("No userCard found.", 400);
+
+    const bonus = await bonusRepository.getById(bonusId);
+    if (!bonus) throw new CustomError("No bonus found.", 400);
+
+    if (user?.balance < bonus.price)
+      throw new CustomError("Insufficient balance.", 400);
+
+    const userBonus = await userBonusRepository.create({
+      userId: user.id,
+      userCardId: userCard.id,
+      bonusId: bonus.id,
+    });
+
+    user.balance -= bonus.price;
+    await userRepository.update(user.id, user);
+
+    return userBonus;
+  },
   use: async (id: string, userId: string) => {
-    /* 
-        check if userBonus is authenticatedUsersOwn 
-        check if userBonus is not used
-    */
     const userBonus = await userBonusRepository.getById(id);
 
     if (!userBonus)

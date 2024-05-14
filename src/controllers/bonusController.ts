@@ -57,4 +57,19 @@ export const bonusController = {
       next(e);
     }
   },
+  getByRestaurantId: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { restaurantId } = req.params;
+
+    try {
+      const bonuses = await bonusRepository.getByRestaurantId(restaurantId);
+
+      return res.status(200).json({ success: true, data: bonuses });
+    } catch (e) {
+      next(e);
+    }
+  },
 };

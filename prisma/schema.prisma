@@ -140,7 +140,7 @@ model Bonus {
   id       String  @id @default(dbgenerated("gen_random_uuid()"))
   imageUrl String?
   name     String
-  // price         Int
+  price    Float   @default(0.00010000)
   // currency      String
   // totalSupply   Int
   // currentSupply Int

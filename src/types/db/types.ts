@@ -10,6 +10,7 @@ export type Bonus = {
     id: Generated<string>;
     imageUrl: string | null;
     name: string;
+    price: Generated<number>;
     cardId: string | null;
 };
 export type Card = {
