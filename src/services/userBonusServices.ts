@@ -74,4 +74,20 @@ export const userBonusServices = {
 
     return { userBonuses, followingBonus };
   },
+  getByUserCardId: async (userCardId: string) => {
+    const userCard = await userCardReposity.getById(userCardId);
+
+    if (!userCard) throw new CustomError("No usercard found.", 400);
+
+    const bonuses = await bonusRepository.getByCardId(userCard.cardId);
+    let index = Math.floor(userCard.visitCount / 3) % bonuses.length;
+    if (index + 1 === bonuses.length) index = 0;
+    else index++;
+
+    const followingBonus = bonuses[index];
+
+    const userBonuses = await userBonusRepository.getByUserCardId(userCardId);
+
+    return { userBonuses, followingBonus };
+  },
 };

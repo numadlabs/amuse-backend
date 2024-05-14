@@ -56,7 +56,7 @@ export const userBonusController = {
       });
 
     try {
-      const bonus = await userBonusRepository.getByUserCardId(userCardId);
+      const bonus = await userBonusServices.getByUserCardId(userCardId);
 
       return res.status(200).json({ success: true, data: bonus });
     } catch (e) {
@@ -83,15 +83,13 @@ export const userBonusController = {
         req.user.id
       );
 
-      return res
-        .status(200)
-        .json({
-          success: true,
-          data: {
-            userBonuses: userBonuses.userBonuses,
-            followingBonus: userBonuses.followingBonus,
-          },
-        });
+      return res.status(200).json({
+        success: true,
+        data: {
+          userBonuses: userBonuses.userBonuses,
+          followingBonus: userBonuses.followingBonus,
+        },
+      });
     } catch (e) {
       next(e);
     }
