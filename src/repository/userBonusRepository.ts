@@ -55,6 +55,7 @@ export const userBonusRepository = {
       .innerJoin("Card", "Card.id", "UserCard.cardId")
       .where("Card.restaurantId", "=", restaurantId)
       .where("UserBonus.userId", "=", userId)
+      .where("isUsed", "=", false)
       .select([
         "UserBonus.id",
         "UserBonus.bonusId",
