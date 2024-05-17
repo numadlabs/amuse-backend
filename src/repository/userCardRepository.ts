@@ -68,10 +68,11 @@ export const userCardReposity = {
     return userCards;
   },
   //jishee ni ene dr orderBy desc, visitCount tedees deesh ntrig ExpressionBuilder avaad where-luu hiih --> more reusable
-  getByRestaurantId: async (restaurantId: string) => {
+  getByRestaurantId: async (restaurantId: string, userId: string) => {
     const userCards = await db
       .selectFrom("UserCard")
-      .innerJoin("Restaurant", "Restaurant.id", "UserCard.id")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
       .select([
         "UserCard.id",
         "UserCard.cardId",
@@ -81,7 +82,8 @@ export const userCardReposity = {
         "UserCard.visitCount",
       ])
       .where("Restaurant.id", "=", restaurantId)
-      .execute();
+      .where("UserCard.userId", "=", userId)
+      .executeTakeFirst();
 
     return userCards;
   },

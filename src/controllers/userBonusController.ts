@@ -5,7 +5,7 @@ import { userBonusRepository } from "../repository/userBonusRepository";
 
 export const userBonusController = {
   buy: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const { bonusId, userCardId } = req.body;
+    const { bonusId, restaurantId } = req.body;
 
     if (!req.user?.id)
       return res.status(400).json({
@@ -17,7 +17,7 @@ export const userBonusController = {
     try {
       const userBonus = await userBonusServices.buy(
         req.user.id,
-        userCardId,
+        restaurantId,
         bonusId
       );
 
