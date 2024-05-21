@@ -8,6 +8,8 @@ import { userRepository } from "../repository/userRepository";
 import { db } from "../utils/db";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
 import { sql } from "kysely";
+import { getBtcPrice } from "../lib/btcPriceHelper";
+import { currencyRepository } from "../repository/currencyRepository";
 
 export const UserController = {
   updateUser: async (
@@ -101,10 +103,15 @@ export const UserController = {
           .json({ success: false, data: null, error: "User does not exist." });
 
       const sanitizedUser = hideDataHelper.sanitizeUserData(user);
+      const btc = await currencyRepository.getByName("Bitcoin");
 
-      return res
-        .status(200)
-        .json({ success: true, data: { user: sanitizedUser } });
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: sanitizedUser,
+          balanceInAed: user.balance * btc.price * 3.67,
+        },
+      });
     } catch (e) {
       next(e);
     }

@@ -106,7 +106,7 @@ export const tapServices = {
     }
 
     const btc = await currencyRepository.getByName("Bitcoin");
-    const incrementBtc = 1 / btc.price / 3.65;
+    const incrementBtc = 1 / (btc.price * 3.67);
     user.balance = user.balance + incrementBtc;
 
     await userRepository.update(user.id, user);
