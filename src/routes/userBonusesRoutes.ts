@@ -6,7 +6,7 @@ const userBonusesRoutes = express.Router();
 userBonusesRoutes.get(
   "/:userCardId/userCard",
   authenticateToken,
-  userBonusController.getUnusedByRestaurantId
+  userBonusController.getUnusedByUserCardId
 );
 userBonusesRoutes.get(
   "/:restaurantId/restaurant",
