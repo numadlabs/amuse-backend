@@ -6,6 +6,17 @@ import { cardRepository } from "../repository/cardRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { userRepository } from "../repository/userRepository";
+import { Bonus } from "../types/db/types";
+
+type followingBonus = {
+  id: string;
+  imageUrl: string | null;
+  name: string;
+  cardId: string | null;
+  price: number;
+  current: number;
+  target: number;
+};
 
 export const userBonusServices = {
   buy: async (userId: string, restaurantId: string, bonusId: string) => {
@@ -99,7 +110,15 @@ export const userBonusServices = {
     if (index + 1 === bonuses.length) index = 0;
     else index++;
 
-    const followingBonus = bonuses[index];
+    const followingBonus: followingBonus = {
+      id: bonuses[index].id,
+      cardId: bonuses[index].cardId,
+      imageUrl: bonuses[index].imageUrl,
+      name: bonuses[index].name,
+      price: bonuses[index].price,
+      current: (userCard.visitCount % 3) + 1,
+      target: 3,
+    };
 
     return { userBonuses, followingBonus };
   },
