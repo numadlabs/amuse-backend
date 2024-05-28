@@ -132,7 +132,15 @@ export const userBonusServices = {
     if (index + 1 === bonuses.length) index = 0;
     else index++;
 
-    const followingBonus = bonuses[index];
+    const followingBonus: followingBonus = {
+      id: bonuses[index].id,
+      cardId: bonuses[index].cardId,
+      imageUrl: bonuses[index].imageUrl,
+      name: bonuses[index].name,
+      price: bonuses[index].price,
+      current: (userCard.visitCount % 3) + 1,
+      target: 3,
+    };
 
     const userBonuses = await userBonusRepository.getByUserCardId(userCardId);
 
