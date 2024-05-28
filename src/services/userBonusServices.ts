@@ -116,7 +116,7 @@ export const userBonusServices = {
       imageUrl: bonuses[index].imageUrl,
       name: bonuses[index].name,
       price: bonuses[index].price,
-      current: (userCard.visitCount % 3) + 1,
+      current: userCard.visitCount % 3,
       target: 3,
     };
 
@@ -138,7 +138,7 @@ export const userBonusServices = {
       imageUrl: bonuses[index].imageUrl,
       name: bonuses[index].name,
       price: bonuses[index].price,
-      current: (userCard.visitCount % 3) + 1,
+      current: userCard.visitCount % 3,
       target: 3,
     };
 
