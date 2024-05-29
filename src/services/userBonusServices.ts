@@ -2,10 +2,12 @@ import { CustomError } from "../exceptions/CustomError";
 import { BONUS_REDEEM_EXPIRATION_TIME } from "../lib/constants";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";
+import { purchaseRepository } from "../repository/purchaseRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { userRepository } from "../repository/userRepository";
+import { Purchase } from "../types/db/types";
 
 type followingBonus = {
   id: string;
@@ -51,6 +53,8 @@ export const userBonusServices = {
     const restaurant = await restaurantRepository.getById(restaurantId);
     restaurant.balance += bonus.price;
     restaurantRepository.update(restaurantId, restaurant);
+
+    await purchaseRepository.create({ userBonusId: userBonus.id });
 
     return userBonus;
   },
