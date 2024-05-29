@@ -44,6 +44,9 @@ CREATE TABLE "Restaurant" (
     "opensAt" TEXT NOT NULL,
     "closesAt" TEXT NOT NULL,
     "logo" TEXT,
+    "budget" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "givenOut" DOUBLE PRECISION NOT NULL DEFAULT 0,
 
     CONSTRAINT "Restaurant_pkey" PRIMARY KEY ("id")
 );
@@ -91,6 +94,7 @@ CREATE TABLE "Bonus" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "imageUrl" TEXT,
     "name" TEXT NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL DEFAULT 0.00010000,
     "cardId" TEXT,
 
     CONSTRAINT "Bonus_pkey" PRIMARY KEY ("id")
@@ -116,6 +120,24 @@ CREATE TABLE "Notification" (
     "isRead" BOOLEAN NOT NULL,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Currency" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "name" TEXT NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+
+    CONSTRAINT "Currency_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Purchase" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userBonusId" TEXT NOT NULL,
+
+    CONSTRAINT "Purchase_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -150,3 +172,6 @@ ALTER TABLE "UserBonus" ADD CONSTRAINT "UserBonus_bonusId_fkey" FOREIGN KEY ("bo
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Purchase" ADD CONSTRAINT "Purchase_userBonusId_fkey" FOREIGN KEY ("userBonusId") REFERENCES "UserBonus"("id") ON DELETE CASCADE ON UPDATE CASCADE;
