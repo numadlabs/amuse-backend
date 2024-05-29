@@ -1,5 +1,5 @@
 import { Insertable, Updateable } from "kysely";
-import { DB, Restaurant } from "../types/db/types";
+import { Restaurant } from "../types/db/types";
 import { db } from "../utils/db";
 
 export const restaurantRepository = {

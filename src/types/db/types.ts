@@ -52,8 +52,9 @@ export type Restaurant = {
     opensAt: string;
     closesAt: string;
     logo: string | null;
-    budget: number | null;
-    balance: number | null;
+    budget: Generated<number>;
+    balance: Generated<number>;
+    givenOut: Generated<number>;
 };
 export type Tap = {
     id: Generated<string>;

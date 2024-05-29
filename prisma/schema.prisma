@@ -78,8 +78,9 @@ model Restaurant {
   opensAt     String
   closesAt    String
   logo        String?
-  budget      Float?
-  balance     Float?
+  budget      Float   @default(0)
+  balance     Float   @default(0)
+  givenOut    Float   @default(0)
 
   //membershipCardId String? @unique
   //Card             Card?   @relation(fields: [membershipCardId], references: [id])
