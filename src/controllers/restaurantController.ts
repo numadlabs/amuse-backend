@@ -7,9 +7,6 @@ import { CATEGORY } from "../types/db/enums";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
 import { restaurantServices } from "../services/restaurantServices";
 import { AuthenticatedRequest } from "../../custom";
-import { cardServices } from "../services/cardServices";
-import { cardRepository } from "../repository/cardRepository";
-import { Rbin } from "aws-sdk";
 
 export const restaurantController = {
   createRestaurant: async (req: Request, res: Response, next: NextFunction) => {

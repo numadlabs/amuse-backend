@@ -1,5 +1,5 @@
 import { Insertable, Updateable } from "kysely";
-import { Card, UserCard } from "../types/db/types";
+import { Card } from "../types/db/types";
 import { db } from "../utils/db";
 
 export const cardRepository = {

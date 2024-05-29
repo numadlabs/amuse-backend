@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Restaurant" ALTER COLUMN "balance" SET DEFAULT 0,
+ALTER COLUMN "budget" SET DEFAULT 0,
+ALTER COLUMN "givenOut" SET DEFAULT 0;

@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import { userBonusServices } from "../services/userBonusServices";
-import { userBonusRepository } from "../repository/userBonusRepository";
 
 export const userBonusController = {
   buy: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

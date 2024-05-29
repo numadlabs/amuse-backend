@@ -4,7 +4,6 @@ import { tapServices } from "../services/tapServices";
 import { AuthenticatedRequest } from "../../custom";
 
 export const tapController = {
-  //z
   generateTap: async (req: Request, res: Response, next: NextFunction) => {
     const { restaurantId } = req.body;
 
@@ -38,16 +37,14 @@ export const tapController = {
     try {
       const result = await tapServices.redeemTap(encryptedData, req.user.id);
 
-      return res
-        .status(200)
-        .json({
-          success: true,
-          data: {
-            tap: result.tap,
-            increment: result.increment,
-            bonus: result.bonus,
-          },
-        });
+      return res.status(200).json({
+        success: true,
+        data: {
+          tap: result.tap,
+          increment: result.increment,
+          bonus: result.bonus,
+        },
+      });
     } catch (e) {
       next(e);
     }

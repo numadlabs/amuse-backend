@@ -9,7 +9,6 @@ import { TAP_EXPIRATION_TIME } from "../lib/constants";
 import { bonusRepository } from "../repository/bonusRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userRepository } from "../repository/userRepository";
-import { getBtcPrice } from "../lib/btcPriceHelper";
 import { currencyRepository } from "../repository/currencyRepository";
 
 export const tapServices = {
@@ -107,6 +106,13 @@ export const tapServices = {
 
     const btc = await currencyRepository.getByName("Bitcoin");
     const incrementBtc = 1 / (btc.price * 3.67);
+
+    if (restaurant.balance >= incrementBtc) {
+      restaurant.balance -= incrementBtc;
+      restaurant.givenOut += incrementBtc;
+      restaurantRepository.update(restaurant.id, restaurant);
+    }
+
     user.balance = user.balance + incrementBtc;
 
     await userRepository.update(user.id, user);

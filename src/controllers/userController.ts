@@ -8,7 +8,6 @@ import { userRepository } from "../repository/userRepository";
 import { db } from "../utils/db";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
 import { sql } from "kysely";
-import { getBtcPrice } from "../lib/btcPriceHelper";
 import { currencyRepository } from "../repository/currencyRepository";
 
 export const UserController = {
