@@ -1,6 +1,12 @@
 import { sql } from "kysely";
 import { db } from "../utils/db";
 
+enum Interval {
+  ONE_WEEK = "1 week",
+  ONE_MONTH = "1 month",
+  THREE_MONTHS = "3 months",
+}
+
 export const dashboardRepository = {
   getTapByDate: async (
     restaurantId: string,
@@ -55,6 +61,67 @@ FROM (
 group by location
 `.execute(db);
 
+    return data.rows;
+  },
+
+  getTapByCheckIn: async (restaurantId: string, selectedInterval: string) => {
+    //need to do update on interval
+    const data = await sql`
+    with myconstants (res_id) as (
+      values (${restaurantId})),
+    checkin_ranges as (
+        select '1' as range
+        union all
+        select '2' as range
+        union all
+        select '3' as range
+        union all
+        select '4' as range
+        union all
+        select '5' as range
+        union all
+        select '+5' as range
+    ),
+    restaurant_checkins as (
+        select "UserCard"."cardId", "Card"."restaurantId", "Tap"."userId", COUNT(*) as checkin_count from "Tap" 
+        inner join "UserCard" on "Tap"."userCardId" = "UserCard".id 
+        inner join "Card" on "UserCard"."cardId" = "Card".id  
+        where "tappedAt" >= NOW() - INTERVAL '1 month'
+        group by "UserCard"."cardId", "Card"."restaurantId", "Tap"."userId" 
+        order by "Card"."restaurantId" 
+    ),
+    --select * from restaurant_checkins;
+    checkin_counts as (select 
+      "restaurantId",
+        case
+            when checkin_count = 1 then '1'
+            when checkin_count = 2 then '2'
+            when checkin_count = 3 then '3'
+            when checkin_count = 4 then '4'
+            when checkin_count = 5 then '5'
+            ELSE '+5'
+        end as checkin_range,
+        count(*) as users_count
+    from
+       restaurant_checkins
+    where 
+      "restaurantId" = (select * from myconstants)
+    group by
+        "restaurantId", checkin_range
+    order by
+      "restaurantId", checkin_range)
+    select 
+      COALESCE(c."restaurantId", (SELECT res_id FROM myconstants)) AS "restaurantId",
+        r.range as checkin_range,
+        COALESCE(c.users_count, 0) as users_count
+    FROM 
+        checkin_ranges r
+    left JOIN 
+        checkin_counts c ON r.range = c.checkin_range
+    ORDER BY 
+        COALESCE(c."restaurantId", (SELECT res_id FROM myconstants)), r.range;`.execute(
+      db
+    );
     return data.rows;
   },
 };
