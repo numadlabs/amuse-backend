@@ -14,6 +14,7 @@ import userCardRoutes from "./routes/userCardRoutes";
 import userBonusesRoutes from "./routes/userBonusesRoutes";
 import bonusRoutes from "./routes/bonusRoutes";
 import { updateCurrencyPrice } from "./cron/updateBtcPrice";
+import dashboardRoutes from "./routes/dashboardRoutes";
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/bonus", bonusRoutes);
 app.use("/api/userCards", userCardRoutes);
 app.use("/api/userBonus", userBonusesRoutes);
 app.use("/api/taps", tapRouter);
+app.use("/api/dashboards", dashboardRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

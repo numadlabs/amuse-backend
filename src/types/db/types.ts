@@ -36,6 +36,11 @@ export type Notification = {
     type: string;
     isRead: boolean;
 };
+export type Purchase = {
+    id: Generated<string>;
+    createdAt: Generated<Timestamp>;
+    userBonusId: string;
+};
 export type Restaurant = {
     id: Generated<string>;
     name: string;
@@ -47,6 +52,8 @@ export type Restaurant = {
     opensAt: string;
     closesAt: string;
     logo: string | null;
+    budget: number | null;
+    balance: number | null;
 };
 export type Tap = {
     id: Generated<string>;
@@ -96,6 +103,7 @@ export type DB = {
     Card: Card;
     Currency: Currency;
     Notification: Notification;
+    Purchase: Purchase;
     Restaurant: Restaurant;
     Tap: Tap;
     User: User;
