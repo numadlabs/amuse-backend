@@ -49,4 +49,22 @@ export const dashboardController = {
       next(e);
     }
   },
+  getTapByCheckIn: async (req: Request, res: Response, next: NextFunction) => {
+    const { restaurantId } = req.params;
+    const interval = req.body.interval;
+    const selectedInterval: string = interval;
+
+    try {
+      const data = await dashboardRepository.getTapByCheckIn(
+        restaurantId,
+        selectedInterval
+      );
+
+      return res.status(200).json({ success: true, data: data });
+    } catch (e) {
+      next(e);
+    }
+
+    return 0;
+  },
 };
