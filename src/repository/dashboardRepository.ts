@@ -63,7 +63,20 @@ group by location
 
     return data.rows;
   },
+  getBudgetPieChart: async (restaurantId: string) => {
+    const data =
+      await sql`select r.id, (r."givenOut" / r.budget * 100) as "Awarded", (SUM(b.price) / r.budget  * 100) as "Redeemed"
+    from "Purchase" p 
+    inner join "UserBonus" ub ON ub.id = p."userBonusId" 
+    inner join "Bonus" b on b.id = ub."bonusId" 
+    inner join "UserCard" uc on uc.id = ub."userCardId" 
+    inner join "Card" c on c.id = uc."cardId" 
+    inner join "Restaurant" r on r.id = c."restaurantId" 
+    where r.id = ${restaurantId}
+    group by r.id`.execute(db);
 
+    return data.rows;
+  },
   getTapByCheckIn: async (restaurantId: string, selectedInterval: string) => {
     //need to do update on interval
     const data = await sql`

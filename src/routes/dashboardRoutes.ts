@@ -3,6 +3,10 @@ import { dashboardController } from "../controllers/dashboardController";
 const dashboardRoutes = express.Router();
 
 dashboardRoutes.get(
+  "/budget/:restaurantId/restaurant",
+  dashboardController.getBudgetPieChart
+);
+dashboardRoutes.get(
   "/taps/area/:restaurantId/restaurant",
   dashboardController.getTapByAreaTable
 );

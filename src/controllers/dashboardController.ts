@@ -49,6 +49,21 @@ export const dashboardController = {
       next(e);
     }
   },
+  getBudgetPieChart: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { restaurantId } = req.params;
+
+    try {
+      const data = await dashboardRepository.getBudgetPieChart(restaurantId);
+
+      return res.status(200).json({ success: true, data: data });
+    } catch (e) {
+      next(e);
+    }
+  },
   getTapByCheckIn: async (req: Request, res: Response, next: NextFunction) => {
     const { restaurantId } = req.params;
     const interval = req.body.interval;
@@ -64,7 +79,5 @@ export const dashboardController = {
     } catch (e) {
       next(e);
     }
-
-    return 0;
   },
 };
