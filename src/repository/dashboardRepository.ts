@@ -103,7 +103,7 @@ group by location
             INNER JOIN "User" u ON u.id = t."userId" 
         WHERE
             r.id = (select * from myconstants) and
-            t."tappedAt" >= NOW() - INTERVAL '1 month'::interval
+            t."tappedAt" >= NOW() - ${selectedInterval}::interval
         GROUP BY
             u.id, r.id
     ) AS subquery`.execute(db);
