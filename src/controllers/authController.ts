@@ -17,7 +17,7 @@ export const authController = {
     try {
       const user = await userServices.login(data);
 
-      //activate it when OTP starts working
+      //activate it to enable OTP service
       /* if (!user.isTelVerified)
             return res.status(200).json({
               success: true,

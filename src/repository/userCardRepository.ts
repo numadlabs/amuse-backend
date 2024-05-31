@@ -67,7 +67,6 @@ export const userCardReposity = {
 
     return userCards;
   },
-  //jishee ni ene dr orderBy desc, visitCount tedees deesh ntrig ExpressionBuilder avaad where-luu hiih --> more reusable
   getByRestaurantId: async (restaurantId: string, userId: string) => {
     const userCards = await db
       .selectFrom("UserCard")
