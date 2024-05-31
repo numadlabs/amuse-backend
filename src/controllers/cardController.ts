@@ -40,7 +40,6 @@ export const cardController = {
       next(e);
     }
   },
-  //cascade delete
   deleteCard: async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
 

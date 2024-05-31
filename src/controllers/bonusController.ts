@@ -12,7 +12,6 @@ export const bonusController = {
         .json({ success: false, data: null, error: "Bad request." });
 
     try {
-      //different creating options such as creating UserBonus for every user, or with conditions
       const createdBonus = await bonusRepository.create(data);
 
       return res.status(200).json({

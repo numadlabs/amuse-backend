@@ -158,7 +158,6 @@ export const UserController = {
       });
 
     try {
-      /* const cards = await userRepository.getUserCards(req.user.id); */
       let query = db
         .selectFrom("UserCard")
         .innerJoin("Card", "Card.id", "UserCard.cardId")
