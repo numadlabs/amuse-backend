@@ -4,7 +4,7 @@
   "description": "Amuse Bouche Backend",
   "main": "index.js",
   "scripts": {
-    "build": "mkdir dist %% npx tsc",
+    "build": "mkdir -p dist %% npx tsc",
     "start": "node dist/src/index.js",
     "dev": "nodemon src/index.ts",
     "migrate:dev": "dotenv -e .env -- npx prisma migrate dev",
