@@ -13,11 +13,11 @@ export async function getAndUpdateBitcoinPrice() {
     const price = await getBtcPrice();
     const bitcoin = await currencyRepository.getByName("Bitcoin");
 
-    bitcoin.price = price;
+    bitcoin.priceInUSD = price;
 
     await currencyRepository.update(bitcoin.id, bitcoin);
 
-    console.log(`Updated Btc price to ${bitcoin.price}`);
+    console.log(`Updated Btc price to ${bitcoin.priceInUSD}`);
   } catch (e) {
     console.log("Cron error catched.");
     console.log(e);

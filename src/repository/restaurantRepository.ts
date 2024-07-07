@@ -36,13 +36,9 @@ export const restaurantRepository = {
         "Restaurant.location",
         "Restaurant.latitude",
         "Restaurant.longitude",
-        "Restaurant.opensAt",
-        "Restaurant.closesAt",
         "Restaurant.logo",
         "Card.id as cardId",
         "Card.benefits",
-        "Card.artistInfo",
-        "Card.expiryInfo",
         "Card.instruction",
         "Card.nftImageUrl",
         db

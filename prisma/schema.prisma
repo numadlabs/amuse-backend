@@ -4,10 +4,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-}
-
 generator kysely {
   provider     = "prisma-kysely"
   output       = "../src/types/db"
@@ -21,35 +17,64 @@ datasource db {
 }
 
 model User {
-  id                    String    @id @default(dbgenerated("gen_random_uuid()"))
+  id             String    @id @default(dbgenerated("gen_random_uuid()"))
+  password       String
+  nickname       String
+  role           ROLES     @default(USER)
+  profilePicture String?
+  dateOfBirth    DateTime?
+  location       String?
+  createdAt      DateTime  @default(now())
+  balance        Float     @default(0)
+  visitCount     Int       @default(0)
+
   email                 String?   @unique
   emailVerificationCode String?
   isEmailVerified       Boolean   @default(false)
   emailVerifiedAt       DateTime?
-  password              String
-  nickname              String
-  firstName             String?
-  lastName              String?
-  role                  ROLES     @default(USER)
-  prefix                String
-  telNumber             String
-  telVerificationCode   String?
-  isTelVerified         Boolean   @default(false)
-  profilePicture        String?
-  dateOfBirth           DateTime?
-  location              String?
-  createdAt             DateTime  @default(now())
-  balance               Float     @default(0)
+
+  prefix              String
+  telNumber           String
+  telVerificationCode String?
+  isTelVerified       Boolean   @default(false)
+  telVerifiedAt       DateTime?
+
+  userTierId String
+  Tier       UserTier @relation(references: [id], fields: [userTierId])
+
+  restaurantId String?
+  Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   UserCard     UserCard[]
   UserBonus    UserBonus[]
   Notification Notification[]
-  Tap          Tap[]
+  Tap          Tap[]          @relation("user")
+  ScannedTaps  Tap[]          @relation("waiter")
+}
+
+model UserTier {
+  id               String @id @default(dbgenerated("gen_random_uuid()"))
+  name             String
+  requiredNo       Int
+  rewardMultiplier Float
+
+  nextTierId String?
+  nextTier   UserTier? @relation("tierHierarchy", references: [id], fields: [nextTierId])
+
+  precedingTiers UserTier[] @relation("tierHierarchy")
+  User           User[]
+}
+
+model Device {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  pushToken String
+  createdAt DateTime @default(now())
 }
 
 enum ROLES {
   SUPER_ADMIN
-  ADMIN
+  RESTAURANT_OWNER
+  RESTAURANT_WAITER
   USER
 }
 
@@ -71,32 +96,39 @@ enum CATEGORY {
 }
 
 model Restaurant {
-  id          String   @id @default(dbgenerated("gen_random_uuid()"))
-  name        String
-  category    CATEGORY
-  description String
-  location    String
-  latitude    Float
-  longitude   Float
-  opensAt     String
-  closesAt    String
-  logo        String?
-  budget      Float   @default(0)
-  balance     Float   @default(0)
-  givenOut    Float   @default(0)
+  id            String   @id @default(dbgenerated("gen_random_uuid()"))
+  createdAt     DateTime @default(now())
+  name          String
+  category      CATEGORY
+  description   String
+  location      String
+  latitude      Float
+  longitude     Float
+  logo          String?
+  balance       Float    @default(0)
+  rewardAmount  Float
+  perkOccurence Int
 
-  //membershipCardId String? @unique
-  //Card             Card?   @relation(fields: [membershipCardId], references: [id])
-  Card Card[]
-  // Cards Card[] @relation("restaurantCard")
+  Card      Card[]
+  User      User[]
+  Timetable Timetable[]
+}
+
+model Timetable {
+  id             String   @id @default(dbgenerated("gen_random_uuid()"))
+  dayNoOfTheWeek Int
+  opensAt        String
+  closesAt       String
+  isOffDay       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  restaurantId String
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
 
 model Card {
-  id          String    @id @default(dbgenerated("gen_random_uuid()"))
-  mintedAt    DateTime?
-  createdAt   DateTime  @default(now())
-  expiryInfo  String?
-  artistInfo  String?
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  createdAt   DateTime @default(now())
   nftImageUrl String?
   instruction String
   benefits    String
@@ -105,6 +137,10 @@ model Card {
   // totalSupply   Int
   // currentSupply Int
 
+  // mintedAt    DateTime?
+  // expiryInfo  String?
+  // artistInfo  String?
+
   restaurantId String
   Restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
@@ -112,44 +148,44 @@ model Card {
   UserCard UserCard[]
 }
 
-enum TIER {
-  BRONZE
-  SILVER
-  GOLD
-}
-
 model UserCard {
-  id         String    @id @default(dbgenerated("gen_random_uuid()"))
-  visitCount Int       @default(0)
-  mintedAt   DateTime?
-  ownedAt    DateTime  @default(now())
-  cardId     String
-  Card       Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  visitCount Int      @default(0)
+  ownedAt    DateTime @default(now())
+
+  cardId String
+  Card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
   userId     String
-  User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isFirstTap Boolean   @default(false)
+  User       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isFirstTap Boolean @default(false)
 
   Tap       Tap[]
   UserBonus UserBonus[]
 }
 
 model Tap {
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  tappedAt   DateTime @default(now())
-  userId     String
-  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String   @id @default(dbgenerated("gen_random_uuid()"))
+  amount   Float
+  tappedAt DateTime @default(now())
+
+  waiterId String
+  Waiter   User   @relation("waiter", fields: [waiterId], references: [id])
+
+  userId String
+  User   User   @relation("user", fields: [userId], references: [id], onDelete: Cascade)
+
   userCardId String
   UserCard   UserCard @relation(fields: [userCardId], references: [id], onDelete: Cascade)
 }
 
 model Bonus {
-  id       String  @id @default(dbgenerated("gen_random_uuid()"))
-  imageUrl String?
-  name     String
-  price    Float   @default(0.00010000)
-  // currency      String
-  // totalSupply   Int
-  // currentSupply Int
+  id            String  @id @default(dbgenerated("gen_random_uuid()"))
+  imageUrl      String?
+  name          String
+  price         Float   @default(0.00010000)
+  totalSupply   Int
+  currentSupply Int
 
   cardId String?
 
@@ -174,17 +210,17 @@ model UserBonus {
 
 model Notification {
   id      String  @id @default(dbgenerated("gen_random_uuid()"))
-  userId  String
-  User    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   message String
-  type    String
   isRead  Boolean
+
+  userId String
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Currency {
-  id    String @id @default(dbgenerated("gen_random_uuid()"))
-  name  String
-  price Float
+  id         String @id @default(dbgenerated("gen_random_uuid()"))
+  name       String
+  priceInUSD Float
 }
 
 model Purchase {

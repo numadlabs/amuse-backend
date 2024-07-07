@@ -75,11 +75,18 @@ export const restaurantController = {
       const categories = req.query.categories;
       const { latitude, longitude, time } = req.query;
 
+      if (!time)
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Please provide the local time.",
+        });
+
       /* if (!latitude && !longitude)
         return res.status(400).json({
           success: false,
           data: null,
-          error: "Please provide your address",
+          error: "Please provide your address.",
         }); */
 
       /* let query = db
@@ -102,7 +109,7 @@ export const restaurantController = {
             )}), ST_MakePoint(${latitude}, ${longitude})::geography) asc`
         ); */
 
-      let ownedQuery = db
+      let query = db
         .selectFrom("Restaurant")
         .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
         .innerJoin("UserCard", "UserCard.cardId", "Card.id")
@@ -114,86 +121,46 @@ export const restaurantController = {
           "Restaurant.location",
           "Restaurant.latitude",
           "Restaurant.longitude",
-          "Restaurant.opensAt",
-          "Restaurant.closesAt",
           "Restaurant.logo",
           "Card.id as cardId",
           "Card.benefits",
-          "Card.artistInfo",
-          "Card.expiryInfo",
           "Card.instruction",
           "Card.nftImageUrl",
-          eb(eb.val(false), "=", false).as("isOwned"),
+          db
+            .selectFrom("UserCard")
+            .innerJoin("Card", "Card.id", "UserCard.cardId")
+            .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+            .select(({ eb, fn }) => [
+              eb(fn.count<number>("UserCard.id"), ">", 0).as("count"),
+            ])
+            .where("Restaurant.id", "=", eb.ref("Restaurant.id"))
+            .where("UserCard.userId", "=", userId)
+            .as("isOwned"),
+          //       sql`
+          //   case
+          //     when (
+          //       (cast(${eb.ref("Restaurant.closesAt")} as time) < cast(${eb.ref(
+          //         "Restaurant.opensAt"
+          //       )} as time))
+          //       and (${time} > cast(${eb.ref("Restaurant.closesAt")} as time))
+          //       and (${time} < cast(${eb.ref("Restaurant.opensAt")} as time))
+          //     ) then false
+          //     when (
+          //       (cast(${eb.ref("Restaurant.closesAt")} as time) > cast(${eb.ref(
+          //         "Restaurant.opensAt"
+          //       )} as time))
+          //       and (${time} > cast(${eb.ref("Restaurant.closesAt")} as time))
+          //       or (${time} < cast(${eb.ref("Restaurant.opensAt")} as time))
+          //     ) then false
+          //     else true
+          //   end
+          // `.as("isOpen"),
           "UserCard.visitCount",
         ])
         .where("UserCard.userId", "=", userId)
         .orderBy("Restaurant.name asc");
 
-      let query = db
-        .selectFrom("Restaurant")
-        .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
-        .select(({ eb }) => [
-          "Restaurant.id",
-          "Restaurant.name",
-          "Restaurant.description",
-          "Restaurant.category",
-          "Restaurant.location",
-          "Restaurant.latitude",
-          "Restaurant.longitude",
-          "Restaurant.opensAt",
-          "Restaurant.closesAt",
-          "Restaurant.logo",
-          "Card.id as cardId",
-          "Card.benefits",
-          "Card.artistInfo",
-          "Card.expiryInfo",
-          "Card.instruction",
-          "Card.nftImageUrl",
-          eb(eb.val(false), "!=", false).as("isOwned"),
-          eb.val(0).as("visitCount"),
-        ])
-        .where((eb) =>
-          eb(
-            "Restaurant.id",
-            "not in",
-            eb
-              .selectFrom("Restaurant")
-              .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
-              .leftJoin("UserCard", "UserCard.cardId", "Card.id")
-              .select(["Restaurant.id"])
-              .where("UserCard.userId", "=", userId)
-          )
-        )
-        .orderBy("Restaurant.name asc");
-
-      if (categories) {
-        const parsedCategories: CATEGORY[] = JSON.parse(categories.toString());
-        query = query.where("Restaurant.category", "in", parsedCategories);
-        ownedQuery = ownedQuery.where(
-          "Restaurant.category",
-          "in",
-          parsedCategories
-        );
-      }
-
-      if (search) {
-        query = query.where((eb) =>
-          eb(
-            to_tsvector(eb.ref("Restaurant.name")),
-            "@@",
-            to_tsquery(`${search}`)
-          )
-        );
-        ownedQuery = ownedQuery.where((eb) =>
-          eb(
-            to_tsvector(eb.ref("Restaurant.name")),
-            "@@",
-            to_tsquery(`${search}`)
-          )
-        );
-      }
-
-      if (time) {
+      /* if (time) {
         query = query.where(
           (eb) => sql`(case
           when ((cast(${eb.ref("Restaurant.closesAt")} as time) < cast(${eb.ref(
@@ -213,52 +180,25 @@ export const restaurantController = {
           else true
         end)`
         );
+      } */
 
-        ownedQuery = ownedQuery.where(
-          (eb) => sql`(case
-          when ((cast(${eb.ref("Restaurant.closesAt")} as time) < cast(${eb.ref(
-            "Restaurant.opensAt"
-          )}  as time)) and ((${time} > cast(${eb.ref(
-            "Restaurant.closesAt"
-          )} as time)) and (${time} < cast(${eb.ref(
-            "Restaurant.opensAt"
-          )} as time)))) then false
-          when ((cast(${eb.ref("Restaurant.closesAt")} as time) > cast(${eb.ref(
-            "Restaurant.opensAt"
-          )}  as time)) and ((${time} > cast(${eb.ref(
-            "Restaurant.closesAt"
-          )} as time)) or (${time} < cast(${eb.ref(
-            "Restaurant.opensAt"
-          )} as time)))) then false
-          else true
-        end)`
+      if (categories) {
+        const parsedCategories: CATEGORY[] = JSON.parse(categories.toString());
+        query = query.where("Restaurant.category", "in", parsedCategories);
+      }
+
+      if (search) {
+        query = query.where((eb) =>
+          eb(
+            to_tsvector(eb.ref("Restaurant.name")),
+            "@@",
+            to_tsquery(`${search}`)
+          )
         );
       }
 
       query = query.offset(offset).limit(limit);
-      ownedQuery = ownedQuery.offset(offset).limit(limit);
-
-      let ownedRestaurants = await ownedQuery.execute();
-      let notOwnedRestaurants = await query.execute();
-
-      let restaurants = [...ownedRestaurants, ...notOwnedRestaurants];
-
-      restaurants = restaurants.map((restaurant) => {
-        restaurant.visitCount = Number(restaurant.visitCount);
-        return restaurant;
-      });
-
-      /* restaurants = restaurants.filter((restaurant) => {
-        if (restaurant.isOwned === true && restaurant.sep === userId)
-          return restaurant;
-        else if (restaurant.isOwned === false) return restaurant;
-      }); */
-
-      /* for (let i = 0; i < restaurants.length; i++) {
-        if (restaurants[i].userId != userId) restaurants.splice(i, 1);
-      }
-
-      console.log(userId); */
+      let restaurants = await query.execute();
 
       return res
         .status(200)

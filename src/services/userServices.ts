@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import { sendOTP } from "../lib/otpHelper";
 import { userRepository } from "../repository/userRepository";
 import { sendVerificationEmail } from "../lib/emailHelper";
@@ -8,12 +7,14 @@ import { CustomError } from "../exceptions/CustomError";
 import { s3BucketName, verificationCodeConstants } from "../lib/constants";
 import { s3 } from "../utils/aws";
 import { randomUUID } from "crypto";
+import { Insertable, Updateable } from "kysely";
+import { User } from "../types/db/types";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
 
 export const userServices = {
-  create: async (data: Prisma.UserCreateInput) => {
+  create: async (data: Insertable<User>) => {
     const hasUser = await userRepository.getUserByPhoneNumber(
       data.telNumber,
       data.prefix
@@ -28,7 +29,7 @@ export const userServices = {
 
     return user;
   },
-  login: async (data: Prisma.UserCreateInput) => {
+  login: async (data: Insertable<User>) => {
     const user = await userRepository.getUserByPhoneNumber(
       data.telNumber,
       data.prefix
@@ -43,7 +44,7 @@ export const userServices = {
     return user;
   },
   //user return hiihiin orond dugaariin avj boloh ym
-  setOTP: async (data: Prisma.UserCreateInput) => {
+  setOTP: async (data: Insertable<User>) => {
     const hasUser = await userRepository.getUserByPhoneNumber(
       data.telNumber,
       data.prefix
@@ -174,7 +175,7 @@ export const userServices = {
   },
   update: async (
     id: string,
-    data: Prisma.UserCreateInput,
+    data: Updateable<User>,
     file: Express.Multer.File
   ) => {
     const findUser = await userRepository.getUserById(id);

@@ -1,14 +1,15 @@
-import { Prisma } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import { userServices } from "../services/userServices";
 import { generateTokens } from "../utils/jwt";
 import { hideDataHelper } from "../lib/hideDataHelper";
 import { AuthenticatedRequest } from "../../custom";
 import jwt from "jsonwebtoken";
+import { Insertable } from "kysely";
+import { User } from "../types/db/types";
 
 export const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
-    const data: Prisma.UserCreateInput = { ...req.body };
+    const data: Insertable<User> = { ...req.body };
     if (!data.prefix || !data.telNumber || !data.password)
       return res
         .status(400)
@@ -45,7 +46,7 @@ export const authController = {
     }
   },
   register: async (req: Request, res: Response, next: NextFunction) => {
-    const data: Prisma.UserCreateInput = { ...req.body };
+    const data: Insertable<User> = { ...req.body };
     if (
       !data.prefix ||
       !data.telNumber ||
@@ -78,7 +79,7 @@ export const authController = {
   },
   sendOTP: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data: Prisma.UserCreateInput = { ...req.body };
+      const data: Insertable<User> = { ...req.body };
 
       if (!data.telNumber || !data.prefix)
         return res.status(400).json({

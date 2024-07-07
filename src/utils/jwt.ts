@@ -1,11 +1,12 @@
 import { sign, verify } from "jsonwebtoken";
 import { Secret } from "jsonwebtoken"; // Import the Secret type
-import { Prisma } from "@prisma/client";
+import { User } from "../types/db/types";
+import { Insertable } from "kysely";
 
 const ACCESS_TOKEN_EXPIRATION_TIME = process.env.JWT_ACCESS_EXPIRATION_TIME;
 const REFRESH_TOKEN_EXPIRATION_TIME = process.env.JWT_REFRESH_EXPIRATION_TIME;
 
-export function generateAccessToken(user: Prisma.UserCreateInput) {
+export function generateAccessToken(user: Insertable<User>) {
   const jwtAccesSecret: Secret | undefined = process.env.JWT_ACCESS_SECRET;
   if (!jwtAccesSecret) {
     throw new Error("JWT_REFRESH_SECRET is not defined.");
@@ -41,7 +42,7 @@ export function extractVerification(token: string) {
   return verificationCode;
 }
 
-export function generateRefreshToken(user: Prisma.UserCreateInput) {
+export function generateRefreshToken(user: Insertable<User>) {
   const jwtRefreshSecret: Secret | undefined = process.env.JWT_REFRESH_SECRET;
   if (!jwtRefreshSecret) {
     throw new Error("JWT_REFRESH_SECRET is not defined.");
@@ -51,7 +52,7 @@ export function generateRefreshToken(user: Prisma.UserCreateInput) {
   });
 }
 
-export function generateTokens(user: Prisma.UserCreateInput) {
+export function generateTokens(user: Insertable<User>) {
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 

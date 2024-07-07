@@ -37,12 +37,9 @@ export const cardRepository = {
       .where("Card.restaurantId", "=", restaurantId)
       .select(({ eb }) => [
         "Card.id",
-        "Card.artistInfo",
         "Card.benefits",
         "Card.createdAt",
-        "Card.expiryInfo",
         "Card.instruction",
-        "Card.mintedAt",
         "Card.nftImageUrl",
         "Card.restaurantId",
         db

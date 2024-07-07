@@ -105,11 +105,10 @@ export const tapServices = {
     }
 
     const btc = await currencyRepository.getByName("Bitcoin");
-    const incrementBtc = 1 / (btc.price * 3.67);
+    const incrementBtc = 1 / (btc.priceInUSD * 3.67);
 
     if (restaurant.balance >= incrementBtc) {
       restaurant.balance -= incrementBtc;
-      restaurant.givenOut += incrementBtc;
       restaurantRepository.update(restaurant.id, restaurant);
     }
 
@@ -121,6 +120,8 @@ export const tapServices = {
     const tapData: Insertable<Tap> = {
       userCardId: userCard.id,
       userId: userId,
+      amount: incrementBtc,
+      waiterId: userCard.id,
     };
 
     const tap = await tapRepository.create(tapData);

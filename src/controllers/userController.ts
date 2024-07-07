@@ -108,7 +108,7 @@ export const UserController = {
         success: true,
         data: {
           user: sanitizedUser,
-          balanceInAed: user.balance * btc.price * 3.67,
+          balanceInAed: user.balance * btc.priceInUSD * 3.67,
         },
       });
     } catch (e) {
@@ -166,8 +166,6 @@ export const UserController = {
         .select(({ eb }) => [
           "UserCard.id",
           "Card.benefits",
-          "Card.artistInfo",
-          "Card.expiryInfo",
           "Card.instruction",
           "Card.nftImageUrl",
           "UserCard.cardId",
@@ -195,7 +193,7 @@ export const UserController = {
             .where("UserBonus.isUsed", "=", false)
             .as("hasBonus"),
         ])
-        .orderBy("UserCard.mintedAt desc");
+        .orderBy("UserCard.ownedAt desc");
 
       if (search)
         query = query.where((eb) =>
