@@ -7,19 +7,19 @@ const bonusRoutes = express.Router();
 bonusRoutes.post(
   "/",
   authenticateToken,
-  authorize("SUPER_ADMIN"),
+  // authorize("SUPER_ADMIN"),
   bonusController.createBonus
 );
 bonusRoutes.put(
   "/:id",
   authenticateToken,
-  authorize("SUPER_ADMIN"),
+  // authorize("SUPER_ADMIN"),
   bonusController.updateBonus
 );
 bonusRoutes.delete(
   "/:id",
   authenticateToken,
-  authorize("SUPER_ADMIN"),
+  // authorize("SUPER_ADMIN"),
   bonusController.deleteBonus
 );
 bonusRoutes.get(

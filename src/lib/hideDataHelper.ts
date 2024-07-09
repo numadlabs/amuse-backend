@@ -1,4 +1,4 @@
-import { User } from "../types/db/types";
+import { Employee, User } from "../types/db/types";
 import { Updateable } from "kysely";
 
 export const hideDataHelper = {
@@ -6,5 +6,9 @@ export const hideDataHelper = {
     const { password, emailVerificationCode, telVerificationCode, ...user } =
       data;
     return user;
+  },
+  sanitizeEmployeeData: (data: Updateable<Employee>) => {
+    const { password, emailVerificationCode, ...employee } = data;
+    return employee;
   },
 };

@@ -6,6 +6,7 @@ import { AuthenticatedRequest } from "../../custom";
 import jwt from "jsonwebtoken";
 import { Insertable } from "kysely";
 import { User } from "../types/db/types";
+import { CustomError } from "../exceptions/CustomError";
 
 export const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
@@ -19,13 +20,8 @@ export const authController = {
       const user = await userServices.login(data);
 
       //activate it to enable OTP service
-      /* if (!user.isTelVerified)
-            return res.status(200).json({
-              success: true,
-              data: {
-                user,
-              },
-            }); */
+      if (!user.isTelVerified)
+        throw new CustomError("Account has not been verified.", 403);
 
       const { accessToken, refreshToken } = generateTokens(user);
 
@@ -52,7 +48,8 @@ export const authController = {
       !data.telNumber ||
       !data.password ||
       !data.nickname ||
-      data.role
+      data.role ||
+      data.balance
     )
       return res.status(400).json({ success: false, error: "Bad request" });
 
@@ -102,10 +99,14 @@ export const authController = {
     }
   },
   checkOTP: async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
+    const { prefix, telNumber } = req.body;
     const { telVerificationCode } = req.body;
     try {
-      const isValidOTP = await userServices.checkOTP(id, telVerificationCode);
+      const isValidOTP = await userServices.checkOTP(
+        prefix,
+        telNumber,
+        telVerificationCode
+      );
       if (!isValidOTP)
         return res.status(400).json({
           success: false,
@@ -126,11 +127,15 @@ export const authController = {
     }
   },
   changePassword: async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
+    const { prefix, telNumber } = req.body;
     const { telVerificationCode, password } = req.body;
     try {
+      if (!prefix || !telNumber || !telVerificationCode || !password)
+        throw new CustomError("Please provide all the required inputs.", 400);
+
       const user = await userServices.changePassword(
-        id,
+        prefix,
+        telNumber,
         telVerificationCode,
         password
       );
@@ -148,10 +153,14 @@ export const authController = {
   },
   verifyOTP: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const { prefix, telNumber } = req.body;
       const { telVerificationCode } = req.body;
 
-      const updatedUser = await userServices.verifyOTP(id, telVerificationCode);
+      const updatedUser = await userServices.verifyOTP(
+        prefix,
+        telNumber,
+        telVerificationCode
+      );
       const sanitizedUser = hideDataHelper.sanitizeUserData(updatedUser);
 
       return res.status(200).json({
@@ -220,7 +229,7 @@ export const authController = {
       return res.status(200).json({
         success: true,
         data: {
-          sanitizedUser,
+          user: sanitizedUser,
         },
       });
     } catch (e) {

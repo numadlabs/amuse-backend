@@ -42,14 +42,36 @@ model User {
   userTierId String
   Tier       UserTier @relation(references: [id], fields: [userTierId])
 
-  restaurantId String?
-  Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-
   UserCard     UserCard[]
   UserBonus    UserBonus[]
   Notification Notification[]
-  Tap          Tap[]          @relation("user")
-  ScannedTaps  Tap[]          @relation("waiter")
+  Tap          Tap[]
+}
+
+model Employee {
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  password  String
+  firstname String
+  lastname  String
+  role      ROLES
+  createdAt DateTime @default(now())
+
+  email                 String  @unique
+  emailVerificationCode String?
+
+  restaurantId String?
+  Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model Invite {
+  id                    String        @id @default(dbgenerated("gen_random_uuid()"))
+  email                 String
+  status                INVITE_STATUS @default(ON_HOLD)
+  emailVerificationCode String?
+  createdAt             DateTime      @default(now())
+
+  restaurantId String
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
 
 model UserTier {
@@ -67,32 +89,8 @@ model UserTier {
 
 model Device {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
-  pushToken String
+  pushToken String   @unique
   createdAt DateTime @default(now())
-}
-
-enum ROLES {
-  SUPER_ADMIN
-  RESTAURANT_OWNER
-  RESTAURANT_WAITER
-  USER
-}
-
-enum CATEGORY {
-  JAPANESE
-  KOREAN
-  MEDITERRANEAN
-  BUFFET
-  FAST_FOOD
-  MONGOLIAN
-  PAN_ASIAN
-  CAFE
-  LEBANESE
-  BEACH_CLUB
-  CHINESE
-  GEORGIAN
-  CUBAN
-  MEXICAN
 }
 
 model Restaurant {
@@ -110,15 +108,16 @@ model Restaurant {
   perkOccurence Int
 
   Card      Card[]
-  User      User[]
   Timetable Timetable[]
+  Employee  Employee[]
+  Invite    Invite[]
 }
 
 model Timetable {
   id             String   @id @default(dbgenerated("gen_random_uuid()"))
   dayNoOfTheWeek Int
-  opensAt        String
-  closesAt       String
+  opensAt        String?
+  closesAt       String?
   isOffDay       Boolean  @default(false)
   createdAt      DateTime @default(now())
 
@@ -169,11 +168,8 @@ model Tap {
   amount   Float
   tappedAt DateTime @default(now())
 
-  waiterId String
-  Waiter   User   @relation("waiter", fields: [waiterId], references: [id])
-
   userId String
-  User   User   @relation("user", fields: [userId], references: [id], onDelete: Cascade)
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   userCardId String
   UserCard   UserCard @relation(fields: [userCardId], references: [id], onDelete: Cascade)
@@ -183,9 +179,12 @@ model Bonus {
   id            String  @id @default(dbgenerated("gen_random_uuid()"))
   imageUrl      String?
   name          String
-  price         Float   @default(0.00010000)
   totalSupply   Int
-  currentSupply Int
+  currentSupply Int @default(0)
+
+  price   Float?
+  visitNo Int?
+  type    BONUS_TYPE
 
   cardId String?
 
@@ -194,8 +193,8 @@ model Bonus {
 }
 
 model UserBonus {
-  id     String  @id @default(dbgenerated("gen_random_uuid()"))
-  isUsed Boolean @default(false)
+  id     String       @id @default(dbgenerated("gen_random_uuid()"))
+  status BONUS_STATUS @default(UNUSED)
 
   userId String
   User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -229,4 +228,46 @@ model Purchase {
 
   userBonusId String
   UserBonus   UserBonus @relation(fields: [userBonusId], references: [id], onDelete: Cascade)
+}
+
+enum ROLES {
+  SUPER_ADMIN
+  RESTAURANT_OWNER
+  RESTAURANT_WAITER
+  USER
+}
+
+enum CATEGORY {
+  JAPANESE
+  KOREAN
+  MEDITERRANEAN
+  BUFFET
+  FAST_FOOD
+  MONGOLIAN
+  PAN_ASIAN
+  CAFE
+  LEBANESE
+  BEACH_CLUB
+  CHINESE
+  GEORGIAN
+  CUBAN
+  MEXICAN
+}
+
+enum BONUS_TYPE {
+  SINGLE
+  RECURRING
+  REDEEMABLE
+}
+
+enum BONUS_STATUS {
+  UNUSED
+  USED
+  SERVED
+}
+
+enum INVITE_STATUS {
+  ON_HOLD
+  ACCEPTED
+  REJECTED
 }

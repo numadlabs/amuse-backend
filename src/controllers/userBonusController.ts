@@ -47,6 +47,7 @@ export const userBonusController = {
     res: Response,
     next: NextFunction
   ) => {
+    const { id } = req.params;
     const { encryptedData } = req.body;
 
     if (!encryptedData)
@@ -55,7 +56,7 @@ export const userBonusController = {
         .json({ success: false, data: null, error: "Passed no data ." });
 
     try {
-      const userBonus = await userBonusServices.redeem(encryptedData);
+      const userBonus = await userBonusServices.redeem(id, encryptedData);
 
       return res.status(200).json({ success: true, data: userBonus });
     } catch (e) {

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { Insertable, Updateable } from "kysely";
 import { Bonus } from "../types/db/types";
 import { bonusRepository } from "../repository/bonusRepository";
+import { bonusServices } from "../services/bonusServices";
 
 export const bonusController = {
   createBonus: async (req: Request, res: Response, next: NextFunction) => {
@@ -12,7 +13,7 @@ export const bonusController = {
         .json({ success: false, data: null, error: "Bad request." });
 
     try {
-      const createdBonus = await bonusRepository.create(data);
+      const createdBonus = await bonusServices.create(data);
 
       return res.status(200).json({
         success: true,
@@ -34,7 +35,7 @@ export const bonusController = {
         .json({ success: false, data: null, error: "Cannot update id field." });
 
     try {
-      const updatedBonus = await bonusRepository.update(data, id);
+      const updatedBonus = await bonusServices.update(data, id);
 
       return res
         .status(200)

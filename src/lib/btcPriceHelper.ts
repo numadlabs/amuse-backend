@@ -1,14 +1,24 @@
 import axios from "axios";
 
-const apiUrl = process.env.BITCOIN_API_URL;
-const apiKey = process.env.BITCOIN_API_KEY;
+const cryptoApiURL = process.env.BITCOIN_API_URL;
+const cryptoApiKey = process.env.BITCOIN_API_KEY;
+const currencyApiURL = process.env.CURRENCY_API_URL;
 
 export async function getBtcPrice() {
-  if (!apiUrl) throw new Error("Error retrieving BTC price.");
+  if (!cryptoApiURL) throw new Error("Error retrieving BTC price.");
 
-  const response = await axios.get(apiUrl, {
-    headers: { "X-CMC_PRO_API_KEY": apiKey },
+  const response = await axios.get(cryptoApiURL, {
+    headers: { "X-CMC_PRO_API_KEY": cryptoApiKey },
   });
 
   return response.data.data[0].quote.USD.price;
+}
+
+export async function getCurrency(ticker: string) {
+  if (!currencyApiURL) throw new Error("Error retrieving BTC price.");
+
+  const response = await axios.get(currencyApiURL);
+  console.log(response.data.conversion_rates[ticker]);
+
+  return response.data.conversion_rates[ticker];
 }

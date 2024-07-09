@@ -12,7 +12,7 @@ export async function sendOTP(
   verificationCode: Number
 ) {
   const message = await client.messages.create({
-    body: `Hello, Here is your OTP: ${verificationCode}`,
+    body: `Your Amuse Bouche verification code is: ${verificationCode}`,
     to: `+${prefix}${telNumber}`, // Text your number
     from: `${fromPhoneNumber}`,
   });

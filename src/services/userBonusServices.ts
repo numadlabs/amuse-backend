@@ -2,6 +2,7 @@ import { CustomError } from "../exceptions/CustomError";
 import { BONUS_REDEEM_EXPIRATION_TIME } from "../lib/constants";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";
+import { cardRepository } from "../repository/cardRepository";
 import { purchaseRepository } from "../repository/purchaseRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
@@ -14,7 +15,6 @@ type followingBonus = {
   imageUrl: string | null;
   name: string;
   cardId: string | null;
-  price: number;
   current: number;
   target: number;
 };
@@ -34,6 +34,9 @@ export const userBonusServices = {
 
     const bonus = await bonusRepository.getById(bonusId);
     if (!bonus) throw new CustomError("No bonus found.", 400);
+
+    if (bonus.type !== "REDEEMABLE" || !bonus.price)
+      throw new CustomError("This bonus cannot be purchased.", 400);
 
     if (user?.balance < bonus.price)
       throw new CustomError("Insufficient balance.", 400);
@@ -67,30 +70,47 @@ export const userBonusServices = {
     if (userBonus?.userId !== userId)
       throw new CustomError("You are not allowed to use this bonus.", 400);
 
-    if (userBonus.isUsed)
+    if (userBonus.status !== "UNUSED")
       throw new CustomError("This bonus is used already.", 400);
 
+    const userCard = await userCardReposity.getById(userBonus.userCardId);
+    if (!userCard) throw new CustomError("User card not found.", 400);
+
+    const card = await cardRepository.getById(userCard.cardId);
+
     const data = {
-      userBonusId: userBonus.id,
-      issuedAt: Date.now(),
+      restaurantId: card.restaurantId,
     };
 
     const encryptedData = encryptionHelper.encryptData(JSON.stringify(data));
 
     return encryptedData;
   },
-  redeem: async (encryptedData: string) => {
+  redeem: async (id: string, encryptedData: string) => {
     const data = encryptionHelper.decryptData(encryptedData);
+    const restaurantId = data.restaurantId;
 
-    if (Date.now() - data.issuedAt > BONUS_REDEEM_EXPIRATION_TIME * 1000)
-      throw new CustomError("The QR has expired.", 400);
+    // if (Date.now() - data.issuedAt > BONUS_REDEEM_EXPIRATION_TIME * 1000)
+    //   throw new CustomError("The QR has expired.", 400);
 
-    const userBonusId: string = data.userBonusId;
+    const userBonus = await userBonusRepository.getById(id);
+    if (!userBonus || userBonus.status !== "UNUSED")
+      throw new CustomError("Invalid userBonus.", 400);
 
-    const userBonus = await userBonusRepository.getById(userBonusId);
-    if (!userBonus) throw new CustomError("Invalid userBonus.", 400);
+    const restaurant = await restaurantRepository.getById(restaurantId);
+    if (!restaurant) throw new CustomError("Invalid restaurant.", 400);
 
-    userBonus.isUsed = true;
+    const userCard = await userCardReposity.getById(userBonus.userCardId);
+    if (!userCard) throw new CustomError("User card not found.", 400);
+
+    const card = await cardRepository.getById(userCard.cardId);
+    if (card.restaurantId !== restaurantId)
+      throw new CustomError(
+        "Input and userCard restaurantId does not match.",
+        400
+      );
+
+    userBonus.status = "USED";
 
     const updatedUserBonus = await userBonusRepository.update(
       userBonus.id,
@@ -113,19 +133,25 @@ export const userBonusServices = {
     if (!userCard) throw new CustomError("No usercard found.", 400);
 
     const bonuses = await bonusRepository.getByRestaurantId(restaurantId);
-    let index = Math.floor(userCard.visitCount / 3) % bonuses.length;
-    if (index + 1 === bonuses.length) index = 0;
-    else index++;
 
-    const followingBonus: followingBonus = {
-      id: bonuses[index].id,
-      cardId: bonuses[index].cardId,
-      imageUrl: bonuses[index].imageUrl,
-      name: bonuses[index].name,
-      price: bonuses[index].price,
-      current: userCard.visitCount % 3,
-      target: 3,
-    };
+    let followingBonus;
+    if (bonuses.length > 0) {
+      const restaurant = await restaurantRepository.getById(restaurantId);
+      let index =
+        Math.floor(userCard.visitCount / restaurant.perkOccurence) %
+        bonuses.length;
+      if (index + 1 === bonuses.length) index = 0;
+      else index++;
+
+      followingBonus = {
+        id: bonuses[index].id,
+        cardId: bonuses[index].cardId,
+        imageUrl: bonuses[index].imageUrl,
+        name: bonuses[index].name,
+        current: userCard.visitCount % restaurant.perkOccurence,
+        target: restaurant.perkOccurence,
+      };
+    }
 
     return { userBonuses, followingBonus };
   },
@@ -135,19 +161,26 @@ export const userBonusServices = {
     if (!userCard) throw new CustomError("No usercard found.", 400);
 
     const bonuses = await bonusRepository.getByCardId(userCard.cardId);
-    let index = Math.floor(userCard.visitCount / 3) % bonuses.length;
-    if (index + 1 === bonuses.length) index = 0;
-    else index++;
+    const card = await cardRepository.getById(userCard.cardId);
+    const restaurant = await restaurantRepository.getById(card.restaurantId);
 
-    const followingBonus: followingBonus = {
-      id: bonuses[index].id,
-      cardId: bonuses[index].cardId,
-      imageUrl: bonuses[index].imageUrl,
-      name: bonuses[index].name,
-      price: bonuses[index].price,
-      current: userCard.visitCount % 3,
-      target: 3,
-    };
+    let followingBonus;
+    if (bonuses.length > 0) {
+      let index =
+        Math.floor(userCard.visitCount / restaurant.perkOccurence) %
+        bonuses.length;
+      if (index + 1 === bonuses.length) index = 0;
+      else index++;
+
+      followingBonus = {
+        id: bonuses[index].id,
+        cardId: bonuses[index].cardId,
+        imageUrl: bonuses[index].imageUrl,
+        name: bonuses[index].name,
+        current: userCard.visitCount % restaurant.perkOccurence,
+        target: restaurant.perkOccurence,
+      };
+    }
 
     const userBonuses = await userBonusRepository.getByUserCardId(userCardId);
 

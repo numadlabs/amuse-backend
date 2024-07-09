@@ -4,15 +4,17 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-import type { ROLES, CATEGORY } from "./enums";
+import type { ROLES, CATEGORY, BONUS_TYPE, BONUS_STATUS, INVITE_STATUS } from "./enums";
 
 export type Bonus = {
     id: Generated<string>;
     imageUrl: string | null;
     name: string;
-    price: Generated<number>;
     totalSupply: number;
-    currentSupply: number;
+    currentSupply: Generated<number>;
+    price: number | null;
+    visitNo: number | null;
+    type: BONUS_TYPE;
     cardId: string | null;
 };
 export type Card = {
@@ -32,6 +34,25 @@ export type Device = {
     id: Generated<string>;
     pushToken: string;
     createdAt: Generated<Timestamp>;
+};
+export type Employee = {
+    id: Generated<string>;
+    password: string;
+    firstname: string;
+    lastname: string;
+    role: ROLES;
+    createdAt: Generated<Timestamp>;
+    email: string;
+    emailVerificationCode: string | null;
+    restaurantId: string | null;
+};
+export type Invite = {
+    id: Generated<string>;
+    email: string;
+    status: Generated<INVITE_STATUS>;
+    emailVerificationCode: string | null;
+    createdAt: Generated<Timestamp>;
+    restaurantId: string;
 };
 export type Notification = {
     id: Generated<string>;
@@ -62,15 +83,14 @@ export type Tap = {
     id: Generated<string>;
     amount: number;
     tappedAt: Generated<Timestamp>;
-    waiterId: string;
     userId: string;
     userCardId: string;
 };
 export type Timetable = {
     id: Generated<string>;
     dayNoOfTheWeek: number;
-    opensAt: string;
-    closesAt: string;
+    opensAt: string | null;
+    closesAt: string | null;
     isOffDay: Generated<boolean>;
     createdAt: Generated<Timestamp>;
     restaurantId: string;
@@ -96,11 +116,10 @@ export type User = {
     isTelVerified: Generated<boolean>;
     telVerifiedAt: Timestamp | null;
     userTierId: string;
-    restaurantId: string | null;
 };
 export type UserBonus = {
     id: Generated<string>;
-    isUsed: Generated<boolean>;
+    status: Generated<BONUS_STATUS>;
     userId: string;
     userCardId: string;
     bonusId: string;
@@ -125,6 +144,8 @@ export type DB = {
     Card: Card;
     Currency: Currency;
     Device: Device;
+    Employee: Employee;
+    Invite: Invite;
     Notification: Notification;
     Purchase: Purchase;
     Restaurant: Restaurant;

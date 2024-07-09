@@ -15,6 +15,14 @@ import userBonusesRoutes from "./routes/userBonusesRoutes";
 import bonusRoutes from "./routes/bonusRoutes";
 import { updateCurrencyPrice } from "./cron/updateBtcPrice";
 import dashboardRoutes from "./routes/dashboardRoutes";
+import timetableRouter from "./routes/timetableRoutes";
+import deviceRouter from "./routes/deviceRoutes";
+import notificationRouter from "./routes/notificationRoutes";
+import employeeRouter from "./routes/employeeRoutes";
+import inviteRouter from "./routes/inviteRoutes";
+import userTierRouter from "./routes/userTierRoutes";
+import { db } from "./utils/db";
+import { userTierRepository } from "./repository/userTierRepository";
 
 const app = express();
 
@@ -38,6 +46,12 @@ app.use("/api/userCards", userCardRoutes);
 app.use("/api/userBonus", userBonusesRoutes);
 app.use("/api/taps", tapRouter);
 app.use("/api/dashboards", dashboardRoutes);
+app.use("/api/timetables", timetableRouter);
+app.use("/api/devices", deviceRouter);
+app.use("/api/notifications", notificationRouter);
+app.use("/api/employees", employeeRouter);
+app.use("/api/invites", inviteRouter);
+app.use("/api/userTiers", userTierRouter);
 
 app.use(notFound);
 app.use(errorHandler);

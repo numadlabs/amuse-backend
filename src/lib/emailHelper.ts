@@ -1,17 +1,13 @@
 import nodemailer from "nodemailer";
 
-const hostConfig = {
-  host: "mail.privateemail.com",
-  port: 465,
-};
-
 const config = {
-  host: hostConfig.host,
-  port: hostConfig.port,
+  service: "Gmail",
+  host: "smtp.gmail.com",
+  port: 465,
   secure: true,
   auth: {
-    user: process.env.EMAIL_ADDRESS, // your email address
-    pass: process.env.EMAIL_PASS, // your password
+    user: process.env.EMAIL_ADDRESS,
+    pass: process.env.EMAIL_PASS,
   },
   tls: { rejectUnauthorized: false },
 };
@@ -25,9 +21,9 @@ export async function sendVerificationEmail(
   const info = await transporter.sendMail({
     from: process.env.EMAIL_ADDRESS,
     to: toEmail,
-    subject: "Amuse Bouche Verification",
-    text: verificationCode.toString(),
+    subject: "Amuse Bouche OTP",
+    text: `Your Amuse Bouche verification code is: ${verificationCode}`,
   });
 
-  console.log("Sent successfully");
+  console.log("Sent successfully: ", info);
 }
