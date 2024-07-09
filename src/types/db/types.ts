@@ -4,21 +4,22 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-import type { ROLES, CATEGORY, TIER } from "./enums";
+import type { ROLES, CATEGORY, BONUS_TYPE, BONUS_STATUS, INVITE_STATUS } from "./enums";
 
 export type Bonus = {
     id: Generated<string>;
     imageUrl: string | null;
     name: string;
-    price: Generated<number>;
+    totalSupply: number;
+    currentSupply: Generated<number>;
+    price: number | null;
+    visitNo: number | null;
+    type: BONUS_TYPE;
     cardId: string | null;
 };
 export type Card = {
     id: Generated<string>;
-    mintedAt: Timestamp | null;
     createdAt: Generated<Timestamp>;
-    expiryInfo: string | null;
-    artistInfo: string | null;
     nftImageUrl: string | null;
     instruction: string;
     benefits: string;
@@ -27,14 +28,37 @@ export type Card = {
 export type Currency = {
     id: Generated<string>;
     name: string;
-    price: number;
+    priceInUSD: number;
+};
+export type Device = {
+    id: Generated<string>;
+    pushToken: string;
+    createdAt: Generated<Timestamp>;
+};
+export type Employee = {
+    id: Generated<string>;
+    password: string;
+    firstname: string;
+    lastname: string;
+    role: ROLES;
+    createdAt: Generated<Timestamp>;
+    email: string;
+    emailVerificationCode: string | null;
+    restaurantId: string | null;
+};
+export type Invite = {
+    id: Generated<string>;
+    email: string;
+    status: Generated<INVITE_STATUS>;
+    emailVerificationCode: string | null;
+    createdAt: Generated<Timestamp>;
+    restaurantId: string;
 };
 export type Notification = {
     id: Generated<string>;
-    userId: string;
     message: string;
-    type: string;
     isRead: boolean;
+    userId: string;
 };
 export type Purchase = {
     id: Generated<string>;
@@ -43,49 +67,59 @@ export type Purchase = {
 };
 export type Restaurant = {
     id: Generated<string>;
+    createdAt: Generated<Timestamp>;
     name: string;
     category: CATEGORY;
     description: string;
     location: string;
     latitude: number;
     longitude: number;
-    opensAt: string;
-    closesAt: string;
     logo: string | null;
-    budget: Generated<number>;
     balance: Generated<number>;
-    givenOut: Generated<number>;
+    rewardAmount: number;
+    perkOccurence: number;
 };
 export type Tap = {
     id: Generated<string>;
+    amount: number;
     tappedAt: Generated<Timestamp>;
     userId: string;
     userCardId: string;
 };
+export type Timetable = {
+    id: Generated<string>;
+    dayNoOfTheWeek: number;
+    opensAt: string | null;
+    closesAt: string | null;
+    isOffDay: Generated<boolean>;
+    createdAt: Generated<Timestamp>;
+    restaurantId: string;
+};
 export type User = {
     id: Generated<string>;
-    email: string | null;
-    emailVerificationCode: string | null;
-    isEmailVerified: Generated<boolean>;
-    emailVerifiedAt: Timestamp | null;
     password: string;
     nickname: string;
-    firstName: string | null;
-    lastName: string | null;
     role: Generated<ROLES>;
-    prefix: string;
-    telNumber: string;
-    telVerificationCode: string | null;
-    isTelVerified: Generated<boolean>;
     profilePicture: string | null;
     dateOfBirth: Timestamp | null;
     location: string | null;
     createdAt: Generated<Timestamp>;
     balance: Generated<number>;
+    visitCount: Generated<number>;
+    email: string | null;
+    emailVerificationCode: string | null;
+    isEmailVerified: Generated<boolean>;
+    emailVerifiedAt: Timestamp | null;
+    prefix: string;
+    telNumber: string;
+    telVerificationCode: string | null;
+    isTelVerified: Generated<boolean>;
+    telVerifiedAt: Timestamp | null;
+    userTierId: string;
 };
 export type UserBonus = {
     id: Generated<string>;
-    isUsed: Generated<boolean>;
+    status: Generated<BONUS_STATUS>;
     userId: string;
     userCardId: string;
     bonusId: string;
@@ -93,21 +127,32 @@ export type UserBonus = {
 export type UserCard = {
     id: Generated<string>;
     visitCount: Generated<number>;
-    mintedAt: Timestamp | null;
     ownedAt: Generated<Timestamp>;
     cardId: string;
     userId: string;
     isFirstTap: Generated<boolean>;
 };
+export type UserTier = {
+    id: Generated<string>;
+    name: string;
+    requiredNo: number;
+    rewardMultiplier: number;
+    nextTierId: string | null;
+};
 export type DB = {
     Bonus: Bonus;
     Card: Card;
     Currency: Currency;
+    Device: Device;
+    Employee: Employee;
+    Invite: Invite;
     Notification: Notification;
     Purchase: Purchase;
     Restaurant: Restaurant;
     Tap: Tap;
+    Timetable: Timetable;
     User: User;
     UserBonus: UserBonus;
     UserCard: UserCard;
+    UserTier: UserTier;
 };

@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import { sendOTP } from "../lib/otpHelper";
 import { userRepository } from "../repository/userRepository";
 import { sendVerificationEmail } from "../lib/emailHelper";
@@ -8,12 +7,15 @@ import { CustomError } from "../exceptions/CustomError";
 import { s3BucketName, verificationCodeConstants } from "../lib/constants";
 import { s3 } from "../utils/aws";
 import { randomUUID } from "crypto";
+import { Insertable, Updateable } from "kysely";
+import { User } from "../types/db/types";
+import { userTierRepository } from "../repository/userTierRepository";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
 
 export const userServices = {
-  create: async (data: Prisma.UserCreateInput) => {
+  create: async (data: Insertable<User>) => {
     const hasUser = await userRepository.getUserByPhoneNumber(
       data.telNumber,
       data.prefix
@@ -24,17 +26,20 @@ export const userServices = {
     const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;
 
+    const userTier = await userTierRepository.getStartingTier();
+    data.userTierId = userTier.id;
+
     const user = await userRepository.create(data);
 
     return user;
   },
-  login: async (data: Prisma.UserCreateInput) => {
+  login: async (data: Insertable<User>) => {
     const user = await userRepository.getUserByPhoneNumber(
       data.telNumber,
       data.prefix
     );
 
-    if (!user) throw new CustomError("User not found", 400);
+    if (!user) throw new CustomError("User not found.", 400);
 
     const isUser = await encryptionHelper.compare(data.password, user.password);
 
@@ -43,7 +48,7 @@ export const userServices = {
     return user;
   },
   //user return hiihiin orond dugaariin avj boloh ym
-  setOTP: async (data: Prisma.UserCreateInput) => {
+  setOTP: async (data: Insertable<User>) => {
     const hasUser = await userRepository.getUserByPhoneNumber(
       data.telNumber,
       data.prefix
@@ -66,10 +71,14 @@ export const userServices = {
     return user;
   },
   verifyOTP: async (
-    id: string,
+    prefix: string,
+    telNumber: string,
     verificationCode: number | null | undefined
   ) => {
-    const hasUser = await userRepository.getUserById(id);
+    const hasUser = await userRepository.getUserByPhoneNumber(
+      telNumber,
+      prefix
+    );
 
     if (!hasUser || !hasUser.telVerificationCode)
       throw new CustomError("User does not exist!", 400);
@@ -91,8 +100,12 @@ export const userServices = {
 
     return user;
   },
-  checkOTP: async (id: string, verificationCode: number) => {
-    const user = await userRepository.getUserById(id);
+  checkOTP: async (
+    prefix: string,
+    telNumber: string,
+    verificationCode: number
+  ) => {
+    const user = await userRepository.getUserByPhoneNumber(telNumber, prefix);
 
     if (!user || !user.telVerificationCode)
       throw new CustomError("User does not exist!", 400);
@@ -108,22 +121,26 @@ export const userServices = {
     return user;
   },
   changePassword: async (
-    id: string,
+    prefix: string,
+    telNumber: string,
     verificationCode: number,
     password: string
   ) => {
-    const user = await userServices.checkOTP(id, verificationCode);
+    const user = await userServices.checkOTP(
+      prefix,
+      telNumber,
+      verificationCode
+    );
 
     const encryptedPassword = await encryptionHelper.encrypt(password);
 
     user.password = encryptedPassword;
     user.telVerificationCode = null;
 
-    const updatedUser = await userRepository.update(id, user);
+    const updatedUser = await userRepository.update(user.id, user);
 
     return updatedUser;
   },
-  //consider using hooks for when email is updated setting the isEmailVerified to false
   setEmailVerification: async (id: string) => {
     const userById = await userRepository.getUserById(id);
 
@@ -174,7 +191,7 @@ export const userServices = {
   },
   update: async (
     id: string,
-    data: Prisma.UserCreateInput,
+    data: Updateable<User>,
     file: Express.Multer.File
   ) => {
     const findUser = await userRepository.getUserById(id);

@@ -75,7 +75,6 @@ export const userCardReposity = {
       .select([
         "UserCard.id",
         "UserCard.cardId",
-        "UserCard.mintedAt",
         "UserCard.userId",
         "UserCard.ownedAt",
         "UserCard.visitCount",
@@ -95,7 +94,6 @@ export const userCardReposity = {
       .select([
         "UserCard.id",
         "UserCard.cardId",
-        "UserCard.mintedAt",
         "UserCard.userId",
         "UserCard.ownedAt",
         "UserCard.visitCount",

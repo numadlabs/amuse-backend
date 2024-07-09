@@ -4,18 +4,20 @@ import { tapServices } from "../services/tapServices";
 import { AuthenticatedRequest } from "../../custom";
 
 export const tapController = {
-  generateTap: async (req: Request, res: Response, next: NextFunction) => {
-    const { restaurantId } = req.body;
-
-    if (!restaurantId)
+  generateTap: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (!req.user?.id)
       return res.status(400).json({
         success: false,
         data: null,
-        error: "No restaurantId was found.",
+        error: "Couldn't parse the id from the token.",
       });
 
     try {
-      const hashedData = await tapServices.generateTap(restaurantId);
+      const hashedData = await tapServices.generateTap(req.user.id);
 
       return res.status(200).json({ success: true, data: hashedData });
     } catch (e) {
@@ -43,6 +45,7 @@ export const tapController = {
           tap: result.tap,
           increment: result.increment,
           bonus: result.bonus,
+          userTier: result.userTier,
         },
       });
     } catch (e) {

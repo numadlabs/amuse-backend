@@ -1,63 +1,126 @@
 -- CreateEnum
-CREATE TYPE "ROLES" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'USER');
+CREATE TYPE "ROLES" AS ENUM ('SUPER_ADMIN', 'RESTAURANT_OWNER', 'RESTAURANT_WAITER', 'USER');
 
 -- CreateEnum
 CREATE TYPE "CATEGORY" AS ENUM ('JAPANESE', 'KOREAN', 'MEDITERRANEAN', 'BUFFET', 'FAST_FOOD', 'MONGOLIAN', 'PAN_ASIAN', 'CAFE', 'LEBANESE', 'BEACH_CLUB', 'CHINESE', 'GEORGIAN', 'CUBAN', 'MEXICAN');
 
 -- CreateEnum
-CREATE TYPE "TIER" AS ENUM ('BRONZE', 'SILVER', 'GOLD');
+CREATE TYPE "BONUS_TYPE" AS ENUM ('SINGLE', 'RECURRING', 'REDEEMABLE');
+
+-- CreateEnum
+CREATE TYPE "BONUS_STATUS" AS ENUM ('UNUSED', 'USED', 'SERVED');
+
+-- CreateEnum
+CREATE TYPE "INVITE_STATUS" AS ENUM ('ON_HOLD', 'ACCEPTED', 'REJECTED');
 
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
-    "email" TEXT,
-    "emailVerificationCode" TEXT,
-    "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
-    "emailVerifiedAt" TIMESTAMP(3),
     "password" TEXT NOT NULL,
     "nickname" TEXT NOT NULL,
-    "firstName" TEXT,
-    "lastName" TEXT,
     "role" "ROLES" NOT NULL DEFAULT 'USER',
-    "prefix" TEXT NOT NULL,
-    "telNumber" TEXT NOT NULL,
-    "telVerificationCode" TEXT,
-    "isTelVerified" BOOLEAN NOT NULL DEFAULT false,
     "profilePicture" TEXT,
     "dateOfBirth" TIMESTAMP(3),
     "location" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "visitCount" INTEGER NOT NULL DEFAULT 0,
+    "email" TEXT,
+    "emailVerificationCode" TEXT,
+    "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "emailVerifiedAt" TIMESTAMP(3),
+    "prefix" TEXT NOT NULL,
+    "telNumber" TEXT NOT NULL,
+    "telVerificationCode" TEXT,
+    "isTelVerified" BOOLEAN NOT NULL DEFAULT false,
+    "telVerifiedAt" TIMESTAMP(3),
+    "userTierId" TEXT NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "Employee" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "password" TEXT NOT NULL,
+    "firstname" TEXT NOT NULL,
+    "lastname" TEXT NOT NULL,
+    "role" "ROLES" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "email" TEXT NOT NULL,
+    "emailVerificationCode" TEXT,
+    "restaurantId" TEXT,
+
+    CONSTRAINT "Employee_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Invite" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "email" TEXT NOT NULL,
+    "status" "INVITE_STATUS" NOT NULL DEFAULT 'ON_HOLD',
+    "emailVerificationCode" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "restaurantId" TEXT NOT NULL,
+
+    CONSTRAINT "Invite_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserTier" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "name" TEXT NOT NULL,
+    "requiredNo" INTEGER NOT NULL,
+    "rewardMultiplier" DOUBLE PRECISION NOT NULL,
+    "nextTierId" TEXT,
+
+    CONSTRAINT "UserTier_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Device" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "pushToken" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Device_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Restaurant" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "name" TEXT NOT NULL,
     "category" "CATEGORY" NOT NULL,
     "description" TEXT NOT NULL,
     "location" TEXT NOT NULL,
     "latitude" DOUBLE PRECISION NOT NULL,
     "longitude" DOUBLE PRECISION NOT NULL,
-    "opensAt" TEXT NOT NULL,
-    "closesAt" TEXT NOT NULL,
     "logo" TEXT,
-    "budget" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "givenOut" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "rewardAmount" DOUBLE PRECISION NOT NULL,
+    "perkOccurence" INTEGER NOT NULL,
 
     CONSTRAINT "Restaurant_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "Timetable" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "dayNoOfTheWeek" INTEGER NOT NULL,
+    "opensAt" TEXT,
+    "closesAt" TEXT,
+    "isOffDay" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "restaurantId" TEXT NOT NULL,
+
+    CONSTRAINT "Timetable_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Card" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
-    "mintedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "expiryInfo" TEXT,
-    "artistInfo" TEXT,
     "nftImageUrl" TEXT,
     "instruction" TEXT NOT NULL,
     "benefits" TEXT NOT NULL,
@@ -70,7 +133,6 @@ CREATE TABLE "Card" (
 CREATE TABLE "UserCard" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "visitCount" INTEGER NOT NULL DEFAULT 0,
-    "mintedAt" TIMESTAMP(3),
     "ownedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "cardId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -82,6 +144,7 @@ CREATE TABLE "UserCard" (
 -- CreateTable
 CREATE TABLE "Tap" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "amount" DOUBLE PRECISION NOT NULL,
     "tappedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT NOT NULL,
     "userCardId" TEXT NOT NULL,
@@ -94,7 +157,11 @@ CREATE TABLE "Bonus" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "imageUrl" TEXT,
     "name" TEXT NOT NULL,
-    "price" DOUBLE PRECISION NOT NULL DEFAULT 0.00010000,
+    "totalSupply" INTEGER NOT NULL,
+    "currentSupply" INTEGER NOT NULL DEFAULT 0,
+    "price" DOUBLE PRECISION,
+    "visitNo" INTEGER,
+    "type" "BONUS_TYPE" NOT NULL,
     "cardId" TEXT,
 
     CONSTRAINT "Bonus_pkey" PRIMARY KEY ("id")
@@ -103,7 +170,7 @@ CREATE TABLE "Bonus" (
 -- CreateTable
 CREATE TABLE "UserBonus" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
-    "isUsed" BOOLEAN NOT NULL DEFAULT false,
+    "status" "BONUS_STATUS" NOT NULL DEFAULT 'UNUSED',
     "userId" TEXT NOT NULL,
     "userCardId" TEXT NOT NULL,
     "bonusId" TEXT NOT NULL,
@@ -114,10 +181,9 @@ CREATE TABLE "UserBonus" (
 -- CreateTable
 CREATE TABLE "Notification" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
-    "userId" TEXT NOT NULL,
     "message" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
     "isRead" BOOLEAN NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
@@ -126,7 +192,7 @@ CREATE TABLE "Notification" (
 CREATE TABLE "Currency" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
-    "price" DOUBLE PRECISION NOT NULL,
+    "priceInUSD" DOUBLE PRECISION NOT NULL,
 
     CONSTRAINT "Currency_pkey" PRIMARY KEY ("id")
 );
@@ -142,6 +208,27 @@ CREATE TABLE "Purchase" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Employee_email_key" ON "Employee"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Device_pushToken_key" ON "Device"("pushToken");
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_userTierId_fkey" FOREIGN KEY ("userTierId") REFERENCES "UserTier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Employee" ADD CONSTRAINT "Employee_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Invite" ADD CONSTRAINT "Invite_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserTier" ADD CONSTRAINT "UserTier_nextTierId_fkey" FOREIGN KEY ("nextTierId") REFERENCES "UserTier"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Timetable" ADD CONSTRAINT "Timetable_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Card" ADD CONSTRAINT "Card_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;

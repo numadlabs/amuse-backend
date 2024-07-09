@@ -16,20 +16,20 @@ cardRoutes.get("/", cardController.getCards);
 cardRoutes.post(
   "/",
   authenticateToken,
-  authorize("ADMIN", "SUPER_ADMIN"),
+  authorize("SUPER_ADMIN"),
   parseFile("nftImage"),
   cardController.createCard
 );
 cardRoutes.put(
   "/:id",
   authenticateToken,
-  authorize("ADMIN", "SUPER_ADMIN"),
+  authorize("SUPER_ADMIN"),
   cardController.updateCard
 );
 cardRoutes.delete(
   "/:id",
   authenticateToken,
-  authorize("ADMIN", "SUPER_ADMIN"),
+  authorize("SUPER_ADMIN"),
   cardController.deleteCard
 );
 

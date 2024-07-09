@@ -39,7 +39,7 @@ export const userBonusRepository = {
       .innerJoin("Bonus", "Bonus.id", "UserBonus.bonusId")
       .selectAll()
       .where("UserBonus.userCardId", "=", userCardId)
-      .where("UserBonus.isUsed", "=", false)
+      .where("UserBonus.status", "=", "UNUSED")
       .execute();
 
     return userBonus;
@@ -55,13 +55,13 @@ export const userBonusRepository = {
       .innerJoin("Card", "Card.id", "UserCard.cardId")
       .where("Card.restaurantId", "=", restaurantId)
       .where("UserBonus.userId", "=", userId)
-      .where("isUsed", "=", false)
+      .where("UserBonus.status", "=", "UNUSED")
       .select([
         "UserBonus.id",
         "UserBonus.bonusId",
         "UserBonus.userId",
         "UserBonus.userCardId",
-        "UserBonus.isUsed",
+        "UserBonus.status",
         "Bonus.name",
       ])
       .execute();

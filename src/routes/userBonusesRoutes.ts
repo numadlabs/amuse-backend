@@ -19,7 +19,7 @@ userBonusesRoutes.post(
   userBonusController.useUserBonus
 );
 userBonusesRoutes.post(
-  "/redeem",
+  "/:id/redeem",
   authenticateToken,
   userBonusController.redeemUserBonus
 );

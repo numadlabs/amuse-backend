@@ -1,5 +1,6 @@
-import { Prisma } from "@prisma/client";
 import { db } from "../utils/db";
+import { Insertable, Updateable } from "kysely";
+import { User } from "../types/db/types";
 
 export const userRepository = {
   getUserByPhoneNumber: async (phoneNumber: string, prefix: string) => {
@@ -45,7 +46,7 @@ export const userRepository = {
     const userBonuses = await db
       .selectFrom("UserBonus")
       .where("UserBonus.userId", "=", id)
-      .where("UserBonus.isUsed", "=", false)
+      .where("UserBonus.status", "=", "UNUSED")
       .selectAll()
       .execute();
 
@@ -55,13 +56,13 @@ export const userRepository = {
     const userBonuses = await db
       .selectFrom("UserBonus")
       .where("UserBonus.userCardId", "=", userCardId)
-      .where("UserBonus.isUsed", "=", false)
+      .where("UserBonus.status", "=", "UNUSED")
       .selectAll()
       .execute();
 
     return userBonuses;
   },
-  create: async (data: Prisma.UserCreateInput) => {
+  create: async (data: Insertable<User>) => {
     const user = await db
       .insertInto("User")
       .values(data)
@@ -70,7 +71,7 @@ export const userRepository = {
 
     return user;
   },
-  update: async (id: string, data: Prisma.UserCreateInput) => {
+  update: async (id: string, data: Updateable<User>) => {
     const user = await db
       .updateTable("User")
       .set(data)

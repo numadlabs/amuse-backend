@@ -102,13 +102,14 @@ export const UserController = {
           .json({ success: false, data: null, error: "User does not exist." });
 
       const sanitizedUser = hideDataHelper.sanitizeUserData(user);
-      const btc = await currencyRepository.getByName("Bitcoin");
+      const btc = await currencyRepository.getByName("BTC");
+      const currency = await currencyRepository.getByName("CZK");
 
       return res.status(200).json({
         success: true,
         data: {
           user: sanitizedUser,
-          balanceInAed: user.balance * btc.price * 3.67,
+          convertedBalance: user.balance * btc.priceInUSD * currency.priceInUSD,
         },
       });
     } catch (e) {
@@ -166,8 +167,6 @@ export const UserController = {
         .select(({ eb }) => [
           "UserCard.id",
           "Card.benefits",
-          "Card.artistInfo",
-          "Card.expiryInfo",
           "Card.instruction",
           "Card.nftImageUrl",
           "UserCard.cardId",
@@ -192,10 +191,10 @@ export const UserController = {
               eb(fn.count<number>("UserBonus.id"), ">", 0).as("count"),
             ])
             .where("UserBonus.userCardId", "=", eb.ref("UserCard.id"))
-            .where("UserBonus.isUsed", "=", false)
+            .where("UserBonus.status", "=", "UNUSED")
             .as("hasBonus"),
         ])
-        .orderBy("UserCard.mintedAt desc");
+        .orderBy("UserCard.ownedAt desc");
 
       if (search)
         query = query.where((eb) =>

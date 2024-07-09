@@ -36,6 +36,10 @@ export const bonusRepository = {
     const bonus = await db
       .selectFrom("Bonus")
       .where("Bonus.cardId", "=", cardId)
+      .where("Bonus.type", "=", "RECURRING")
+      .where((eb) =>
+        eb("Bonus.currentSupply", "<=", eb.ref("Bonus.totalSupply"))
+      )
       .selectAll()
       .execute();
 
@@ -47,6 +51,10 @@ export const bonusRepository = {
       .innerJoin("Card", "Card.id", "Bonus.cardId")
       .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
       .where("Restaurant.id", "=", restaurantId)
+      .where("Bonus.type", "=", "RECURRING")
+      .where((eb) =>
+        eb("Bonus.currentSupply", "<=", eb.ref("Bonus.totalSupply"))
+      )
       .select([
         "Bonus.id",
         "Bonus.cardId",
