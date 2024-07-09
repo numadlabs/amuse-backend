@@ -97,6 +97,8 @@ export const tapServices = {
       await bonusRepository.update(bonus, bonus.id);
     }
 
+    userCard.visitCount += 1;
+
     if (
       userCard.visitCount % restaurant.perkOccurence === 0 &&
       bonuses.length > 0
@@ -118,8 +120,6 @@ export const tapServices = {
       await bonusRepository.update(bonus, bonus.id);
     }
 
-    userCard.visitCount += 1;
-
     const tier = await userTierRepository.getByIdWithNextTier(user.userTierId);
 
     const btc = await currencyRepository.getByName("BTC");
@@ -135,9 +135,9 @@ export const tapServices = {
     if (restaurant.balance >= incrementBtc) {
       restaurant.balance -= incrementBtc;
       restaurantRepository.update(restaurant.id, restaurant);
-    }
+      user.balance = user.balance + incrementBtc;
+    } else incrementBtc = 0;
 
-    user.balance = user.balance + incrementBtc;
     user.visitCount += 1;
     await userRepository.update(user.id, user);
     await userCardReposity.update(userCard, userCard.id);
@@ -159,7 +159,7 @@ export const tapServices = {
 
     return {
       tap: tap,
-      increment: incrementBtc,
+      increment: incrementBtc.toFixed(8),
       bonus: bonus,
       userTier: updatedUserTier,
     };
