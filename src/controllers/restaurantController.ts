@@ -199,18 +199,23 @@ export const restaurantController = {
     next: NextFunction
   ) => {
     const { id } = req.params;
-
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Could not retrieve data from the token.",
-      });
+    const { time, dayNoOfTheWeek } = req.query;
 
     try {
+      if (!req.user?.id)
+        throw new CustomError("Could not retrieve data from the token.", 400);
+
+      if (!time || !dayNoOfTheWeek)
+        throw new CustomError(
+          "Please provide the time and dayNoOfTheWeek.",
+          400
+        );
+
       const restaurant = await restaurantRepository.getByIdWithCardInfo(
         id,
-        req.user.id
+        req.user.id,
+        time.toString(),
+        Number(dayNoOfTheWeek)
       );
 
       return res.status(200).json({ success: true, restaurant: restaurant });

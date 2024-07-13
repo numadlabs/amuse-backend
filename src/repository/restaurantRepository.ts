@@ -1,4 +1,4 @@
-import { Insertable, Updateable } from "kysely";
+import { Insertable, Updateable, sql } from "kysely";
 import { Restaurant } from "../types/db/types";
 import { db } from "../utils/db";
 
@@ -23,20 +23,25 @@ export const restaurantRepository = {
 
     return restaurant;
   },
-  getByIdWithCardInfo: async (id: string, userId: string) => {
+  getByIdWithCardInfo: async (
+    id: string,
+    userId: string,
+    time: string,
+    dayNo: number
+  ) => {
     const restaurant = await db
-      .selectFrom("Restaurant")
-      .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
-      .where("Restaurant.id", "=", id)
+      .selectFrom("Restaurant as r")
+      .innerJoin("Card", "Card.restaurantId", "r.id")
+      .where("r.id", "=", id)
       .select(({ eb }) => [
-        "Restaurant.id",
-        "Restaurant.name",
-        "Restaurant.description",
-        "Restaurant.category",
-        "Restaurant.location",
-        "Restaurant.latitude",
-        "Restaurant.longitude",
-        "Restaurant.logo",
+        "r.id",
+        "r.name",
+        "r.description",
+        "r.category",
+        "r.location",
+        "r.latitude",
+        "r.longitude",
+        "r.logo",
         "Card.id as cardId",
         "Card.benefits",
         "Card.instruction",
@@ -56,6 +61,27 @@ export const restaurantRepository = {
           .where("UserCard.cardId", "=", eb.ref("Card.id"))
           .where("UserCard.userId", "=", userId)
           .as("isOwned"),
+        sql`
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM "Timetable" t
+                    WHERE t."restaurantId" = r."id"
+                      AND t."dayNoOfTheWeek" = ${dayNo}
+                      AND (
+                          (CAST(t."closesAt" AS TIME) < CAST(t."opensAt" AS TIME)
+                          AND CAST(${time} AS TIME) > CAST(t."closesAt" AS TIME)
+                          AND CAST(${time} AS TIME) < CAST(t."opensAt" AS TIME))
+                        OR 
+                          (CAST(t."closesAt" AS TIME) > CAST(t."opensAt" AS TIME)
+                          AND CAST(${time} AS TIME) > CAST(t."closesAt" AS TIME))
+                          OR (CAST(${time} AS TIME) < CAST(t."opensAt" AS TIME))
+                        OR (CAST(t."closesAt" AS TIME) IS NULL OR CAST(t."opensAt" AS TIME) IS NULL OR t."isOffDay" IS TRUE)
+                      )
+                ) THEN false
+                ELSE true
+            END
+          `.as("isOpen"),
       ])
       .executeTakeFirstOrThrow(() => new Error("Restaurant does not exists"));
 
