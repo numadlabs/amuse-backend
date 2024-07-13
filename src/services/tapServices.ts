@@ -14,19 +14,6 @@ import { userTierRepository } from "../repository/userTierRepository";
 import { employeeRepository } from "../repository/employeeRepository";
 
 export const tapServices = {
-  generateTap: async (waiterId: string) => {
-    const waiter = await employeeRepository.getById(waiterId);
-
-    if (!waiter) throw new CustomError("Invalid userId.", 400);
-
-    const data = {
-      restaurantId: waiter.restaurantId,
-    };
-
-    const hashedData = encryptionHelper.encryptData(JSON.stringify(data));
-
-    return hashedData;
-  },
   verifyTap: async (hashedData: string, userId: string) => {
     const user = await userRepository.getUserById(userId);
 

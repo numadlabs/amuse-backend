@@ -17,6 +17,12 @@ restaurantRoutes.get(
   authenticateToken,
   restaurantController.getRestaurants
 );
+restaurantRoutes.post(
+  "/generate",
+  authenticateToken,
+  // authorize("RESTAURANT_WAITER"),
+  restaurantController.generateNFC
+);
 restaurantRoutes.get(
   "/:id",
   authenticateToken,

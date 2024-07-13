@@ -51,7 +51,7 @@ export const bonusRepository = {
       .innerJoin("Card", "Card.id", "Bonus.cardId")
       .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
       .where("Restaurant.id", "=", restaurantId)
-      .where("Bonus.type", "=", "RECURRING")
+      .where("Bonus.type", "=", "REDEEMABLE")
       .where((eb) =>
         eb("Bonus.currentSupply", "<=", eb.ref("Bonus.totalSupply"))
       )
