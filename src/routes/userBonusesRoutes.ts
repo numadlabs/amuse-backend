@@ -18,11 +18,6 @@ userBonusesRoutes.post(
   authenticateToken,
   userBonusController.useUserBonus
 );
-userBonusesRoutes.post(
-  "/:id/redeem",
-  authenticateToken,
-  userBonusController.redeemUserBonus
-);
 userBonusesRoutes.post("/buy", authenticateToken, userBonusController.buy);
 
 export = userBonusesRoutes;

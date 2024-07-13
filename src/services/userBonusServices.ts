@@ -1,5 +1,4 @@
 import { CustomError } from "../exceptions/CustomError";
-import { BONUS_REDEEM_EXPIRATION_TIME } from "../lib/constants";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";
 import { cardRepository } from "../repository/cardRepository";
@@ -8,16 +7,6 @@ import { restaurantRepository } from "../repository/restaurantRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { userRepository } from "../repository/userRepository";
-import { Purchase } from "../types/db/types";
-
-type followingBonus = {
-  id: string;
-  imageUrl: string | null;
-  name: string;
-  cardId: string | null;
-  current: number;
-  target: number;
-};
 
 export const userBonusServices = {
   buy: async (userId: string, restaurantId: string, bonusId: string) => {
@@ -61,7 +50,7 @@ export const userBonusServices = {
 
     return userBonus;
   },
-  use: async (id: string, userId: string) => {
+  use: async (id: string, userId: string, encryptedData: string) => {
     const userBonus = await userBonusRepository.getById(id);
 
     if (!userBonus)
@@ -78,37 +67,9 @@ export const userBonusServices = {
 
     const card = await cardRepository.getById(userCard.cardId);
 
-    const data = {
-      restaurantId: card.restaurantId,
-    };
-
-    const encryptedData = encryptionHelper.encryptData(JSON.stringify(data));
-
-    return encryptedData;
-  },
-  redeem: async (id: string, encryptedData: string) => {
     const data = encryptionHelper.decryptData(encryptedData);
-    const restaurantId = data.restaurantId;
-
-    // if (Date.now() - data.issuedAt > BONUS_REDEEM_EXPIRATION_TIME * 1000)
-    //   throw new CustomError("The QR has expired.", 400);
-
-    const userBonus = await userBonusRepository.getById(id);
-    if (!userBonus || userBonus.status !== "UNUSED")
-      throw new CustomError("Invalid userBonus.", 400);
-
-    const restaurant = await restaurantRepository.getById(restaurantId);
-    if (!restaurant) throw new CustomError("Invalid restaurant.", 400);
-
-    const userCard = await userCardReposity.getById(userBonus.userCardId);
-    if (!userCard) throw new CustomError("User card not found.", 400);
-
-    const card = await cardRepository.getById(userCard.cardId);
-    if (card.restaurantId !== restaurantId)
-      throw new CustomError(
-        "Input and userCard restaurantId does not match.",
-        400
-      );
+    if (card.restaurantId !== data.restaurantId)
+      throw new CustomError("Invalid NFC info.", 400);
 
     userBonus.status = "USED";
 
