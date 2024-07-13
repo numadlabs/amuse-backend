@@ -7,6 +7,7 @@ import { CATEGORY } from "../types/db/enums";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
 import { restaurantServices } from "../services/restaurantServices";
 import { AuthenticatedRequest } from "../../custom";
+import { CustomError } from "../exceptions/CustomError";
 
 export const restaurantController = {
   createRestaurant: async (req: Request, res: Response, next: NextFunction) => {
@@ -213,6 +214,27 @@ export const restaurantController = {
       );
 
       return res.status(200).json({ success: true, restaurant: restaurant });
+    } catch (e) {
+      next(e);
+    }
+  },
+  generateNFC: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { restaurantId } = req.body;
+
+    try {
+      if (!req.user?.id)
+        throw new CustomError("Couldn't parse the id from the token.", 400);
+
+      if (!restaurantId)
+        throw new CustomError("Please provide the restaurantId.", 400);
+
+      const hashedData = await restaurantServices.generateNFC(restaurantId);
+
+      return res.status(200).json({ success: true, data: hashedData });
     } catch (e) {
       next(e);
     }

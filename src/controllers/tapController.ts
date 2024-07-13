@@ -2,28 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import { tapRepository } from "../repository/tapRepository";
 import { tapServices } from "../services/tapServices";
 import { AuthenticatedRequest } from "../../custom";
+import { CustomError } from "../exceptions/CustomError";
 
 export const tapController = {
-  generateTap: async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Couldn't parse the id from the token.",
-      });
-
-    try {
-      const hashedData = await tapServices.generateTap(req.user.id);
-
-      return res.status(200).json({ success: true, data: hashedData });
-    } catch (e) {
-      next(e);
-    }
-  },
   redeemTap: async (
     req: AuthenticatedRequest,
     res: Response,

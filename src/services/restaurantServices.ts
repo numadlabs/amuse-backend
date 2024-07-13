@@ -7,6 +7,7 @@ import { s3BucketName } from "../lib/constants";
 import { randomUUID } from "crypto";
 import { cardRepository } from "../repository/cardRepository";
 import { timetableRepository } from "../repository/timetableRepository";
+import { encryptionHelper } from "../lib/encryptionHelper";
 
 export const restaurantServices = {
   create: async (data: Insertable<Restaurant>, file: Express.Multer.File) => {
@@ -127,5 +128,18 @@ export const restaurantServices = {
     const deletedRestaurant = await restaurantRepository.delete(restaurant.id);
 
     return deletedRestaurant;
+  },
+  generateNFC: async (restaurantId: string) => {
+    const restaurant = await restaurantRepository.getById(restaurantId);
+
+    if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
+
+    const data = {
+      restaurantId: restaurant.id,
+    };
+
+    const hashedData = encryptionHelper.encryptData(JSON.stringify(data));
+
+    return hashedData;
   },
 };
