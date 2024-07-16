@@ -12,8 +12,9 @@ const config = {
   tls: { rejectUnauthorized: false },
 };
 
-export async function sendVerificationEmail(
-  verificationCode: number,
+export async function sendEmail(
+  subject: string,
+  text: string,
   toEmail: string
 ) {
   const transporter = nodemailer.createTransport(config);
@@ -21,8 +22,8 @@ export async function sendVerificationEmail(
   const info = await transporter.sendMail({
     from: process.env.EMAIL_ADDRESS,
     to: toEmail,
-    subject: "Amuse Bouche OTP",
-    text: `Your Amuse Bouche verification code is: ${verificationCode}`,
+    subject: subject,
+    text: text,
   });
 
   console.log("Sent successfully: ", info);

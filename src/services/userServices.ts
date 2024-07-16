@@ -1,6 +1,6 @@
 import { sendOTP } from "../lib/otpHelper";
 import { userRepository } from "../repository/userRepository";
-import { sendVerificationEmail } from "../lib/emailHelper";
+import { sendEmail } from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { extractVerification, generateVerificationToken } from "../utils/jwt";
 import { CustomError } from "../exceptions/CustomError";
@@ -156,7 +156,11 @@ export const userServices = {
       verificationCodeConstants.EMAIL_EXPIRATION_TIME
     );
 
-    await sendVerificationEmail(randomNumber, userById.email);
+    await sendEmail(
+      "Amuse Bouche OTP",
+      `Your Amuse Bouche verification code is: ${randomNumber}`,
+      userById.email
+    );
 
     userById.emailVerificationCode = emailVerificationToken;
     const user = await userRepository.update(userById.id, userById);
