@@ -22,11 +22,20 @@ export const inviteServices = {
     if (!restaurantCheck) throw new CustomError("Invalid restaurant.", 400);
 
     const invite = await inviteRepository.create(data);
-    await sendEmail(
-      `You have been invited to the ${restaurantCheck.name} on Amuse Bouche`,
-      `inviteId: ${invite.id}, ene idgaar url/employees/:id geed webiin link yvuulna, ter linkeer ni orhod password ntre oruulah form haragdah ystoi.`,
-      invite.email
-    );
+    const employee = await employeeRepository.getByEmail(invite.email);
+    if (employee) {
+      await sendEmail(
+        `You have been invited to the ${restaurantCheck.name} on Amuse Bouche`,
+        `It seems that you have already registered into our platform. so please handle the restaurant-changing invitation in the app.`,
+        invite.email
+      );
+    } else {
+      await sendEmail(
+        `You have been invited to the ${restaurantCheck.name} on Amuse Bouche`,
+        `inviteId: ${invite.id}\n ene idgaar "hostURL"/employees/:inviteId/register gdg ch ymuu portal-webiin link yvuulna,\n ter linkeer ni orhod inviteId-gaar ni check if email is used gdg API-g duudaj shalgaad success state ni true baival, name/password ntr oruulah form haruulna, false baival haruulahgu aldaa ugdug ch ymuu neg tiimerhuu.\n formoo bugluj duusanguut invite-iin setOTP API-g duudaj emaileer OTP yvuulanguutaa, mobile app deerh shg neg OTP batalgaajuulah hesegruu shiljine, OTP-goo oruulanguutni umnuh formiin data-tai hamt register as employee gdg API-g duudna\n hervee OTP ni zuw baival zuugchuur burtgegdeed duusna, buruu bol aldaa ugnu.`,
+        invite.email
+      );
+    }
 
     return invite;
   },
