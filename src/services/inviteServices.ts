@@ -3,11 +3,10 @@ import { Invite } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { inviteRepository } from "../repository/inviteRepository";
-import { userRepository } from "../repository/userRepository";
 import { employeeRepository } from "../repository/employeeRepository";
 import { verificationCodeConstants } from "../lib/constants";
 import { generateVerificationToken } from "../utils/jwt";
-import { sendVerificationEmail } from "../lib/emailHelper";
+import { sendEmail } from "../lib/emailHelper";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
@@ -15,7 +14,7 @@ const MAX = verificationCodeConstants.MAX_VALUE,
 export const inviteServices = {
   create: async (data: Insertable<Invite>) => {
     if (data.emailVerificationCode || data.status)
-      throw new CustomError("These fields cannot be updated.", 400);
+      throw new CustomError("These fields cannot be inserted.", 400);
 
     const restaurantCheck = await restaurantRepository.getById(
       data.restaurantId
@@ -23,6 +22,11 @@ export const inviteServices = {
     if (!restaurantCheck) throw new CustomError("Invalid restaurant.", 400);
 
     const invite = await inviteRepository.create(data);
+    await sendEmail(
+      `You have been invited to the ${restaurantCheck.name} on Amuse Bouche`,
+      `inviteId: ${invite.id}, ene idgaar url/employees/:id geed webiin link yvuulna, ter linkeer ni orhod password ntre oruulah form haragdah ystoi.`,
+      invite.email
+    );
 
     return invite;
   },
@@ -49,7 +53,11 @@ export const inviteServices = {
       verificationCodeConstants.EMAIL_EXPIRATION_TIME
     );
 
-    await sendVerificationEmail(randomNumber, invite.email);
+    await sendEmail(
+      "Amuse Bouche OTP",
+      `Your Amuse Bouche verification code is: ${randomNumber}`,
+      invite.email
+    );
 
     invite.emailVerificationCode = emailVerificationToken;
     const updatedInvite = await inviteRepository.update(invite, id);

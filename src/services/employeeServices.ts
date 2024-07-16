@@ -1,7 +1,7 @@
 import { Insertable, Updateable } from "kysely";
 import { CustomError } from "../exceptions/CustomError";
 import { verificationCodeConstants } from "../lib/constants";
-import { sendVerificationEmail } from "../lib/emailHelper";
+import { sendEmail } from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { employeeRepository } from "../repository/employeeRepository";
 import { extractVerification, generateVerificationToken } from "../utils/jwt";
@@ -94,7 +94,11 @@ export const employeeServices = {
       verificationCodeConstants.EMAIL_EXPIRATION_TIME
     );
 
-    await sendVerificationEmail(randomNumber, employeeById.email);
+    await sendEmail(
+      "Amuse Bouche OTP",
+      `Your Amuse Bouche verification code is: ${randomNumber}`,
+      employeeById.email
+    );
 
     employeeById.emailVerificationCode = emailVerificationToken;
     const employee = await employeeRepository.update(
