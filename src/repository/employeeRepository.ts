@@ -16,7 +16,14 @@ export const employeeRepository = {
     const employee = await db
       .insertInto("Employee")
       .values(data)
-      .returningAll()
+      .returning([
+        "Employee.id",
+        "Employee.firstname",
+        "Employee.lastname",
+        "Employee.email",
+        "Employee.role",
+        "Employee.restaurantId",
+      ])
       .executeTakeFirstOrThrow(
         () => new Error("Could not create the employee.")
       );

@@ -6,18 +6,42 @@ import { hideDataHelper } from "../lib/hideDataHelper";
 import { Insertable } from "kysely";
 import { Employee } from "../types/db/types";
 import { employeeRepository } from "../repository/employeeRepository";
+import { AuthenticatedRequest } from "../../custom";
 
 export const employeeController = {
-  create: async (req: Request, res: Response, next: NextFunction) => {
-    const { inviteId, verificationCode, ...rest } = req.body;
-    const data: Insertable<Employee> = rest;
+  create: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const data: Insertable<Employee> = req.body;
 
     try {
-      const employee = await employeeServices.create(
-        data,
-        inviteId,
-        verificationCode
-      );
+      if (!data.restaurantId)
+        throw new CustomError("Please provide a restaurantId.", 400);
+
+      if (!req.user?.id || !req.user?.role)
+        throw new CustomError("Could not parse info from the token.", 400);
+
+      const employee = await employeeServices.create(data, req.user.id);
+
+      return res.status(200).json({
+        success: true,
+        data: employee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  createAsSuperAdmin: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const data: Insertable<Employee> = req.body;
+
+    try {
+      const employee = await employeeServices.createAsSuperAdmin(data);
 
       return res.status(200).json({
         success: true,

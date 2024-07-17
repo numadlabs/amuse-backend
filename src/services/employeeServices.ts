@@ -6,18 +6,13 @@ import { encryptionHelper } from "../lib/encryptionHelper";
 import { employeeRepository } from "../repository/employeeRepository";
 import { extractVerification, generateVerificationToken } from "../utils/jwt";
 import { Employee } from "../types/db/types";
-import { inviteRepository } from "../repository/inviteRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
 
 export const employeeServices = {
-  create: async (
-    data: Insertable<Employee>,
-    inviteId: string | undefined,
-    verificationCode: number | undefined
-  ) => {
+  create: async (data: Insertable<Employee>, creatorId: string) => {
     if (data.role === "SUPER_ADMIN" || data.role === "USER" || !data.role)
       throw new CustomError("Error on the role input.", 400);
 
@@ -25,32 +20,48 @@ export const employeeServices = {
     if (emailCheck)
       throw new CustomError("Email has already been registed.", 400);
 
-    if (data.role === "RESTAURANT_WAITER") {
-      if (!inviteId) throw new CustomError("Invite must be provided.", 400);
-      const invite = await inviteRepository.getById(inviteId);
-      if (!invite) throw new CustomError("Invalid invite.", 400);
-      data.restaurantId = invite.restaurantId;
+    const creator = await employeeRepository.getById(creatorId);
+    if (!creator || creator.restaurantId !== data.restaurantId)
+      throw new CustomError(
+        "You are not allowed to create employee for this restaurant.",
+        400
+      );
 
-      if (!invite.emailVerificationCode)
-        throw new CustomError("No OTP set.", 400);
+    const password = data.password;
 
-      const inviteOTP = extractVerification(invite.emailVerificationCode);
-      if (
-        inviteOTP !== verificationCode ||
-        invite.emailVerificationCode === null
-      )
-        throw new CustomError("Invalid OTP.", 400);
+    const hashedPassword = await encryptionHelper.encrypt(password);
+    data.password = hashedPassword;
 
-      invite.status = "ACCEPTED";
-      invite.emailVerificationCode = null;
+    const employee = await employeeRepository.create(data);
 
-      await inviteRepository.update(invite, invite.id);
-    }
+    await sendEmail(
+      "Amuse Bouche authentication info(RESTAURANT_WAITER)",
+      `email: ${data.email}, password: ${password}`,
+      employee.email
+    );
+
+    return employee;
+  },
+  createAsSuperAdmin: async (data: Insertable<Employee>) => {
+    if (data.role === "SUPER_ADMIN" || data.role === "USER" || !data.role)
+      throw new CustomError("Error on the role input.", 400);
+
+    const emailCheck = await employeeRepository.getByEmail(data.email);
+    if (emailCheck)
+      throw new CustomError("Email has already been registed.", 400);
+
+    const password = data.password;
 
     const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;
 
     const employee = await employeeRepository.create(data);
+
+    await sendEmail(
+      "Amuse Bouche authentication info(RESTAURANT_OWNER for walkthrough)",
+      `email: ${data.email}, password: ${password}`,
+      employee.email
+    );
 
     return employee;
   },

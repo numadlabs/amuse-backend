@@ -5,8 +5,9 @@ const authRoutes = express.Router();
 
 authRoutes.post("/login", authController.login);
 authRoutes.post("/register", authController.register);
+authRoutes.post("/registerOTP", authController.sendRegisterOTP);
+authRoutes.post("/checkTelNumber", authController.checkTelNumber);
 authRoutes.post("/otp", authController.sendOTP);
-authRoutes.post("/verifyOTP", authController.verifyOTP);
 authRoutes.post(
   "/email",
   authenticateToken,
@@ -19,6 +20,6 @@ authRoutes.post(
 );
 authRoutes.post("/refreshToken", authController.refreshToken);
 authRoutes.post("/checkOTP", authController.checkOTP);
-authRoutes.post("/changePassword", authController.changePassword);
+authRoutes.post("/forgotPassword", authController.forgotPassword);
 
 export = authRoutes;

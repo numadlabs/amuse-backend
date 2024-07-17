@@ -8,20 +8,37 @@ import { s3BucketName, verificationCodeConstants } from "../lib/constants";
 import { s3 } from "../utils/aws";
 import { randomUUID } from "crypto";
 import { Insertable, Updateable } from "kysely";
-import { User } from "../types/db/types";
+import { TempUser, User } from "../types/db/types";
 import { userTierRepository } from "../repository/userTierRepository";
+import { tempUserRepository } from "../repository/tempUserRepository";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
 
 export const userServices = {
-  create: async (data: Insertable<User>) => {
+  create: async (data: Insertable<User>, verificationCode: number) => {
     const hasUser = await userRepository.getUserByPhoneNumber(
       data.telNumber,
       data.prefix
     );
     if (hasUser)
-      throw new CustomError("User already exists with this phone number", 400);
+      throw new CustomError("User already exists with this phone number.", 400);
+
+    const tempUser = await tempUserRepository.getByTelNumber(
+      data.prefix,
+      data.telNumber
+    );
+    if (!tempUser || !tempUser.telVerificationCode)
+      throw new CustomError(
+        "Please send OTP and and provide the verificationCode.",
+        400
+      );
+    const telVerificationCode = extractVerification(
+      tempUser.telVerificationCode
+    );
+
+    if (telVerificationCode !== verificationCode)
+      throw new CustomError("Invalid verification code!", 400);
 
     const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;
@@ -70,36 +87,6 @@ export const userServices = {
 
     return user;
   },
-  verifyOTP: async (
-    prefix: string,
-    telNumber: string,
-    verificationCode: number | null | undefined
-  ) => {
-    const hasUser = await userRepository.getUserByPhoneNumber(
-      telNumber,
-      prefix
-    );
-
-    if (!hasUser || !hasUser.telVerificationCode)
-      throw new CustomError("User does not exist!", 400);
-
-    const telVerificationCode = extractVerification(
-      hasUser.telVerificationCode
-    );
-
-    if (
-      telVerificationCode !== verificationCode ||
-      hasUser.telVerificationCode === null
-    )
-      throw new CustomError("Invalid verification code!", 400);
-
-    hasUser.isTelVerified = true;
-    hasUser.telVerificationCode = null;
-
-    const user = await userRepository.update(hasUser.id, hasUser);
-
-    return user;
-  },
   checkOTP: async (
     prefix: string,
     telNumber: string,
@@ -120,7 +107,7 @@ export const userServices = {
 
     return user;
   },
-  changePassword: async (
+  forgotPassword: async (
     prefix: string,
     telNumber: string,
     verificationCode: number,
@@ -238,5 +225,25 @@ export const userServices = {
     const user = await userRepository.delete(findUser.id);
 
     return user;
+  },
+  sendRegisterOTP: async (data: Insertable<TempUser>) => {
+    const user = await userRepository.getUserByPhoneNumber(
+      data.telNumber,
+      data.prefix
+    );
+
+    const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
+    const telVerificationToken = generateVerificationToken(
+      randomNumber,
+      verificationCodeConstants.TEL_EXPIRATION_TIME
+    );
+
+    data.telVerificationCode = telVerificationToken;
+    const tempUser = await tempUserRepository.create(data);
+
+    const isSent = await sendOTP(data.prefix, data.telNumber, randomNumber);
+    if (!isSent) throw new Error("Error has occured while sending the OTP.");
+
+    return tempUser;
   },
 };

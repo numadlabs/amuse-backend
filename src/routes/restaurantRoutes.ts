@@ -8,7 +8,7 @@ const restaurantRoutes = express.Router();
 restaurantRoutes.post(
   "/",
   authenticateToken,
-  authorize("SUPER_ADMIN"),
+  authorize("RESTAURANT_OWNER"),
   parseFile("logo"),
   restaurantController.createRestaurant
 );

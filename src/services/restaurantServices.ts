@@ -8,9 +8,14 @@ import { randomUUID } from "crypto";
 import { cardRepository } from "../repository/cardRepository";
 import { timetableRepository } from "../repository/timetableRepository";
 import { encryptionHelper } from "../lib/encryptionHelper";
+import { employeeRepository } from "../repository/employeeRepository";
 
 export const restaurantServices = {
-  create: async (data: Insertable<Restaurant>, file: Express.Multer.File) => {
+  create: async (
+    data: Insertable<Restaurant>,
+    file: Express.Multer.File,
+    ownerId: string
+  ) => {
     const restaurant = await restaurantRepository.create(data);
 
     if (!file) return restaurant;
@@ -75,6 +80,7 @@ export const restaurantServices = {
     ];
 
     await timetableRepository.create(timetable);
+    await employeeRepository.update({ restaurantId: restaurant.id }, ownerId);
 
     return updatedRestaurant;
   },
