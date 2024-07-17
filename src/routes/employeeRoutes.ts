@@ -1,8 +1,21 @@
 import express from "express";
 import { employeeController } from "../controllers/employeeController";
+import { authenticateToken } from "../middlewares/authenticateToken";
+import { authorize } from "../middlewares/authorization";
 const employeeRouter = express.Router();
 
-employeeRouter.post("/", employeeController.create);
+employeeRouter.post(
+  "/",
+  authenticateToken,
+  authorize("RESTAURANT_OWNER"),
+  employeeController.create
+);
+employeeRouter.post(
+  "/superAdmin",
+  authenticateToken,
+  // authorize('SUPER_ADMIN'),
+  employeeController.createAsSuperAdmin
+);
 employeeRouter.post("/login", employeeController.login);
 employeeRouter.post("/sendOTP", employeeController.sendEmailOTP);
 employeeRouter.post("/checkOTP", employeeController.checkEmailOTP);

@@ -10,12 +10,22 @@ import { AuthenticatedRequest } from "../../custom";
 import { CustomError } from "../exceptions/CustomError";
 
 export const restaurantController = {
-  createRestaurant: async (req: Request, res: Response, next: NextFunction) => {
+  createRestaurant: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const data: Insertable<Restaurant> = { ...req.body };
     const file = req.file as Express.Multer.File;
 
     try {
-      const restaurant = await restaurantServices.create(data, file);
+      if (!req.user?.id)
+        throw new CustomError("Could not retrive info from the token.", 400);
+      const restaurant = await restaurantServices.create(
+        data,
+        file,
+        req.user.id
+      );
 
       return res
         .status(200)

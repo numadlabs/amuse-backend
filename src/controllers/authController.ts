@@ -5,8 +5,9 @@ import { hideDataHelper } from "../lib/hideDataHelper";
 import { AuthenticatedRequest } from "../../custom";
 import jwt from "jsonwebtoken";
 import { Insertable } from "kysely";
-import { User } from "../types/db/types";
+import { TempUser, User } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
+import { userRepository } from "../repository/userRepository";
 
 export const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
@@ -18,13 +19,7 @@ export const authController = {
 
     try {
       const user = await userServices.login(data);
-
-      //activate it to enable OTP service
-      if (!user.isTelVerified)
-        throw new CustomError("Account has not been verified.", 403);
-
       const { accessToken, refreshToken } = generateTokens(user);
-
       const sanitizedUser = hideDataHelper.sanitizeUserData(user);
 
       return res.status(200).json({
@@ -42,7 +37,9 @@ export const authController = {
     }
   },
   register: async (req: Request, res: Response, next: NextFunction) => {
-    const data: Insertable<User> = { ...req.body };
+    const { verificationCode, ...rest } = req.body;
+    const data: Insertable<User> = { ...rest };
+
     if (
       !data.prefix ||
       !data.telNumber ||
@@ -54,7 +51,7 @@ export const authController = {
       return res.status(400).json({ success: false, error: "Bad request" });
 
     try {
-      const createdUser = await userServices.create(data);
+      const createdUser = await userServices.create(data, verificationCode);
 
       const { accessToken, refreshToken } = generateTokens(createdUser);
 
@@ -102,6 +99,11 @@ export const authController = {
     const { prefix, telNumber } = req.body;
     const { telVerificationCode } = req.body;
     try {
+      if (!prefix || !telNumber)
+        throw new CustomError(
+          "Please provide the prefix and phone number.",
+          400
+        );
       const isValidOTP = await userServices.checkOTP(
         prefix,
         telNumber,
@@ -126,42 +128,20 @@ export const authController = {
       next(e);
     }
   },
-  changePassword: async (req: Request, res: Response, next: NextFunction) => {
+  forgotPassword: async (req: Request, res: Response, next: NextFunction) => {
     const { prefix, telNumber } = req.body;
     const { telVerificationCode, password } = req.body;
     try {
       if (!prefix || !telNumber || !telVerificationCode || !password)
         throw new CustomError("Please provide all the required inputs.", 400);
 
-      const user = await userServices.changePassword(
+      const user = await userServices.forgotPassword(
         prefix,
         telNumber,
         telVerificationCode,
         password
       );
       const sanitizedUser = hideDataHelper.sanitizeUserData(user);
-
-      return res.status(200).json({
-        success: true,
-        data: {
-          user: sanitizedUser,
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  verifyOTP: async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { prefix, telNumber } = req.body;
-      const { telVerificationCode } = req.body;
-
-      const updatedUser = await userServices.verifyOTP(
-        prefix,
-        telNumber,
-        telVerificationCode
-      );
-      const sanitizedUser = hideDataHelper.sanitizeUserData(updatedUser);
 
       return res.status(200).json({
         success: true,
@@ -268,5 +248,57 @@ export const authController = {
         data: tokens,
       });
     });
+  },
+  checkTelNumber: async (req: Request, res: Response, next: NextFunction) => {
+    const { prefix, telNumber } = req.body;
+    try {
+      if (!prefix || !telNumber)
+        throw new CustomError(
+          "Please provide the prefix and phone number.",
+          400
+        );
+      const checkExists = await userRepository.getUserByPhoneNumber(
+        telNumber,
+        prefix
+      );
+
+      if (checkExists)
+        throw new CustomError(
+          "This phone number has already been registered.",
+          400
+        );
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: null,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  sendRegisterOTP: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data: Insertable<TempUser> = { ...req.body };
+
+      if (!data.telNumber || !data.prefix)
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Please provide a phone number.",
+        });
+
+      await userServices.sendRegisterOTP(data);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: null,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
   },
 };

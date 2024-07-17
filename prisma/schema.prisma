@@ -36,7 +36,6 @@ model User {
   prefix              String
   telNumber           String
   telVerificationCode String?
-  isTelVerified       Boolean   @default(false)
   telVerifiedAt       DateTime?
 
   userTierId String
@@ -63,15 +62,12 @@ model Employee {
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
 
-model Invite {
-  id                    String        @id @default(dbgenerated("gen_random_uuid()"))
-  email                 String
-  status                INVITE_STATUS @default(ON_HOLD)
-  emailVerificationCode String?
-  createdAt             DateTime      @default(now())
-
-  restaurantId String
-  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+model TempUser {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()"))
+  prefix              String
+  telNumber           String
+  telVerificationCode String?
+  createdAt           DateTime @default(now())
 }
 
 model UserTier {
@@ -110,7 +106,6 @@ model Restaurant {
   Card      Card[]
   Timetable Timetable[]
   Employee  Employee[]
-  Invite    Invite[]
 }
 
 model Timetable {
@@ -180,7 +175,7 @@ model Bonus {
   imageUrl      String?
   name          String
   totalSupply   Int
-  currentSupply Int @default(0)
+  currentSupply Int     @default(0)
 
   price   Float?
   visitNo Int?

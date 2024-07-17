@@ -46,14 +46,6 @@ export type Employee = {
     emailVerificationCode: string | null;
     restaurantId: string | null;
 };
-export type Invite = {
-    id: Generated<string>;
-    email: string;
-    status: Generated<INVITE_STATUS>;
-    emailVerificationCode: string | null;
-    createdAt: Generated<Timestamp>;
-    restaurantId: string;
-};
 export type Notification = {
     id: Generated<string>;
     message: string;
@@ -86,6 +78,13 @@ export type Tap = {
     userId: string;
     userCardId: string;
 };
+export type TempUser = {
+    id: Generated<string>;
+    prefix: string;
+    telNumber: string;
+    telVerificationCode: string | null;
+    createdAt: Generated<Timestamp>;
+};
 export type Timetable = {
     id: Generated<string>;
     dayNoOfTheWeek: number;
@@ -113,7 +112,6 @@ export type User = {
     prefix: string;
     telNumber: string;
     telVerificationCode: string | null;
-    isTelVerified: Generated<boolean>;
     telVerifiedAt: Timestamp | null;
     userTierId: string;
 };
@@ -145,11 +143,11 @@ export type DB = {
     Currency: Currency;
     Device: Device;
     Employee: Employee;
-    Invite: Invite;
     Notification: Notification;
     Purchase: Purchase;
     Restaurant: Restaurant;
     Tap: Tap;
+    TempUser: TempUser;
     Timetable: Timetable;
     User: User;
     UserBonus: UserBonus;

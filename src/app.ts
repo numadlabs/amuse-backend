@@ -19,7 +19,6 @@ import timetableRouter from "./routes/timetableRoutes";
 import deviceRouter from "./routes/deviceRoutes";
 import notificationRouter from "./routes/notificationRoutes";
 import employeeRouter from "./routes/employeeRoutes";
-import inviteRouter from "./routes/inviteRoutes";
 import userTierRouter from "./routes/userTierRoutes";
 import { db } from "./utils/db";
 import { userTierRepository } from "./repository/userTierRepository";
@@ -50,7 +49,6 @@ app.use("/api/timetables", timetableRouter);
 app.use("/api/devices", deviceRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/employees", employeeRouter);
-app.use("/api/invites", inviteRouter);
 app.use("/api/userTiers", userTierRouter);
 
 app.use(notFound);
