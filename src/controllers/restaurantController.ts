@@ -3,8 +3,6 @@ import { Restaurant } from "../types/db/types";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { NextFunction, Request, Response } from "express";
 import { db } from "../utils/db";
-import { CATEGORY } from "../types/db/enums";
-import { to_tsquery, to_tsvector } from "../lib/queryHelper";
 import { restaurantServices } from "../services/restaurantServices";
 import { AuthenticatedRequest } from "../../custom";
 import { CustomError } from "../exceptions/CustomError";
@@ -15,7 +13,8 @@ export const restaurantController = {
     res: Response,
     next: NextFunction
   ) => {
-    const data: Insertable<Restaurant> = { ...req.body };
+    const { googleMapsUrl, ...rest } = req.body;
+    const data: Insertable<Restaurant> = { ...rest };
     const file = req.file as Express.Multer.File;
 
     try {
@@ -24,7 +23,8 @@ export const restaurantController = {
       const restaurant = await restaurantServices.create(
         data,
         file,
-        req.user.id
+        req.user.id,
+        googleMapsUrl
       );
 
       return res
@@ -36,13 +36,20 @@ export const restaurantController = {
   },
   updateRestaurant: async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const data: Updateable<Restaurant> = { ...req.body };
+    const { googleMapsUrl, ...rest } = req.body;
+    const data: Updateable<Restaurant> = { ...rest };
     const file = req.file as Express.Multer.File;
 
     try {
-      if (data.id) throw new Error("You cannot change id.");
+      if (data.id || data.perkOccurence || data.rewardAmount)
+        throw new Error("You cannot change id.");
 
-      const restaurant = await restaurantServices.update(id, data, file);
+      const restaurant = await restaurantServices.update(
+        id,
+        data,
+        file,
+        googleMapsUrl
+      );
 
       return res.status(200).json({ success: true, restaurant: restaurant });
     } catch (e) {
@@ -127,6 +134,7 @@ export const restaurantController = {
       let query = db
         .selectFrom("Restaurant as r")
         .innerJoin("Card", "Card.restaurantId", "r.id")
+        .innerJoin("Category", "Category.id", "r.categoryId")
         .leftJoin(
           "UserCard",
           (join) =>
@@ -138,7 +146,8 @@ export const restaurantController = {
           "r.id",
           "r.name",
           "r.description",
-          "r.category",
+          "r.categoryId",
+          "Category.name as categoryName",
           "r.location",
           "r.latitude",
           "r.longitude",
@@ -182,10 +191,10 @@ export const restaurantController = {
         ])
         .orderBy("r.name", "asc"); // Fix the orderBy syntax
 
-      if (categories) {
-        const parsedCategories: CATEGORY[] = JSON.parse(categories.toString());
-        query = query.where("r.category", "in", parsedCategories);
-      }
+      // if (categories) {
+      //   const parsedCategories: CATEGORY[] = JSON.parse(categories.toString());
+      //   query = query.where("r.category", "in", parsedCategories);
+      // }
 
       // if (search) {
       //   query = query.where((eb) =>
@@ -250,6 +259,24 @@ export const restaurantController = {
       const hashedData = await restaurantServices.generateNFC(restaurantId);
 
       return res.status(200).json({ success: true, data: hashedData });
+    } catch (e) {
+      next(e);
+    }
+  },
+  updateRewardDetail: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { id } = req.params;
+    const data: Updateable<Restaurant> = { ...req.body };
+
+    try {
+      if (data.id) throw new Error("You cannot change id.");
+
+      const restaurant = await restaurantServices.updateRewardDetail(id, data);
+
+      return res.status(200).json({ success: true, restaurant: restaurant });
     } catch (e) {
       next(e);
     }

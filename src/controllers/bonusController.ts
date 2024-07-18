@@ -3,11 +3,12 @@ import { Insertable, Updateable } from "kysely";
 import { Bonus } from "../types/db/types";
 import { bonusRepository } from "../repository/bonusRepository";
 import { bonusServices } from "../services/bonusServices";
+import { BONUS_TYPE } from "../types/db/enums";
 
 export const bonusController = {
   createBonus: async (req: Request, res: Response, next: NextFunction) => {
     const data: Insertable<Bonus> = { ...req.body };
-    if (!data.cardId || !data.imageUrl || !data.name || data.id)
+    if (!data.cardId || !data.name || data.id)
       return res
         .status(400)
         .json({ success: false, data: null, error: "Bad request." });
@@ -63,9 +64,13 @@ export const bonusController = {
     next: NextFunction
   ) => {
     const { restaurantId } = req.params;
+    const { type } = req.query;
 
     try {
-      const bonuses = await bonusRepository.getByRestaurantId(restaurantId);
+      const bonuses = await bonusRepository.getByRestaurantId(
+        restaurantId,
+        type as BONUS_TYPE
+      );
 
       return res.status(200).json({ success: true, data: bonuses });
     } catch (e) {

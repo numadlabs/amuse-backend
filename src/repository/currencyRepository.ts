@@ -3,11 +3,11 @@ import { db } from "../utils/db";
 import { Currency } from "../types/db/types";
 
 export const currencyRepository = {
-  getByName: async (name: string) => {
+  getByTicker: async (ticker: string) => {
     const currency = await db
       .selectFrom("Currency")
       .selectAll()
-      .where("Currency.name", "=", name)
+      .where("Currency.ticker", "=", ticker)
       .executeTakeFirstOrThrow(() => new Error("Currency not found."));
 
     return currency;

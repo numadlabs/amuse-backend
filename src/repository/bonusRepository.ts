@@ -2,6 +2,7 @@ import { Insertable, Updateable } from "kysely";
 import { Bonus } from "../types/db/types";
 import { db } from "../utils/db";
 import { CustomError } from "../exceptions/CustomError";
+import { BONUS_TYPE } from "../types/db/enums";
 
 export const bonusRepository = {
   create: async (data: Insertable<Bonus>) => {
@@ -45,13 +46,13 @@ export const bonusRepository = {
 
     return bonus;
   },
-  getByRestaurantId: async (restaurantId: string) => {
+  getByRestaurantId: async (restaurantId: string, type: BONUS_TYPE) => {
     const bonus = await db
       .selectFrom("Bonus")
       .innerJoin("Card", "Card.id", "Bonus.cardId")
       .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
       .where("Restaurant.id", "=", restaurantId)
-      .where("Bonus.type", "=", "REDEEMABLE")
+      .where("Bonus.type", "=", type)
       .where((eb) =>
         eb("Bonus.currentSupply", "<=", eb.ref("Bonus.totalSupply"))
       )
@@ -59,8 +60,11 @@ export const bonusRepository = {
         "Bonus.id",
         "Bonus.cardId",
         "Bonus.name",
-        "Bonus.imageUrl",
         "Bonus.price",
+        "Bonus.type",
+        "Bonus.visitNo",
+        "Bonus.currentSupply",
+        "Bonus.totalSupply",
       ])
       .execute();
 

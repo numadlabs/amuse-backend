@@ -9,31 +9,45 @@ import { cardRepository } from "../repository/cardRepository";
 import { timetableRepository } from "../repository/timetableRepository";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { employeeRepository } from "../repository/employeeRepository";
+import { parseLatLong } from "../lib/locationParser";
 
 export const restaurantServices = {
   create: async (
     data: Insertable<Restaurant>,
     file: Express.Multer.File,
-    ownerId: string
+    ownerId: string,
+    googleMapsUrl: string
   ) => {
+    const owner = await employeeRepository.getById(ownerId);
+    if (!owner) throw new CustomError("Owner not found.", 400);
+
+    const { latitude, longitude } = parseLatLong(googleMapsUrl);
+    if (!latitude || !longitude)
+      throw new CustomError("Error parsing the latitude and longitude.", 400);
+
+    data.latitude = latitude;
+    data.longitude = longitude;
+
     const restaurant = await restaurantRepository.create(data);
 
-    if (!file) return restaurant;
+    let updatedRestaurant = restaurant;
+    if (file) {
+      const randomKey = randomUUID();
+      const s3Response = await s3
+        .upload({
+          Bucket: s3BucketName,
+          Key: `restaurant/${randomKey}`,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        })
+        .promise();
 
-    const s3Response = await s3
-      .upload({
-        Bucket: s3BucketName,
-        Key: randomUUID(),
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      })
-      .promise();
-
-    restaurant.logo = s3Response.Key;
-    const updatedRestaurant = await restaurantRepository.update(
-      restaurant.id,
-      restaurant
-    );
+      restaurant.logo = randomKey;
+      updatedRestaurant = await restaurantRepository.update(
+        restaurant.id,
+        restaurant
+      );
+    }
 
     const timetable: Insertable<Timetable>[] = [
       {
@@ -87,36 +101,44 @@ export const restaurantServices = {
   update: async (
     id: string,
     data: Updateable<Restaurant>,
-    file: Express.Multer.File
+    file: Express.Multer.File,
+    googleMapsUrl: string
   ) => {
     const restaurant = await restaurantRepository.getById(id);
     if (!restaurant)
       throw new CustomError("No restaurant found with the given id.", 400);
-    if (
-      data.balance ||
-      data.logo ||
-      (data.perkOccurence && data.perkOccurence < 1) ||
-      (data.rewardAmount && data.rewardAmount <= 0)
-    )
+    if (data.balance || data.logo)
       throw new CustomError("Invalid data given.", 400);
+
+    if (googleMapsUrl) {
+      const { latitude, longitude } = parseLatLong(googleMapsUrl);
+      if (!latitude || !longitude)
+        throw new CustomError("Error parsing the latitude and longitude.", 400);
+      data.latitude = latitude;
+      data.longitude = longitude;
+    }
 
     if (file && restaurant.logo) {
       await s3
-        .deleteObject({ Bucket: s3BucketName, Key: restaurant.logo })
+        .deleteObject({
+          Bucket: s3BucketName,
+          Key: `restaurant/${restaurant.logo}`,
+        })
         .promise();
     }
 
     if (file) {
+      const randomKey = randomUUID();
       const s3Response = await s3
         .upload({
           Bucket: s3BucketName,
-          Key: randomUUID(),
+          Key: `restaurant/${randomKey}`,
           Body: file.buffer,
           ContentType: file.mimetype,
         })
         .promise();
 
-      data.logo = s3Response.Key;
+      data.logo = randomKey;
     }
 
     const updatedRestaurant = await restaurantRepository.update(
@@ -147,5 +169,23 @@ export const restaurantServices = {
     const hashedData = encryptionHelper.encryptData(JSON.stringify(data));
 
     return hashedData;
+  },
+  updateRewardDetail: async (id: string, data: Updateable<Restaurant>) => {
+    const restaurant = await restaurantRepository.getById(id);
+    if (!restaurant)
+      throw new CustomError("No restaurant found with the given id.", 400);
+
+    if (data.rewardAmount && data.rewardAmount <= 0)
+      throw new CustomError("Invalid rewardAmount.", 400);
+
+    if (data.perkOccurence && data.perkOccurence < 1)
+      throw new CustomError("Invalid perkOccurence.", 400);
+
+    const updatedRestaurant = await restaurantRepository.update(
+      restaurant.id,
+      data
+    );
+
+    return updatedRestaurant;
   },
 };

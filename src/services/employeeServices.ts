@@ -57,11 +57,12 @@ export const employeeServices = {
 
     const employee = await employeeRepository.create(data);
 
-    await sendEmail(
-      "Amuse Bouche authentication info(RESTAURANT_OWNER for walkthrough)",
-      `email: ${data.email}, password: ${password}`,
-      employee.email
-    );
+    if (!employee.restaurantId)
+      await sendEmail(
+        "Amuse Bouche authentication info(RESTAURANT_OWNER for walkthrough)",
+        `email: ${data.email}, password: ${password}`,
+        employee.email
+      );
 
     return employee;
   },

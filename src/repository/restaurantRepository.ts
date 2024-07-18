@@ -32,12 +32,14 @@ export const restaurantRepository = {
     const restaurant = await db
       .selectFrom("Restaurant as r")
       .innerJoin("Card", "Card.restaurantId", "r.id")
+      .innerJoin("Category", "Category.id", "r.categoryId")
       .where("r.id", "=", id)
       .select(({ eb }) => [
         "r.id",
         "r.name",
         "r.description",
-        "r.category",
+        "r.categoryId",
+        "Category.name as categoryName",
         "r.location",
         "r.latitude",
         "r.longitude",

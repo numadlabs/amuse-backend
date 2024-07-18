@@ -1,5 +1,5 @@
-import { getBtcPrice, getCurrency } from "../lib/btcPriceHelper";
-import { currencyRepository } from "../repository/currencyRepository";
+import { getBtcPrice, getCurrency } from "./lib/btcPriceHelper";
+import { currencyRepository } from "./repository/currencyRepository";
 import cron from "node-cron";
 
 export async function updateCurrencyPrice() {
@@ -12,13 +12,13 @@ export async function updateCurrencyPrice() {
 export async function getAndUpdateBitcoinPrice() {
   try {
     const price = await getBtcPrice();
-    const bitcoin = await currencyRepository.getByName("BTC");
+    const bitcoin = await currencyRepository.getByTicker("BTC");
 
-    bitcoin.priceInUSD = price;
+    bitcoin.currentPrice = price;
 
     await currencyRepository.update(bitcoin.id, bitcoin);
 
-    console.log(`Updated Btc price to ${bitcoin.priceInUSD}`);
+    console.log(`Updated Btc price to ${bitcoin.currentPrice}`);
   } catch (e) {
     console.log("Cron error catched.");
     console.log(e);
@@ -27,14 +27,14 @@ export async function getAndUpdateBitcoinPrice() {
 
 export async function getAndUpdateCZK() {
   try {
-    const price = await getCurrency("CZK");
-    const currency = await currencyRepository.getByName("CZK");
+    const price = await getCurrency("EUR");
+    const currency = await currencyRepository.getByTicker("EUR");
 
-    currency.priceInUSD = price;
+    currency.currentPrice = price;
 
     await currencyRepository.update(currency.id, currency);
 
-    console.log(`Updated CZK price to ${currency.priceInUSD}`);
+    console.log(`Updated EUR price to ${currency.currentPrice}`);
   } catch (e) {
     console.log("Cron error catched.");
     console.log(e);

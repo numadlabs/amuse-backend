@@ -4,11 +4,10 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-import type { ROLES, CATEGORY, BONUS_TYPE, BONUS_STATUS, INVITE_STATUS } from "./enums";
+import type { ROLES, BONUS_TYPE, BONUS_STATUS, TRANSACTION_TYPE } from "./enums";
 
 export type Bonus = {
     id: Generated<string>;
-    imageUrl: string | null;
     name: string;
     totalSupply: number;
     currentSupply: Generated<number>;
@@ -20,15 +19,22 @@ export type Bonus = {
 export type Card = {
     id: Generated<string>;
     createdAt: Generated<Timestamp>;
+    nftUrl: string;
     nftImageUrl: string | null;
     instruction: string;
     benefits: string;
     restaurantId: string;
 };
-export type Currency = {
+export type Category = {
     id: Generated<string>;
     name: string;
-    priceInUSD: number;
+    createdAt: Generated<Timestamp>;
+};
+export type Currency = {
+    id: Generated<string>;
+    ticker: string;
+    currentPrice: number;
+    setPrice: number | null;
 };
 export type Device = {
     id: Generated<string>;
@@ -61,7 +67,6 @@ export type Restaurant = {
     id: Generated<string>;
     createdAt: Generated<Timestamp>;
     name: string;
-    category: CATEGORY;
     description: string;
     location: string;
     latitude: number;
@@ -70,6 +75,7 @@ export type Restaurant = {
     balance: Generated<number>;
     rewardAmount: number;
     perkOccurence: number;
+    categoryId: string;
 };
 export type Tap = {
     id: Generated<string>;
@@ -93,6 +99,15 @@ export type Timetable = {
     isOffDay: Generated<boolean>;
     createdAt: Generated<Timestamp>;
     restaurantId: string;
+};
+export type Transaction = {
+    id: Generated<string>;
+    txid: string;
+    amount: number;
+    type: TRANSACTION_TYPE;
+    createdAt: Generated<Timestamp>;
+    restaurantId: string | null;
+    userId: string | null;
 };
 export type User = {
     id: Generated<string>;
@@ -140,6 +155,7 @@ export type UserTier = {
 export type DB = {
     Bonus: Bonus;
     Card: Card;
+    Category: Category;
     Currency: Currency;
     Device: Device;
     Employee: Employee;
@@ -149,6 +165,7 @@ export type DB = {
     Tap: Tap;
     TempUser: TempUser;
     Timetable: Timetable;
+    Transaction: Transaction;
     User: User;
     UserBonus: UserBonus;
     UserCard: UserCard;

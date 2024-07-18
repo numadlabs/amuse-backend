@@ -2,16 +2,10 @@
 CREATE TYPE "ROLES" AS ENUM ('SUPER_ADMIN', 'RESTAURANT_OWNER', 'RESTAURANT_WAITER', 'USER');
 
 -- CreateEnum
-CREATE TYPE "CATEGORY" AS ENUM ('JAPANESE', 'KOREAN', 'MEDITERRANEAN', 'BUFFET', 'FAST_FOOD', 'MONGOLIAN', 'PAN_ASIAN', 'CAFE', 'LEBANESE', 'BEACH_CLUB', 'CHINESE', 'GEORGIAN', 'CUBAN', 'MEXICAN');
-
--- CreateEnum
 CREATE TYPE "BONUS_TYPE" AS ENUM ('SINGLE', 'RECURRING', 'REDEEMABLE');
 
 -- CreateEnum
 CREATE TYPE "BONUS_STATUS" AS ENUM ('UNUSED', 'USED', 'SERVED');
-
--- CreateEnum
-CREATE TYPE "INVITE_STATUS" AS ENUM ('ON_HOLD', 'ACCEPTED', 'REJECTED');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -32,7 +26,6 @@ CREATE TABLE "User" (
     "prefix" TEXT NOT NULL,
     "telNumber" TEXT NOT NULL,
     "telVerificationCode" TEXT,
-    "isTelVerified" BOOLEAN NOT NULL DEFAULT false,
     "telVerifiedAt" TIMESTAMP(3),
     "userTierId" TEXT NOT NULL,
 
@@ -55,15 +48,14 @@ CREATE TABLE "Employee" (
 );
 
 -- CreateTable
-CREATE TABLE "Invite" (
+CREATE TABLE "TempUser" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
-    "email" TEXT NOT NULL,
-    "status" "INVITE_STATUS" NOT NULL DEFAULT 'ON_HOLD',
-    "emailVerificationCode" TEXT,
+    "prefix" TEXT NOT NULL,
+    "telNumber" TEXT NOT NULL,
+    "telVerificationCode" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "restaurantId" TEXT NOT NULL,
 
-    CONSTRAINT "Invite_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "TempUser_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -91,7 +83,6 @@ CREATE TABLE "Restaurant" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "name" TEXT NOT NULL,
-    "category" "CATEGORY" NOT NULL,
     "description" TEXT NOT NULL,
     "location" TEXT NOT NULL,
     "latitude" DOUBLE PRECISION NOT NULL,
@@ -100,8 +91,18 @@ CREATE TABLE "Restaurant" (
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "rewardAmount" DOUBLE PRECISION NOT NULL,
     "perkOccurence" INTEGER NOT NULL,
+    "categoryId" TEXT NOT NULL,
 
     CONSTRAINT "Restaurant_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Category" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -121,6 +122,7 @@ CREATE TABLE "Timetable" (
 CREATE TABLE "Card" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "nftUrl" TEXT NOT NULL,
     "nftImageUrl" TEXT,
     "instruction" TEXT NOT NULL,
     "benefits" TEXT NOT NULL,
@@ -155,7 +157,6 @@ CREATE TABLE "Tap" (
 -- CreateTable
 CREATE TABLE "Bonus" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
-    "imageUrl" TEXT,
     "name" TEXT NOT NULL,
     "totalSupply" INTEGER NOT NULL,
     "currentSupply" INTEGER NOT NULL DEFAULT 0,
@@ -191,8 +192,9 @@ CREATE TABLE "Notification" (
 -- CreateTable
 CREATE TABLE "Currency" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
-    "name" TEXT NOT NULL,
-    "priceInUSD" DOUBLE PRECISION NOT NULL,
+    "ticker" TEXT NOT NULL,
+    "currentPrice" DOUBLE PRECISION NOT NULL,
+    "setPrice" DOUBLE PRECISION,
 
     CONSTRAINT "Currency_pkey" PRIMARY KEY ("id")
 );
@@ -222,10 +224,10 @@ ALTER TABLE "User" ADD CONSTRAINT "User_userTierId_fkey" FOREIGN KEY ("userTierI
 ALTER TABLE "Employee" ADD CONSTRAINT "Employee_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Invite" ADD CONSTRAINT "Invite_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UserTier" ADD CONSTRAINT "UserTier_nextTierId_fkey" FOREIGN KEY ("nextTierId") REFERENCES "UserTier"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserTier" ADD CONSTRAINT "UserTier_nextTierId_fkey" FOREIGN KEY ("nextTierId") REFERENCES "UserTier"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Restaurant" ADD CONSTRAINT "Restaurant_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Timetable" ADD CONSTRAINT "Timetable_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;

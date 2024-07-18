@@ -8,22 +8,23 @@ import userRoutes from "./routes/userRoutes";
 import restaurantRoutes from "./routes/restaurantRoutes";
 import cardRoutes from "./routes/cardRoutes";
 import authRoutes from "./routes/authRoutes";
-import userBonusesRouter from "./routes/userBonusesRoutes";
 import tapRouter from "./routes/tapRoutes";
 import userCardRoutes from "./routes/userCardRoutes";
 import userBonusesRoutes from "./routes/userBonusesRoutes";
 import bonusRoutes from "./routes/bonusRoutes";
-import { updateCurrencyPrice } from "./cron/updateBtcPrice";
+import { updateCurrencyPrice } from "./cron";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import timetableRouter from "./routes/timetableRoutes";
 import deviceRouter from "./routes/deviceRoutes";
 import notificationRouter from "./routes/notificationRoutes";
 import employeeRouter from "./routes/employeeRoutes";
 import userTierRouter from "./routes/userTierRoutes";
-import { db } from "./utils/db";
-import { userTierRepository } from "./repository/userTierRepository";
+import categoryRouter from "./routes/categoryRoutes";
+const http = require("http");
+import transactionRouter from "./routes/transactionRoutes";
 
 const app = express();
+const server = http.createServer(app);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
@@ -50,10 +51,13 @@ app.use("/api/devices", deviceRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/employees", employeeRouter);
 app.use("/api/userTiers", userTierRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/transactions", transactionRouter);
 
 app.use(notFound);
 app.use(errorHandler);
 
 updateCurrencyPrice();
+// insertSeed();
 
 export = app;
