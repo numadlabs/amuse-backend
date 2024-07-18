@@ -4,9 +4,18 @@ import { Card } from "../types/db/types";
 import { s3 } from "../utils/aws";
 import { randomUUID } from "crypto";
 import { s3BucketName } from "../lib/constants";
+import { restaurantRepository } from "../repository/restaurantRepository";
+import { CustomError } from "../exceptions/CustomError";
 
 export const cardServices = {
   create: async (data: Insertable<Card>, file: Express.Multer.File) => {
+    const restaurant = await restaurantRepository.getById(data.restaurantId);
+    if (!restaurant) throw new CustomError("Invalid restaurantId", 400);
+
+    data.benefits =
+      "Earn Bitcoin for every visits, Complimentary bites along the way.";
+    data.instruction =
+      "Scan the Amuse Bouche QR code to check in and unlock rewards with each visit.";
     const card = await cardRepository.create(data);
 
     if (!file) return card;

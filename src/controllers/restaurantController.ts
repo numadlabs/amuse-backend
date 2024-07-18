@@ -6,6 +6,7 @@ import { db } from "../utils/db";
 import { restaurantServices } from "../services/restaurantServices";
 import { AuthenticatedRequest } from "../../custom";
 import { CustomError } from "../exceptions/CustomError";
+import { currencyRepository } from "../repository/currencyRepository";
 
 export const restaurantController = {
   createRestaurant: async (
@@ -236,8 +237,17 @@ export const restaurantController = {
         time.toString(),
         Number(dayNoOfTheWeek)
       );
+      const btc = await currencyRepository.getByTicker("BTC");
+      const currency = await currencyRepository.getByTicker("EUR");
 
-      return res.status(200).json({ success: true, restaurant: restaurant });
+      return res.status(200).json({
+        success: true,
+        data: {
+          restaurant: restaurant,
+          convertedBalance:
+            restaurant.balance * btc.currentPrice * currency.currentPrice,
+        },
+      });
     } catch (e) {
       next(e);
     }
