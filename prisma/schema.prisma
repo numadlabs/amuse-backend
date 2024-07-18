@@ -100,8 +100,8 @@ model Restaurant {
   longitude     Float
   logo          String?
   balance       Float    @default(0)
-  rewardAmount  Float
-  perkOccurence Int
+  rewardAmount  Float @default(1)
+  perkOccurence Int @default(3)
 
   categoryId String
   Category   Category @relation(fields: [categoryId], references: [id])

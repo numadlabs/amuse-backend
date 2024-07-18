@@ -73,8 +73,8 @@ export type Restaurant = {
     longitude: number;
     logo: string | null;
     balance: Generated<number>;
-    rewardAmount: number;
-    perkOccurence: number;
+    rewardAmount: Generated<number>;
+    perkOccurence: Generated<number>;
     categoryId: string;
 };
 export type Tap = {
