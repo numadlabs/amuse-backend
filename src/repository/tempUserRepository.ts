@@ -25,7 +25,7 @@ export const tempUserRepository = {
       .selectAll()
       .where("TempUser.prefix", "=", prefix)
       .where("TempUser.telNumber", "=", telNumber)
-      .orderBy("TempUser.createdAt asc")
+      .orderBy("TempUser.createdAt desc")
       .executeTakeFirst();
 
     return tempUser;

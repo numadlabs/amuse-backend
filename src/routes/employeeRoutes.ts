@@ -13,7 +13,7 @@ employeeRouter.post(
 employeeRouter.post(
   "/superAdmin",
   authenticateToken,
-  // authorize('SUPER_ADMIN'),
+  authorize("SUPER_ADMIN"),
   employeeController.createAsSuperAdmin
 );
 employeeRouter.post("/login", employeeController.login);

@@ -23,6 +23,13 @@ restaurantRoutes.post(
   // authorize("RESTAURANT_WAITER"),
   restaurantController.generateNFC
 );
+restaurantRoutes.put(
+  "/:id/rewardDetail",
+  authenticateToken,
+  authorize("RESTAURANT_OWNER"),
+  parseFile("logo"),
+  restaurantController.updateRewardDetail
+);
 restaurantRoutes.get(
   "/:id",
   authenticateToken,
@@ -31,7 +38,7 @@ restaurantRoutes.get(
 restaurantRoutes.put(
   "/:id",
   authenticateToken,
-  authorize("SUPER_ADMIN"),
+  authorize("RESTAURANT_OWNER"),
   parseFile("logo"),
   restaurantController.updateRestaurant
 );

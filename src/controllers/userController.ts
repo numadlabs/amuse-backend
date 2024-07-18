@@ -102,14 +102,15 @@ export const UserController = {
           .json({ success: false, data: null, error: "User does not exist." });
 
       const sanitizedUser = hideDataHelper.sanitizeUserData(user);
-      const btc = await currencyRepository.getByName("BTC");
-      const currency = await currencyRepository.getByName("CZK");
+      const btc = await currencyRepository.getByTicker("BTC");
+      const currency = await currencyRepository.getByTicker("EUR");
 
       return res.status(200).json({
         success: true,
         data: {
           user: sanitizedUser,
-          convertedBalance: user.balance * btc.priceInUSD * currency.priceInUSD,
+          convertedBalance:
+            user.balance * btc.currentPrice * currency.currentPrice,
         },
       });
     } catch (e) {
@@ -163,6 +164,7 @@ export const UserController = {
         .selectFrom("UserCard")
         .innerJoin("Card", "Card.id", "UserCard.cardId")
         .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+        .innerJoin("Category", "Category.id", "Restaurant.categoryId")
         .where("UserCard.userId", "=", req.user.id)
         .select(({ eb }) => [
           "UserCard.id",
@@ -174,7 +176,8 @@ export const UserController = {
           "Restaurant.location",
           "Restaurant.latitude",
           "Restaurant.location",
-          "Restaurant.category",
+          "Restaurant.categoryId",
+          "Restaurant.categoryId as categoryName",
           "Restaurant.name",
           "Restaurant.logo",
           "UserCard.visitCount",

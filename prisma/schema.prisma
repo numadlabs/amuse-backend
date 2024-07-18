@@ -45,6 +45,7 @@ model User {
   UserBonus    UserBonus[]
   Notification Notification[]
   Tap          Tap[]
+  Transaction  Transaction[]
 }
 
 model Employee {
@@ -93,7 +94,6 @@ model Restaurant {
   id            String   @id @default(dbgenerated("gen_random_uuid()"))
   createdAt     DateTime @default(now())
   name          String
-  category      CATEGORY
   description   String
   location      String
   latitude      Float
@@ -103,9 +103,20 @@ model Restaurant {
   rewardAmount  Float
   perkOccurence Int
 
-  Card      Card[]
-  Timetable Timetable[]
-  Employee  Employee[]
+  categoryId String
+  Category   Category @relation(fields: [categoryId], references: [id])
+
+  Card        Card[]
+  Timetable   Timetable[]
+  Employee    Employee[]
+  Transaction Transaction[]
+}
+
+model Category {
+  id         String       @id @default(dbgenerated("gen_random_uuid()"))
+  name       String
+  createdAt  DateTime     @default(now())
+  Restaurant Restaurant[]
 }
 
 model Timetable {
@@ -123,6 +134,7 @@ model Timetable {
 model Card {
   id          String   @id @default(dbgenerated("gen_random_uuid()"))
   createdAt   DateTime @default(now())
+  nftUrl      String
   nftImageUrl String?
   instruction String
   benefits    String
@@ -171,11 +183,10 @@ model Tap {
 }
 
 model Bonus {
-  id            String  @id @default(dbgenerated("gen_random_uuid()"))
-  imageUrl      String?
+  id            String @id @default(dbgenerated("gen_random_uuid()"))
   name          String
   totalSupply   Int
-  currentSupply Int     @default(0)
+  currentSupply Int    @default(0)
 
   price   Float?
   visitNo Int?
@@ -212,9 +223,10 @@ model Notification {
 }
 
 model Currency {
-  id         String @id @default(dbgenerated("gen_random_uuid()"))
-  name       String
-  priceInUSD Float
+  id           String @id @default(dbgenerated("gen_random_uuid()"))
+  ticker       String
+  currentPrice Float
+  setPrice     Float?
 }
 
 model Purchase {
@@ -225,28 +237,25 @@ model Purchase {
   UserBonus   UserBonus @relation(fields: [userBonusId], references: [id], onDelete: Cascade)
 }
 
+model Transaction {
+  id        String           @id @default(dbgenerated("gen_random_uuid()"))
+  txid      String
+  amount    Float
+  type      TRANSACTION_TYPE
+  createdAt DateTime         @default(now())
+
+  restaurantId String?
+  Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  userId String?
+  User   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 enum ROLES {
   SUPER_ADMIN
   RESTAURANT_OWNER
   RESTAURANT_WAITER
   USER
-}
-
-enum CATEGORY {
-  JAPANESE
-  KOREAN
-  MEDITERRANEAN
-  BUFFET
-  FAST_FOOD
-  MONGOLIAN
-  PAN_ASIAN
-  CAFE
-  LEBANESE
-  BEACH_CLUB
-  CHINESE
-  GEORGIAN
-  CUBAN
-  MEXICAN
 }
 
 enum BONUS_TYPE {
@@ -261,8 +270,7 @@ enum BONUS_STATUS {
   SERVED
 }
 
-enum INVITE_STATUS {
-  ON_HOLD
-  ACCEPTED
-  REJECTED
+enum TRANSACTION_TYPE {
+  WITHDRAW
+  DEPOSIT
 }

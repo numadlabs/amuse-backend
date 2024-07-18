@@ -190,21 +190,25 @@ export const userServices = {
 
     if (file && findUser.profilePicture) {
       await s3
-        .deleteObject({ Bucket: s3BucketName, Key: findUser.profilePicture })
+        .deleteObject({
+          Bucket: s3BucketName,
+          Key: `restaurant/${findUser.profilePicture}`,
+        })
         .promise();
     }
 
     if (file) {
+      const randomKey = randomUUID();
       const s3Response = await s3
         .upload({
           Bucket: s3BucketName,
-          Key: randomUUID(),
+          Key: `restaurant/${randomKey}`,
           Body: file.buffer,
           ContentType: file.mimetype,
         })
         .promise();
 
-      data.profilePicture = s3Response.Key;
+      data.profilePicture = randomKey;
     }
 
     const user = await userRepository.update(findUser.id, data);

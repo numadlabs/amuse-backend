@@ -93,7 +93,10 @@ export const userBonusServices = {
 
     if (!userCard) throw new CustomError("No usercard found.", 400);
 
-    const bonuses = await bonusRepository.getByRestaurantId(restaurantId);
+    const bonuses = await bonusRepository.getByRestaurantId(
+      restaurantId,
+      "RECURRING"
+    );
 
     let followingBonus;
     if (bonuses.length > 0) {
@@ -107,7 +110,6 @@ export const userBonusServices = {
       followingBonus = {
         id: bonuses[index].id,
         cardId: bonuses[index].cardId,
-        imageUrl: bonuses[index].imageUrl,
         name: bonuses[index].name,
         current: userCard.visitCount % restaurant.perkOccurence,
         target: restaurant.perkOccurence,
@@ -136,7 +138,6 @@ export const userBonusServices = {
       followingBonus = {
         id: bonuses[index].id,
         cardId: bonuses[index].cardId,
-        imageUrl: bonuses[index].imageUrl,
         name: bonuses[index].name,
         current: userCard.visitCount % restaurant.perkOccurence,
         target: restaurant.perkOccurence,

@@ -25,6 +25,7 @@ export const cardController = {
   },
   updateCard: async (req: Request, res: Response, next: NextFunction) => {
     const data: Updateable<Card> = { ...req.body };
+    const file = req.file as Express.Multer.File;
     const id = req.params.id;
 
     if (data.id)
@@ -33,7 +34,7 @@ export const cardController = {
         .json({ success: false, data: null, error: "Cannot update id field" });
 
     try {
-      const card = await cardServices.update(id, data);
+      const card = await cardServices.update(id, data, file);
 
       return res.status(200).json({ success: true, data: { card: card } });
     } catch (e) {

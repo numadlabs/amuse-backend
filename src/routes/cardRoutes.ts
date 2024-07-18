@@ -16,14 +16,15 @@ cardRoutes.get("/", cardController.getCards);
 cardRoutes.post(
   "/",
   authenticateToken,
-  authorize("SUPER_ADMIN"),
+  authorize("RESTAURANT_OWNER"),
   parseFile("nftImage"),
   cardController.createCard
 );
 cardRoutes.put(
   "/:id",
   authenticateToken,
-  authorize("SUPER_ADMIN"),
+  authorize("RESTAURANT_OWNER"),
+  parseFile("nftImage"),
   cardController.updateCard
 );
 cardRoutes.delete(

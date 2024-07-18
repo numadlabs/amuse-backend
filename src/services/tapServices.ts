@@ -109,11 +109,11 @@ export const tapServices = {
 
     const tier = await userTierRepository.getByIdWithNextTier(user.userTierId);
 
-    const btc = await currencyRepository.getByName("BTC");
-    const currency = await currencyRepository.getByName("CZK");
+    const btc = await currencyRepository.getByTicker("BTC");
+    const currency = await currencyRepository.getByTicker("EUR");
 
     let incrementBtc =
-      (restaurant.rewardAmount / (btc.priceInUSD * currency.priceInUSD)) *
+      (restaurant.rewardAmount / (btc.currentPrice * currency.currentPrice)) *
       tier.rewardMultiplier;
 
     if (user.email && user.location && user.dateOfBirth)

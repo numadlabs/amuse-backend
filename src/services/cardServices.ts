@@ -11,23 +11,51 @@ export const cardServices = {
 
     if (!file) return card;
 
+    const randomKey = randomUUID();
     const s3Response = await s3
       .upload({
         Bucket: s3BucketName,
-        Key: randomUUID(),
+        Key: `restaurant/${randomKey}`,
         Body: file.buffer,
         ContentType: file.mimetype,
       })
       .promise();
 
-    card.nftImageUrl = s3Response.Key;
+    card.nftImageUrl = randomKey;
 
     const updatedCard = await cardRepository.update(card.id, card);
 
     return updatedCard;
   },
-  update: async (id: string, data: Updateable<Card>) => {
+  update: async (
+    id: string,
+    data: Updateable<Card>,
+    file: Express.Multer.File
+  ) => {
     const card = await cardRepository.getById(id);
+
+    if (file && card.nftImageUrl) {
+      await s3
+        .deleteObject({
+          Bucket: s3BucketName,
+          Key: `restaurant/${card.nftImageUrl}`,
+        })
+        .promise();
+    }
+
+    if (file) {
+      const randomKey = randomUUID();
+      const s3Response = await s3
+        .upload({
+          Bucket: s3BucketName,
+          Key: `restaurant/${randomKey}`,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        })
+        .promise();
+
+      card.nftImageUrl = randomKey;
+    }
 
     const updatedCard = await cardRepository.update(card.id, data);
 
