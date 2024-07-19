@@ -7,6 +7,9 @@ CREATE TYPE "BONUS_TYPE" AS ENUM ('SINGLE', 'RECURRING', 'REDEEMABLE');
 -- CreateEnum
 CREATE TYPE "BONUS_STATUS" AS ENUM ('UNUSED', 'USED', 'SERVED');
 
+-- CreateEnum
+CREATE TYPE "TRANSACTION_TYPE" AS ENUM ('WITHDRAW', 'DEPOSIT');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
@@ -89,8 +92,8 @@ CREATE TABLE "Restaurant" (
     "longitude" DOUBLE PRECISION NOT NULL,
     "logo" TEXT,
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "rewardAmount" DOUBLE PRECISION NOT NULL,
-    "perkOccurence" INTEGER NOT NULL,
+    "rewardAmount" DOUBLE PRECISION NOT NULL DEFAULT 1,
+    "perkOccurence" INTEGER NOT NULL DEFAULT 3,
     "categoryId" TEXT NOT NULL,
 
     CONSTRAINT "Restaurant_pkey" PRIMARY KEY ("id")
@@ -160,6 +163,7 @@ CREATE TABLE "Bonus" (
     "name" TEXT NOT NULL,
     "totalSupply" INTEGER NOT NULL,
     "currentSupply" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "price" DOUBLE PRECISION,
     "visitNo" INTEGER,
     "type" "BONUS_TYPE" NOT NULL,
@@ -172,6 +176,7 @@ CREATE TABLE "Bonus" (
 CREATE TABLE "UserBonus" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "status" "BONUS_STATUS" NOT NULL DEFAULT 'UNUSED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT NOT NULL,
     "userCardId" TEXT NOT NULL,
     "bonusId" TEXT NOT NULL,
@@ -184,6 +189,7 @@ CREATE TABLE "Notification" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "message" TEXT NOT NULL,
     "isRead" BOOLEAN NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
@@ -206,6 +212,19 @@ CREATE TABLE "Purchase" (
     "userBonusId" TEXT NOT NULL,
 
     CONSTRAINT "Purchase_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Transaction" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "txid" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "type" "TRANSACTION_TYPE" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "restaurantId" TEXT,
+    "userId" TEXT,
+
+    CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -264,3 +283,9 @@ ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "Purchase" ADD CONSTRAINT "Purchase_userBonusId_fkey" FOREIGN KEY ("userBonusId") REFERENCES "UserBonus"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

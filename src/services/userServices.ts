@@ -192,7 +192,7 @@ export const userServices = {
       await s3
         .deleteObject({
           Bucket: s3BucketName,
-          Key: `restaurant/${findUser.profilePicture}`,
+          Key: `user/${findUser.profilePicture}`,
         })
         .promise();
     }
@@ -202,7 +202,7 @@ export const userServices = {
       const s3Response = await s3
         .upload({
           Bucket: s3BucketName,
-          Key: `restaurant/${randomKey}`,
+          Key: `user/${randomKey}`,
           Body: file.buffer,
           ContentType: file.mimetype,
         })
@@ -222,7 +222,10 @@ export const userServices = {
 
     if (findUser.profilePicture) {
       await s3
-        .deleteObject({ Bucket: s3BucketName, Key: findUser.profilePicture })
+        .deleteObject({
+          Bucket: s3BucketName,
+          Key: `user/${findUser.profilePicture}`,
+        })
         .promise();
     }
 

@@ -8,23 +8,13 @@ import {
   Employee,
   Restaurant,
   Timetable,
+  Transaction,
   UserTier,
 } from "../types/db/types";
 
 const currency: Insertable<Currency>[] = [
   { ticker: "BTC", currentPrice: 64403 },
   { ticker: "EUR", currentPrice: 0.9178 },
-];
-
-const employee: Insertable<Employee>[] = [
-  {
-    id: "7a5758cf-58f5-49ce-98d3-a8fc9c4541ed",
-    firstname: "super",
-    lastname: "admin",
-    role: "SUPER_ADMIN",
-    email: "admin@mara.com",
-    password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
-  },
 ];
 
 const userTier: Insertable<UserTier>[] = [
@@ -79,7 +69,7 @@ const category: Insertable<Category>[] = [
     name: "Pan-Asian",
   },
   {
-    id: "1d7d5b1f-f591-4dcd-af15-c5bebf40dac3",
+    id: "ef18c860-255c-434d-85a6-5431b2180fc1",
     name: "Cafe",
   },
   {
@@ -158,8 +148,109 @@ const restaurant: Insertable<Restaurant>[] = [
     longitude: 14.419586,
     rewardAmount: 1,
     perkOccurence: 3,
-    categoryId: "1d7d5b1f-f591-4dcd-af15-c5bebf40dac3",
+    categoryId: "ef18c860-255c-434d-85a6-5431b2180fc1",
     logo: "4eb16d9b-d2f8-47a4-9c3f-e9e673130684",
+  },
+];
+
+const transaction: Insertable<Transaction>[] = [
+  {
+    type: "DEPOSIT",
+    amount: 1,
+    txid: "3a0b28909a47b6421dc2ed486a7bc7b7555ee88a94373b629f7eee5043ab1718",
+    restaurantId: "8cbfece9-bc33-4089-af7d-7a327a5e7faf",
+  },
+  {
+    type: "DEPOSIT",
+    amount: 1,
+    txid: "472a870f066f9c455d03b512e6d52a6dd423905dff6a31ee9390ffe47a4782a3",
+    restaurantId: "34dbdac2-05f8-426e-926a-1983f3b9f144",
+  },
+  {
+    type: "DEPOSIT",
+    amount: 1,
+    txid: "9db2e85e69bab802b7e5f6ca29da9e163b84a4bd77b2eef9e2327f342d5d1aef",
+    restaurantId: "ac9d78f5-4c18-418e-928e-162457adf328",
+  },
+  {
+    type: "DEPOSIT",
+    amount: 1,
+    txid: "8d5381ca891816279858e7a0ae6b2348f55eb908f57f76b568e30fffae6a7dad",
+    restaurantId: "1d7d5b1f-f591-4dcd-af15-c5bebf40dac3",
+  },
+];
+
+const employee: Insertable<Employee>[] = [
+  {
+    firstname: "super",
+    lastname: "admin",
+    role: "SUPER_ADMIN",
+    email: "admin@mara.com",
+    password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
+  },
+  {
+    firstname: "sasazu",
+    lastname: "owner",
+    role: "RESTAURANT_OWNER",
+    email: "owner@sasazu.com",
+    password: "$2b$10$UaHxXjkleWhQZpHdNFPJ0.jylGtOAUE6nxs/RigdndMVwEnaMejGG",
+    restaurantId: "8cbfece9-bc33-4089-af7d-7a327a5e7faf",
+  },
+  {
+    firstname: "sasazu",
+    lastname: "waiter",
+    role: "RESTAURANT_WAITER",
+    email: "waiter@sasazu.com",
+    password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
+    restaurantId: "8cbfece9-bc33-4089-af7d-7a327a5e7faf",
+  },
+  {
+    firstname: "sansho",
+    lastname: "owner",
+    role: "RESTAURANT_OWNER",
+    email: "owner@sansho.com",
+    password: "$2b$10$UaHxXjkleWhQZpHdNFPJ0.jylGtOAUE6nxs/RigdndMVwEnaMejGG",
+    restaurantId: "34dbdac2-05f8-426e-926a-1983f3b9f144",
+  },
+  {
+    firstname: "sansho",
+    lastname: "waiter",
+    role: "RESTAURANT_WAITER",
+    email: "waiter@sansho.com",
+    password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
+    restaurantId: "34dbdac2-05f8-426e-926a-1983f3b9f144",
+  },
+  {
+    firstname: "kro",
+    lastname: "owner",
+    role: "RESTAURANT_OWNER",
+    email: "owner@kro.com",
+    password: "$2b$10$UaHxXjkleWhQZpHdNFPJ0.jylGtOAUE6nxs/RigdndMVwEnaMejGG",
+    restaurantId: "ac9d78f5-4c18-418e-928e-162457adf328",
+  },
+  {
+    firstname: "kro",
+    lastname: "waiter",
+    role: "RESTAURANT_WAITER",
+    email: "waiter@kro.com",
+    password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
+    restaurantId: "ac9d78f5-4c18-418e-928e-162457adf328",
+  },
+  {
+    firstname: "louvre",
+    lastname: "owner",
+    role: "RESTAURANT_OWNER",
+    email: "owner@louvre.com",
+    password: "$2b$10$UaHxXjkleWhQZpHdNFPJ0.jylGtOAUE6nxs/RigdndMVwEnaMejGG",
+    restaurantId: "1d7d5b1f-f591-4dcd-af15-c5bebf40dac3",
+  },
+  {
+    firstname: "louvre",
+    lastname: "waiter",
+    role: "RESTAURANT_WAITER",
+    email: "waiter@louvre.com",
+    password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
+    restaurantId: "1d7d5b1f-f591-4dcd-af15-c5bebf40dac3",
   },
 ];
 
@@ -621,11 +712,16 @@ const bonus: Insertable<Bonus>[] = [
 
 export async function insertSeed() {
   await db.insertInto("Currency").values(currency).returningAll().execute();
-  await db.insertInto("Employee").values(employee).returningAll().execute();
   await db.insertInto("UserTier").values(userTier).returningAll().execute();
   await db.insertInto("Category").values(category).returningAll().execute();
   await db.insertInto("Restaurant").values(restaurant).returningAll().execute();
+  await db.insertInto("Employee").values(employee).returningAll().execute();
   await db.insertInto("Timetable").values(timetable).returningAll().execute();
   await db.insertInto("Card").values(card).returningAll().execute();
   await db.insertInto("Bonus").values(bonus).returningAll().execute();
+  await db
+    .insertInto("Transaction")
+    .values(transaction)
+    .returningAll()
+    .execute();
 }

@@ -23,6 +23,7 @@ import categoryRouter from "./routes/categoryRoutes";
 import transactionRouter from "./routes/transactionRoutes";
 
 import { Server } from "socket.io";
+import { insertSeed } from "./seeders/main";
 const { createServer } = require("node:http");
 
 const app = express();
@@ -61,7 +62,9 @@ app.use(notFound);
 app.use(errorHandler);
 
 updateCurrencyPrice();
-// insertSeed();
+// insertSeed().then(() =>
+//   console.log(`Inserted seed data to DB ${process.env.PGDATABASE}`)
+// );
 
 export const connections = new Map();
 

@@ -9,7 +9,8 @@
     "dev": "nodemon src/index.ts",
     "migrate:dev": "dotenv -e .env -- npx prisma migrate dev",
     "migrate:prod": "dotenv -e .env.prod -- npx prisma migrate dev",
-    "test": "jest"
+    "test": "jest",
+    "seed": "dotenv -e .env.prod -- nodemon src/index.ts"
   },
   "author": "gombochir.dev@gmail.com",
   "license": "Proprietary",
