@@ -36,6 +36,7 @@
     "nodemailer": "^6.9.8",
     "pg": "^8.11.3",
     "prisma-kysely": "^1.7.1",
+    "socket.io": "^4.7.5",
     "twilio": "^4.21.0"
   },
   "devDependencies": {

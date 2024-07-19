@@ -157,19 +157,6 @@ export const restaurantServices = {
 
     return deletedRestaurant;
   },
-  generateNFC: async (restaurantId: string) => {
-    const restaurant = await restaurantRepository.getById(restaurantId);
-
-    if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
-
-    const data = {
-      restaurantId: restaurant.id,
-    };
-
-    const hashedData = encryptionHelper.encryptData(JSON.stringify(data));
-
-    return hashedData;
-  },
   updateRewardDetail: async (id: string, data: Updateable<Restaurant>) => {
     const restaurant = await restaurantRepository.getById(id);
     if (!restaurant)

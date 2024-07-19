@@ -1,7 +1,9 @@
+import { connections, io } from "../app";
 import { CustomError } from "../exceptions/CustomError";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";
 import { cardRepository } from "../repository/cardRepository";
+import { employeeRepository } from "../repository/employeeRepository";
 import { purchaseRepository } from "../repository/purchaseRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
@@ -50,26 +52,45 @@ export const userBonusServices = {
 
     return userBonus;
   },
-  use: async (id: string, userId: string, encryptedData: string) => {
+  generate: async (id: string, userId: string) => {
     const userBonus = await userBonusRepository.getById(id);
+    if (!userBonus) throw new CustomError("Invalid userBonusId.", 400);
+    if (userBonus.userId !== userId)
+      throw new CustomError("You are not allowed to use it.", 400);
+
+    const data = {
+      userBonusId: userBonus.id,
+      generatedAt: Date.now(),
+    };
+
+    const hashedData = encryptionHelper.encryptData(JSON.stringify(data));
+
+    return hashedData;
+  },
+  use: async (encryptedData: string, waiterId: string) => {
+    const data = encryptionHelper.decryptData(encryptedData);
+    if (!data.userBonusId) throw new CustomError("Invalid QR.", 400);
+
+    const userBonus = await userBonusRepository.getById(data.userBonusId);
 
     if (!userBonus)
       throw new CustomError("No corresponding userBonus found.", 400);
 
-    if (userBonus?.userId !== userId)
-      throw new CustomError("You are not allowed to use this bonus.", 400);
-
     if (userBonus.status !== "UNUSED")
       throw new CustomError("This bonus is used already.", 400);
+
+    const waiter = await employeeRepository.getById(waiterId);
+    if (!waiter) throw new CustomError("Waiter not found.", 400);
 
     const userCard = await userCardReposity.getById(userBonus.userCardId);
     if (!userCard) throw new CustomError("User card not found.", 400);
 
     const card = await cardRepository.getById(userCard.cardId);
-
-    const data = encryptionHelper.decryptData(encryptedData);
-    if (card.restaurantId !== data.restaurantId)
-      throw new CustomError("Invalid NFC info.", 400);
+    if (!waiter.restaurantId || card.restaurantId !== waiter.restaurantId)
+      throw new CustomError(
+        "Invalid waiter or you are not allowed to scan this bonus.",
+        400
+      );
 
     userBonus.status = "USED";
 
@@ -77,6 +98,9 @@ export const userBonusServices = {
       userBonus.id,
       userBonus
     );
+
+    const userSocketId = connections.get(userCard.userId);
+    io.to(userSocketId).emit("bonus-scan", { bonus: updatedUserBonus });
 
     return updatedUserBonus;
   },
@@ -123,7 +147,10 @@ export const userBonusServices = {
 
     if (!userCard) throw new CustomError("No usercard found.", 400);
 
-    const bonuses = await bonusRepository.getByCardId(userCard.cardId);
+    const bonuses = await bonusRepository.getByCardId(
+      userCard.cardId,
+      "RECURRING"
+    );
     const card = await cardRepository.getById(userCard.cardId);
     const restaurant = await restaurantRepository.getById(card.restaurantId);
 

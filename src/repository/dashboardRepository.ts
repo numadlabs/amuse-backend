@@ -84,12 +84,12 @@ group by location
       values (${restaurantId}))
     select
       coalesce((select * from myconstants), 'undefined') as restaurantId,
-        SUM(CASE WHEN tapCount = 1 THEN 1 ELSE 0 END) as "1",
-        SUM(CASE WHEN tapCount = 2 THEN 1 ELSE 0 END) as "2",
-        SUM(CASE WHEN tapCount = 3 THEN 1 ELSE 0 END) as "3",
-        SUM(CASE WHEN tapCount = 4 THEN 1 ELSE 0 END) as "4",
-        SUM(CASE WHEN tapCount = 5 THEN 1 ELSE 0 END) as "5",
-        SUM(CASE WHEN tapCount > 5 THEN 1 ELSE 0 END) as "+5"
+        COALESCE(SUM(CASE WHEN tapCount = 1 THEN 1 ELSE 0 END), 0) AS "1",
+        COALESCE(SUM(CASE WHEN tapCount = 2 THEN 1 ELSE 0 END), 0) AS "2",
+        COALESCE(SUM(CASE WHEN tapCount = 3 THEN 1 ELSE 0 END), 0) AS "3",
+        COALESCE(SUM(CASE WHEN tapCount = 4 THEN 1 ELSE 0 END), 0) AS "4",
+        COALESCE(SUM(CASE WHEN tapCount = 5 THEN 1 ELSE 0 END), 0) AS "5",
+        COALESCE(SUM(CASE WHEN tapCount > 5 THEN 1 ELSE 0 END), 0) AS "+5"
     FROM (
         select
             u.id as "userId",

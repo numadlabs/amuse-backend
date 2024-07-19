@@ -11,6 +11,7 @@ export type Bonus = {
     name: string;
     totalSupply: number;
     currentSupply: Generated<number>;
+    createdAt: Generated<Timestamp>;
     price: number | null;
     visitNo: number | null;
     type: BONUS_TYPE;
@@ -56,6 +57,7 @@ export type Notification = {
     id: Generated<string>;
     message: string;
     isRead: boolean;
+    createdAt: Generated<Timestamp>;
     userId: string;
 };
 export type Purchase = {
@@ -133,6 +135,7 @@ export type User = {
 export type UserBonus = {
     id: Generated<string>;
     status: Generated<BONUS_STATUS>;
+    createdAt: Generated<Timestamp>;
     userId: string;
     userCardId: string;
     bonusId: string;

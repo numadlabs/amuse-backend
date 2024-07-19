@@ -26,12 +26,31 @@ export const userBonusController = {
       next(e);
     }
   },
-  useUserBonus: async (
+  generate: async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
     const { id } = req.params;
+
+    try {
+      if (!req.user?.id)
+        throw new CustomError("Could not parse the id from the token", 400);
+
+      const hashedData = await userBonusServices.generate(id, req.user?.id);
+
+      return res
+        .status(200)
+        .json({ success: true, data: { encryptedData: hashedData } });
+    } catch (e) {
+      next(e);
+    }
+  },
+  useUserBonus: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const { encryptedData } = req.body;
 
     try {
@@ -42,9 +61,8 @@ export const userBonusController = {
         throw new CustomError("Please provide the NFC info.", 400);
 
       const userBonus = await userBonusServices.use(
-        id,
-        req.user?.id,
-        encryptedData
+        encryptedData,
+        req.user?.id
       );
 
       return res.status(200).json({ success: true, data: userBonus });

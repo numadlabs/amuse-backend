@@ -12,89 +12,95 @@ import { userRepository } from "../repository/userRepository";
 import { currencyRepository } from "../repository/currencyRepository";
 import { userTierRepository } from "../repository/userTierRepository";
 import { employeeRepository } from "../repository/employeeRepository";
+import { connections, io } from "../app";
 
 export const tapServices = {
-  verifyTap: async (hashedData: string, userId: string) => {
-    const user = await userRepository.getUserById(userId);
+  generate: async (userId: string) => {
+    const data = {
+      userId: userId,
+      generatedAt: Date.now(),
+    };
 
-    if (!user) throw new CustomError("Invalid user.", 400);
+    const hashedData = encryptionHelper.encryptData(JSON.stringify(data));
 
-    const data = encryptionHelper.decryptData(hashedData);
-
-    /* if (Date.now() - data.issuedAt > TAP_EXPIRATION_TIME * 1000)
-      throw new CustomError("The QR has expired.", 400); */
-
-    const restaurant = await restaurantRepository.getById(data.restaurantId);
-    if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
-
-    const userCard = await userCardReposity.getByUserIdRestaurantId(
-      userId,
-      data.restaurantId
-    );
-
-    if (!userCard) return { isOwned: false, userCard };
-
-    return { isOwned: true, userCard };
+    return hashedData;
   },
-  redeemTap: async (hashedData: string, userId: string) => {
+  redeemTap: async (hashedData: string, waiterId: string) => {
     const data = encryptionHelper.decryptData(hashedData);
-
-    const restaurant = await restaurantRepository.getById(data.restaurantId);
-    if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
     // if (Date.now() - data.issuedAt > TAP_EXPIRATION_TIME * 1000)
     //   throw new CustomError("The QR has expired.", 400);
 
-    const user = await userRepository.getUserById(userId);
-    if (!user) throw new CustomError("Invalid userId.", 400);
+    if (!data.userId) throw new CustomError("Invalid QR.", 400);
+    const user = await userRepository.getUserById(data.userId);
+    if (!user) throw new CustomError("Invalid QR.", 400);
+
+    const waiter = await employeeRepository.getById(waiterId);
+    if (!waiter || !waiter.restaurantId)
+      throw new CustomError("Invalid waiterId.", 400);
+
+    const restaurant = await restaurantRepository.getById(waiter.restaurantId);
+    if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
     const userCard = await userCardReposity.getByUserIdRestaurantId(
       user.id,
       restaurant.id
     );
 
-    if (!userCard)
+    const userSocketId = connections.get(user.id);
+    if (!userCard) {
+      io.to(userSocketId).emit("tap-scan", { isOwned: false });
       throw new CustomError(
         "Customer does not have a membership card for this restaurant.",
         400
       );
-
-    userCard.isFirstTap = true;
-
-    const bonuses = await bonusRepository.getByCardId(userCard.cardId);
-    let bonus;
-
-    if (bonuses.length === 0) bonus = "Ran out of perks.";
-
-    if (userCard.visitCount === 0 && bonuses.length > 0) {
-      const index =
-        Math.floor(userCard.visitCount / restaurant.perkOccurence) %
-        bonuses.length;
-      bonus = bonuses[index];
-
-      const userBonus: Insertable<UserBonus> = {
-        bonusId: bonus.id,
-        userId: user.id,
-        userCardId: userCard.id,
-      };
-
-      await userBonusRepository.create(userBonus);
-
-      bonus.currentSupply++;
-      await bonusRepository.update(bonus, bonus.id);
     }
 
+    userCard.isFirstTap = true;
     userCard.visitCount += 1;
 
-    if (
-      userCard.visitCount % restaurant.perkOccurence === 0 &&
-      bonuses.length > 0
-    ) {
-      const index =
-        Math.floor(userCard.visitCount / restaurant.perkOccurence) %
-        bonuses.length;
-      bonus = bonuses[index];
+    //start of bonus logic
+    const singleBonus = await bonusRepository.getByRestaurantIdAndVisitNo(
+      restaurant.id,
+      userCard.visitCount
+    );
+    let bonus = null;
+    let hasRecurringBonus = true;
 
+    if (!singleBonus) {
+      const recurringBonuses = await bonusRepository.getByCardId(
+        userCard.cardId,
+        "RECURRING"
+      );
+
+      if (
+        userCard.visitCount % restaurant.perkOccurence === 0 &&
+        recurringBonuses.length === 0
+      )
+        hasRecurringBonus = false;
+
+      if (
+        (userCard.visitCount === 1 ||
+          userCard.visitCount % restaurant.perkOccurence === 0) &&
+        recurringBonuses.length > 0
+      ) {
+        const index =
+          Math.floor(userCard.visitCount / restaurant.perkOccurence) %
+          recurringBonuses.length;
+        bonus = recurringBonuses[index];
+        const userBonus: Insertable<UserBonus> = {
+          bonusId: bonus.id,
+          userId: user.id,
+          userCardId: userCard.id,
+        };
+
+        await userBonusRepository.create(userBonus);
+
+        bonus.currentSupply++;
+        await bonusRepository.update(bonus, bonus.id);
+      }
+    } else {
+      bonus = singleBonus;
       const userBonus: Insertable<UserBonus> = {
         bonusId: bonus.id,
         userId: user.id,
@@ -116,8 +122,8 @@ export const tapServices = {
       (restaurant.rewardAmount / (btc.currentPrice * currency.currentPrice)) *
       tier.rewardMultiplier;
 
-    if (user.email && user.location && user.dateOfBirth)
-      incrementBtc *= BOOST_MULTIPLIER;
+    // if (user.email && user.location && user.dateOfBirth)
+    //   incrementBtc *= BOOST_MULTIPLIER;
 
     if (restaurant.balance >= incrementBtc) {
       restaurant.balance -= incrementBtc;
@@ -137,18 +143,33 @@ export const tapServices = {
 
     const tap = await tapRepository.create(tapData);
 
-    let updatedUserTier;
-    if (tier.nextTierNo && tier.nextTierId)
-      if (user.visitCount >= tier.nextTierNo) {
-        await userRepository.update(user.id, { userTierId: tier.nextTierId });
-        updatedUserTier = await userTierRepository.getById(tier.nextTierId);
-      }
+    let updatedUserTier = null;
+    if (
+      tier.nextTierNo &&
+      tier.nextTierId &&
+      user.visitCount >= tier.nextTierNo
+    ) {
+      await userRepository.update(user.id, { userTierId: tier.nextTierId });
+      updatedUserTier = await userTierRepository.getById(tier.nextTierId);
+    }
+
+    io.to(userSocketId).emit("tap-scan", {
+      isOwned: true,
+      data: {
+        increment: incrementBtc * btc.currentPrice * currency.currentPrice,
+        ticker: "EUR",
+        bonus: bonus,
+        userTier: updatedUserTier,
+        bonusCheck: hasRecurringBonus,
+      },
+    });
 
     return {
-      tap: tap,
-      increment: incrementBtc.toFixed(8),
+      increment: incrementBtc * btc.currentPrice * currency.currentPrice,
+      ticker: "EUR",
       bonus: bonus,
       userTier: updatedUserTier,
+      bonusCheck: hasRecurringBonus,
     };
   },
 };

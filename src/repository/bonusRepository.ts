@@ -33,14 +33,15 @@ export const bonusRepository = {
 
     return bonus;
   },
-  getByCardId: async (cardId: string) => {
+  getByCardId: async (cardId: string, type: BONUS_TYPE) => {
     const bonus = await db
       .selectFrom("Bonus")
       .where("Bonus.cardId", "=", cardId)
       .where("Bonus.type", "=", "RECURRING")
       .where((eb) =>
-        eb("Bonus.currentSupply", "<=", eb.ref("Bonus.totalSupply"))
+        eb("Bonus.currentSupply", "<", eb.ref("Bonus.totalSupply"))
       )
+      .where("Bonus.type", "=", type)
       .selectAll()
       .execute();
 
@@ -54,7 +55,7 @@ export const bonusRepository = {
       .where("Restaurant.id", "=", restaurantId)
       .where("Bonus.type", "=", type)
       .where((eb) =>
-        eb("Bonus.currentSupply", "<=", eb.ref("Bonus.totalSupply"))
+        eb("Bonus.currentSupply", "<", eb.ref("Bonus.totalSupply"))
       )
       .select([
         "Bonus.id",
@@ -70,15 +71,31 @@ export const bonusRepository = {
 
     return bonus;
   },
-  getFirstTapBonus: async () => {
+  getByRestaurantIdAndVisitNo: async (
+    restaurantId: string,
+    visitNo: number
+  ) => {
     const bonus = await db
       .selectFrom("Bonus")
-      /* .where("Bonus.cardId", "=", null) */
-      .where("Bonus.name", "=", "Free drink on the house")
-      .selectAll()
-      .executeTakeFirstOrThrow(
-        () => new CustomError("No Global free drink bonus found.", 500)
-      );
+      .innerJoin("Card", "Card.id", "Bonus.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .where("Restaurant.id", "=", restaurantId)
+      .where("Bonus.type", "=", "SINGLE")
+      .where("Bonus.visitNo", "=", visitNo)
+      .where((eb) =>
+        eb("Bonus.currentSupply", "<=", eb.ref("Bonus.totalSupply"))
+      )
+      .select([
+        "Bonus.id",
+        "Bonus.cardId",
+        "Bonus.name",
+        "Bonus.price",
+        "Bonus.type",
+        "Bonus.visitNo",
+        "Bonus.currentSupply",
+        "Bonus.totalSupply",
+      ])
+      .executeTakeFirst();
 
     return bonus;
   },

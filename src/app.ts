@@ -20,11 +20,14 @@ import notificationRouter from "./routes/notificationRoutes";
 import employeeRouter from "./routes/employeeRoutes";
 import userTierRouter from "./routes/userTierRoutes";
 import categoryRouter from "./routes/categoryRoutes";
-const http = require("http");
 import transactionRouter from "./routes/transactionRoutes";
 
+import { Server } from "socket.io";
+const { createServer } = require("node:http");
+
 const app = express();
-const server = http.createServer(app);
+export const server = createServer(app);
+export const io = new Server(server);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
@@ -60,4 +63,16 @@ app.use(errorHandler);
 updateCurrencyPrice();
 // insertSeed();
 
-export = app;
+export const connections = new Map();
+
+io.on("connection", (socket) => {
+  console.log(`socket ID of ${socket.id} connected`);
+  socket.on("register", (userId) => {
+    connections.set(userId, socket.id);
+    console.log(`User ${userId} registered with socket ID ${socket.id}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected", socket.id);
+  });
+});

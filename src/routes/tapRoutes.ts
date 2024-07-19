@@ -5,16 +5,16 @@ import { authorize } from "../middlewares/authorization";
 const tapRouter = express.Router();
 
 tapRouter.post(
-  "/redeem",
+  "/generate",
   authenticateToken,
   authorize("USER"),
-  tapController.redeemTap
+  tapController.generate
 );
 tapRouter.post(
-  "/verify",
+  "/redeem",
   authenticateToken,
-  authorize("USER"),
-  tapController.verifyTap
+  authorize("RESTAURANT_WAITER"),
+  tapController.redeemTap
 );
 tapRouter.get("/:id", tapController.getTapById);
 

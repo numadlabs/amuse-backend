@@ -1,8 +1,15 @@
 import express from "express";
 import { authenticateToken } from "../middlewares/authenticateToken";
 import { userBonusController } from "../controllers/userBonusController";
+import { authorize } from "../middlewares/authorization";
 const userBonusesRoutes = express.Router();
 
+userBonusesRoutes.post(
+  "/use",
+  authenticateToken,
+  authorize("RESTAURANT_WAITER"),
+  userBonusController.useUserBonus
+);
 userBonusesRoutes.get(
   "/:userCardId/userCard",
   authenticateToken,
@@ -14,9 +21,10 @@ userBonusesRoutes.get(
   userBonusController.getUnusedByRestaurantId
 );
 userBonusesRoutes.post(
-  "/:id/use",
+  "/:id/generate",
   authenticateToken,
-  userBonusController.useUserBonus
+  authorize("USER"),
+  userBonusController.generate
 );
 userBonusesRoutes.post("/buy", authenticateToken, userBonusController.buy);
 

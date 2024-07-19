@@ -135,14 +135,12 @@ export const restaurantController = {
       let query = db
         .selectFrom("Restaurant as r")
         .innerJoin("Card", "Card.restaurantId", "r.id")
-        .innerJoin("Category", "Category.id", "r.categoryId")
-        .leftJoin(
-          "UserCard",
-          (join) =>
-            join
-              .on("Card.id", "=", "UserCard.cardId")
-              .on("UserCard.userId", "=", userId) // Move the userId condition here
+        .leftJoin("UserCard", (join) =>
+          join
+            .onRef("Card.id", "=", "UserCard.cardId")
+            .on("UserCard.userId", "=", userId)
         )
+        .innerJoin("Category", "Category.id", "r.categoryId")
         .select(({ eb }) => [
           "r.id",
           "r.name",
@@ -248,27 +246,6 @@ export const restaurantController = {
             restaurant.balance * btc.currentPrice * currency.currentPrice,
         },
       });
-    } catch (e) {
-      next(e);
-    }
-  },
-  generateNFC: async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const { restaurantId } = req.body;
-
-    try {
-      if (!req.user?.id)
-        throw new CustomError("Couldn't parse the id from the token.", 400);
-
-      if (!restaurantId)
-        throw new CustomError("Please provide the restaurantId.", 400);
-
-      const hashedData = await restaurantServices.generateNFC(restaurantId);
-
-      return res.status(200).json({ success: true, data: hashedData });
     } catch (e) {
       next(e);
     }
