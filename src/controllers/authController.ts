@@ -293,9 +293,32 @@ export const authController = {
 
       return res.status(200).json({
         success: true,
-        data: {
-          user: null,
-        },
+        data: null,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  checkRegisterOTP: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { telVerificationCode, prefix, telNumber } = req.body;
+
+      if (!telNumber || !prefix || !telVerificationCode)
+        return res.status(400).json({
+          success: false,
+          data: null,
+          error: "Please provide a phone number.",
+        });
+
+      await userServices.checkRegisterOTP(
+        prefix,
+        telNumber,
+        telVerificationCode
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: null,
       });
     } catch (e) {
       next(e);

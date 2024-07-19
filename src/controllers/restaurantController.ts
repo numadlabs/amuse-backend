@@ -188,7 +188,7 @@ export const restaurantController = {
           `.as("isOpen"),
           "UserCard.visitCount",
         ])
-        .orderBy("r.name", "asc"); // Fix the orderBy syntax
+        .orderBy("r.name", "asc");
 
       // if (categories) {
       //   const parsedCategories: CATEGORY[] = JSON.parse(categories.toString());

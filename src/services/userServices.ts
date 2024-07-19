@@ -253,4 +253,22 @@ export const userServices = {
 
     return tempUser;
   },
+  checkRegisterOTP: async (
+    prefix: string,
+    telNumber: string,
+    verificationCode: number
+  ) => {
+    const tempUser = await tempUserRepository.getByTelNumber(prefix, telNumber);
+    if (!tempUser || !tempUser.telVerificationCode)
+      throw new CustomError("No record of sent OTP was found.", 400);
+
+    const telVerificationCode = extractVerification(
+      tempUser.telVerificationCode
+    );
+
+    if (telVerificationCode !== verificationCode)
+      throw new CustomError("Invalid verification code!", 400);
+
+    return true;
+  },
 };

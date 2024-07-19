@@ -18,7 +18,6 @@ export async function getCurrency(ticker: string) {
   if (!currencyApiURL) throw new Error("Error retrieving BTC price.");
 
   const response = await axios.get(currencyApiURL);
-  console.log(response.data.conversion_rates[ticker]);
 
   return response.data.conversion_rates[ticker];
 }
