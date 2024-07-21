@@ -49,6 +49,8 @@ export const userBonusServices = {
     restaurantRepository.update(restaurantId, restaurant);
 
     await purchaseRepository.create({ userBonusId: userBonus.id });
+    bonus.currentSupply++;
+    await bonusRepository.update(bonus, bonus.id);
 
     return userBonus;
   },

@@ -177,7 +177,7 @@ export const UserController = {
           "Restaurant.latitude",
           "Restaurant.location",
           "Restaurant.categoryId",
-          "Restaurant.categoryId as categoryName",
+          "Category.name as categoryName",
           "Restaurant.name",
           "Restaurant.logo",
           "UserCard.visitCount",
