@@ -30,4 +30,38 @@ export const tapRepository = {
 
     return tap;
   },
+  getTotalAmountByRestaurantId: async (restaurantId: string) => {
+    const amount = await db
+      .selectFrom("Tap")
+      .innerJoin("UserCard", "UserCard.id", "Tap.userCardId")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .select(({ fn }) => [fn.sum<number>("Tap.amount").as("totalAmount")])
+      .where("Restaurant.id", "=", restaurantId)
+      .executeTakeFirstOrThrow(
+        () => new Error("Error fetching check-in data.")
+      );
+
+    return amount;
+  },
+  getCountByRestaurantId: async (
+    restaurantId: string,
+    startDate: Date,
+    endDate: Date
+  ) => {
+    const count = await db
+      .selectFrom("Tap")
+      .innerJoin("UserCard", "UserCard.id", "Tap.userCardId")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .select(({ fn }) => [fn.count<number>("Tap.id").as("count")])
+      .where("Restaurant.id", "=", restaurantId)
+      .where("Tap.tappedAt", ">=", startDate)
+      .where("Tap.tappedAt", "<", endDate)
+      .executeTakeFirstOrThrow(
+        () => new Error("Error fetching check-in data.")
+      );
+
+    return count;
+  },
 };

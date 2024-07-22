@@ -11,12 +11,6 @@ export const BONUS_TYPE = {
     REDEEMABLE: "REDEEMABLE"
 } as const;
 export type BONUS_TYPE = (typeof BONUS_TYPE)[keyof typeof BONUS_TYPE];
-export const BONUS_STATUS = {
-    UNUSED: "UNUSED",
-    USED: "USED",
-    SERVED: "SERVED"
-} as const;
-export type BONUS_STATUS = (typeof BONUS_STATUS)[keyof typeof BONUS_STATUS];
 export const TRANSACTION_TYPE = {
     WITHDRAW: "WITHDRAW",
     DEPOSIT: "DEPOSIT"

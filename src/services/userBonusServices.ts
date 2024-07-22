@@ -26,7 +26,11 @@ export const userBonusServices = {
     const bonus = await bonusRepository.getById(bonusId);
     if (!bonus) throw new CustomError("No bonus found.", 400);
 
-    if (bonus.type !== "REDEEMABLE" || !bonus.price)
+    if (
+      bonus.type !== "REDEEMABLE" ||
+      !bonus.price ||
+      bonus.currentSupply >= bonus.totalSupply
+    )
       throw new CustomError("This bonus cannot be purchased.", 400);
 
     if (user?.balance < bonus.price)
@@ -34,6 +38,9 @@ export const userBonusServices = {
 
     if (userCard.cardId !== bonus.cardId)
       throw new CustomError("Invalid card, bonus relation.", 400);
+
+    const reducePercentage = 1 - bonus.price / user.balance;
+    await userCardReposity.reduceBalanceByUserId(user.id, reducePercentage);
 
     const userBonus = await userBonusRepository.create({
       userId: user.id,
@@ -78,7 +85,7 @@ export const userBonusServices = {
     if (!userBonus)
       throw new CustomError("No corresponding userBonus found.", 400);
 
-    if (userBonus.status !== "UNUSED")
+    if (userBonus.isUsed !== false)
       throw new CustomError("This bonus is used already.", 400);
 
     const waiter = await employeeRepository.getById(waiterId);
@@ -94,7 +101,8 @@ export const userBonusServices = {
         400
       );
 
-    userBonus.status = "USED";
+    userBonus.isUsed = true;
+    userBonus.usedAt = new Date();
 
     const updatedUserBonus = await userBonusRepository.update(
       userBonus.id,
@@ -102,7 +110,8 @@ export const userBonusServices = {
     );
 
     const userSocketId = connections.get(userCard.userId);
-    io.to(userSocketId).emit("bonus-scan", { bonus: updatedUserBonus });
+    if (userSocketId)
+      io.to(userSocketId).emit("bonus-scan", { bonus: updatedUserBonus });
 
     return updatedUserBonus;
   },

@@ -10,7 +10,7 @@ export const transactionServices = {
   deposit: async (data: Insertable<Transaction>) => {
     const eur = await currencyRepository.getByTicker("EUR");
     const bitcoin = await currencyRepository.getByTicker("BTC");
-    const amount = data.amount / (bitcoin.currentPrice * eur.currentPrice);
+    const amount = data.amount / (bitcoin.price * eur.price);
 
     if (data.restaurantId) {
       const restaurant = await restaurantRepository.getById(data.restaurantId);
@@ -37,7 +37,7 @@ export const transactionServices = {
   withdraw: async (data: Insertable<Transaction>) => {
     const eur = await currencyRepository.getByTicker("EUR");
     const bitcoin = await currencyRepository.getByTicker("BTC");
-    const amount = data.amount / (bitcoin.currentPrice * eur.currentPrice);
+    const amount = data.amount / (bitcoin.price * eur.price);
 
     if (data.restaurantId) {
       const restaurant = await restaurantRepository.getById(data.restaurantId);

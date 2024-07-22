@@ -23,4 +23,32 @@ export const transactionRepository = {
 
     return transaction;
   },
+  getTotalDepositByRestaurantId: async (restaurantId: string) => {
+    const amount = await db
+      .selectFrom("Transaction")
+      .select(({ fn }) => [
+        fn.sum<number>("Transaction.amount").as("totalDeposit"),
+      ])
+      .where("Transaction.restaurantId", "=", restaurantId)
+      .where("Transaction.type", "=", "DEPOSIT")
+      .executeTakeFirstOrThrow(
+        () => new Error("Error fetching transaction data.")
+      );
+
+    return amount;
+  },
+  getTotalWithdrawByRestaurantId: async (restaurantId: string) => {
+    const amount = await db
+      .selectFrom("Transaction")
+      .select(({ fn }) => [
+        fn.sum<number>("Transaction.amount").as("totalWithdraw"),
+      ])
+      .where("Transaction.restaurantId", "=", restaurantId)
+      .where("Transaction.type", "=", "WITHDRAW")
+      .executeTakeFirstOrThrow(
+        () => new Error("Error fetching transaction data.")
+      );
+
+    return amount;
+  },
 };

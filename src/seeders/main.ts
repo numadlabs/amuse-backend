@@ -9,16 +9,18 @@ import {
   Restaurant,
   Timetable,
   Transaction,
+  User,
   UserTier,
 } from "../types/db/types";
 
 const currency: Insertable<Currency>[] = [
-  { ticker: "BTC", currentPrice: 64403 },
-  { ticker: "EUR", currentPrice: 0.9178 },
+  { ticker: "BTC", price: 64403 },
+  { ticker: "EUR", price: 0.9178 },
 ];
 
 const userTier: Insertable<UserTier>[] = [
   {
+    id: "b2207e15-18ca-4a90-9fd0-88186443f2bd",
     name: "Bronze",
     requiredNo: 0,
     rewardMultiplier: 1,
@@ -38,6 +40,14 @@ const userTier: Insertable<UserTier>[] = [
     rewardMultiplier: 1.5,
   },
 ];
+
+const user: Insertable<User> = {
+  nickname: "gombochir",
+  prefix: "976",
+  telNumber: "99090280",
+  password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
+  userTierId: "b2207e15-18ca-4a90-9fd0-88186443f2bd",
+};
 
 const category: Insertable<Category>[] = [
   {
@@ -107,6 +117,7 @@ const restaurant: Insertable<Restaurant>[] = [
     location: "Bubenské nábř. 306, 170 04 Praha 7-Holešovice, Czechia",
     latitude: 50.100578,
     longitude: 14.438367,
+    balance: 1,
     rewardAmount: 1,
     perkOccurence: 3,
     categoryId: "f4d83093-a32f-403c-8d1b-299ae5e53f72",
@@ -120,8 +131,9 @@ const restaurant: Insertable<Restaurant>[] = [
     location: "Petrská 25, 110 00 Praha 1-Nové Město, Czechia",
     latitude: 50.092205,
     longitude: 14.431995,
-    rewardAmount: 1,
-    perkOccurence: 3,
+    balance: 1,
+    rewardAmount: 2,
+    perkOccurence: 5,
     categoryId: "f4d83093-a32f-403c-8d1b-299ae5e53f72",
     logo: "534889fc-b663-4636-954e-04d9900baf79",
   },
@@ -133,8 +145,9 @@ const restaurant: Insertable<Restaurant>[] = [
     location: "Štítného 202/35, 130 00 Praha 3-Žižkov, Czechia",
     latitude: 50.08635,
     longitude: 14.448378,
-    rewardAmount: 1,
-    perkOccurence: 3,
+    balance: 1,
+    rewardAmount: 3,
+    perkOccurence: 7,
     categoryId: "00a9a914-54be-498c-a61e-dbb8919efde9",
     logo: "227307e6-b0df-4bf0-86ad-035866967114",
   },
@@ -146,8 +159,9 @@ const restaurant: Insertable<Restaurant>[] = [
     location: "Národní 22, 110 00 Praha 1-Nové Město, Czechia",
     latitude: 50.082739,
     longitude: 14.419586,
-    rewardAmount: 1,
-    perkOccurence: 3,
+    balance: 1,
+    rewardAmount: 5,
+    perkOccurence: 10,
     categoryId: "ef18c860-255c-434d-85a6-5431b2180fc1",
     logo: "4eb16d9b-d2f8-47a4-9c3f-e9e673130684",
   },
@@ -711,8 +725,20 @@ const bonus: Insertable<Bonus>[] = [
 ];
 
 export async function insertSeed() {
+  await db.deleteFrom("User").execute();
+  await db.deleteFrom("Restaurant").execute();
+  await db.deleteFrom("Currency").execute();
+  await db.deleteFrom("UserTier").execute();
+  await db.deleteFrom("Category").execute();
+  await db.deleteFrom("Employee").execute();
+  await db.deleteFrom("Timetable").execute();
+  await db.deleteFrom("Card").execute();
+  await db.deleteFrom("Bonus").execute();
+  await db.deleteFrom("Transaction").execute();
+
   await db.insertInto("Currency").values(currency).returningAll().execute();
   await db.insertInto("UserTier").values(userTier).returningAll().execute();
+  await db.insertInto("User").values(user).returningAll().execute();
   await db.insertInto("Category").values(category).returningAll().execute();
   await db.insertInto("Restaurant").values(restaurant).returningAll().execute();
   await db.insertInto("Employee").values(employee).returningAll().execute();

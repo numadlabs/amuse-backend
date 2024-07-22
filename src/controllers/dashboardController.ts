@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { dashboardRepository } from "../repository/dashboardRepository";
+import { userCardReposity } from "../repository/userCardRepository";
+import { userBonusRepository } from "../repository/userBonusRepository";
 
 export const dashboardController = {
   getTapLineGraph: async (req: Request, res: Response, next: NextFunction) => {
@@ -57,9 +59,9 @@ export const dashboardController = {
     const { restaurantId } = req.params;
 
     try {
-      const data = await dashboardRepository.getBudgetPieChart(restaurantId);
+      const result = await dashboardRepository.getBudgetPieChart(restaurantId);
 
-      return res.status(200).json({ success: true, data: data });
+      return res.status(200).json({ success: true, data: result });
     } catch (e) {
       next(e);
     }
@@ -76,6 +78,17 @@ export const dashboardController = {
       );
 
       return res.status(200).json({ success: true, data: data });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getTotals: async (req: Request, res: Response, next: NextFunction) => {
+    const { restaurantId } = req.params;
+
+    try {
+      const result = await dashboardRepository.getTotals(restaurantId);
+
+      return res.status(200).json({ success: true, data: result });
     } catch (e) {
       next(e);
     }

@@ -63,7 +63,7 @@ app.use(errorHandler);
 
 updateCurrencyPrice();
 // insertSeed().then(() =>
-//   console.log(`Inserted seed data to DB ${process.env.PGDATABASE}`)
+//   console.log(`Inserted seed data to DB: ${process.env.PGDATABASE}`)
 // );
 
 export const connections = new Map();

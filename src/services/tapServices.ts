@@ -49,14 +49,14 @@ export const tapServices = {
 
     const userSocketId = connections.get(user.id);
     if (!userCard) {
-      io.to(userSocketId).emit("tap-scan", { isOwned: false });
+      if (userSocketId)
+        io.to(userSocketId).emit("tap-scan", { isOwned: false });
       throw new CustomError(
         "Customer does not have a membership card for this restaurant.",
         400
       );
     }
 
-    userCard.isFirstTap = true;
     userCard.visitCount += 1;
 
     //start of bonus logic
@@ -119,7 +119,7 @@ export const tapServices = {
     const currency = await currencyRepository.getByTicker("EUR");
 
     let incrementBtc =
-      (restaurant.rewardAmount / (btc.currentPrice * currency.currentPrice)) *
+      (restaurant.rewardAmount / (btc.price * currency.price)) *
       tier.rewardMultiplier;
 
     // if (user.email && user.location && user.dateOfBirth)
@@ -133,6 +133,8 @@ export const tapServices = {
 
     user.visitCount += 1;
     await userRepository.update(user.id, user);
+
+    userCard.balance += incrementBtc;
     await userCardReposity.update(userCard, userCard.id);
 
     const tapData: Insertable<Tap> = {
@@ -141,7 +143,7 @@ export const tapServices = {
       amount: incrementBtc,
     };
 
-    const tap = await tapRepository.create(tapData);
+    await tapRepository.create(tapData);
 
     let updatedUserTier = null;
     if (
@@ -153,19 +155,20 @@ export const tapServices = {
       updatedUserTier = await userTierRepository.getById(tier.nextTierId);
     }
 
-    io.to(userSocketId).emit("tap-scan", {
-      isOwned: true,
-      data: {
-        increment: incrementBtc * btc.currentPrice * currency.currentPrice,
-        ticker: "EUR",
-        bonus: bonus,
-        userTier: updatedUserTier,
-        bonusCheck: hasRecurringBonus,
-      },
-    });
+    if (userSocketId)
+      io.to(userSocketId).emit("tap-scan", {
+        isOwned: true,
+        data: {
+          increment: incrementBtc * btc.price * currency.price,
+          ticker: "EUR",
+          bonus: bonus,
+          userTier: updatedUserTier,
+          bonusCheck: hasRecurringBonus,
+        },
+      });
 
     return {
-      increment: incrementBtc * btc.currentPrice * currency.currentPrice,
+      increment: incrementBtc * btc.price * currency.price,
       ticker: "EUR",
       bonus: bonus,
       userTier: updatedUserTier,

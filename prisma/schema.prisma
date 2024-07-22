@@ -157,6 +157,7 @@ model Card {
 model UserCard {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
   visitCount Int      @default(0)
+  balance Float @default(0)
   ownedAt    DateTime @default(now())
 
   cardId String
@@ -164,7 +165,6 @@ model UserCard {
 
   userId     String
   User       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isFirstTap Boolean @default(false)
 
   Tap       Tap[]
   UserBonus UserBonus[]
@@ -201,8 +201,9 @@ model Bonus {
 
 model UserBonus {
   id     String       @id @default(dbgenerated("gen_random_uuid()"))
-  status BONUS_STATUS @default(UNUSED)
+  isUsed Boolean @default(false)
   createdAt DateTime @default(now())
+  usedAt DateTime?
 
   userId String
   User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -228,8 +229,8 @@ model Notification {
 model Currency {
   id           String @id @default(dbgenerated("gen_random_uuid()"))
   ticker       String
-  currentPrice Float
-  setPrice     Float?
+  price Float @default(0)
+  updatedAt DateTime? @default(now())
 }
 
 model Purchase {
@@ -265,12 +266,6 @@ enum BONUS_TYPE {
   SINGLE
   RECURRING
   REDEEMABLE
-}
-
-enum BONUS_STATUS {
-  UNUSED
-  USED
-  SERVED
 }
 
 enum TRANSACTION_TYPE {

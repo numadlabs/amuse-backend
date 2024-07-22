@@ -242,8 +242,7 @@ export const restaurantController = {
         success: true,
         data: {
           restaurant: restaurant,
-          convertedBalance:
-            restaurant.balance * btc.currentPrice * currency.currentPrice,
+          convertedBalance: restaurant.balance * btc.price * currency.price,
         },
       });
     } catch (e) {

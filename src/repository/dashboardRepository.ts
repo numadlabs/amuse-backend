@@ -1,5 +1,8 @@
 import { sql } from "kysely";
 import { db } from "../utils/db";
+import { transactionRepository } from "./transactionRepository";
+import { tapRepository } from "./tapRepository";
+import { userCardReposity } from "./userCardRepository";
 
 enum Interval {
   ONE_WEEK = "1 week",
@@ -64,18 +67,28 @@ group by location
     return data.rows;
   },
   getBudgetPieChart: async (restaurantId: string) => {
-    const data =
-      await sql`select r.id, (r."givenOut" / r.budget * 100) as "Awarded", (SUM(b.price) / r.budget  * 100) as "Redeemed"
-    from "Purchase" p 
-    inner join "UserBonus" ub ON ub.id = p."userBonusId" 
-    inner join "Bonus" b on b.id = ub."bonusId" 
-    inner join "UserCard" uc on uc.id = ub."userCardId" 
-    inner join "Card" c on c.id = uc."cardId" 
-    inner join "Restaurant" r on r.id = c."restaurantId" 
-    where r.id = ${restaurantId}
-    group by r.id`.execute(db);
+    const { totalDeposit } =
+      await transactionRepository.getTotalDepositByRestaurantId(restaurantId);
+    const { totalWithdraw } =
+      await transactionRepository.getTotalWithdrawByRestaurantId(restaurantId);
+    const { totalAmount } = await tapRepository.getTotalAmountByRestaurantId(
+      restaurantId
+    );
+    const { totalBalance } =
+      await userCardReposity.getTotalBalanceByRestaurantId(restaurantId);
 
-    return data.rows;
+    const budget = totalDeposit - totalWithdraw;
+    const awarded = totalAmount || 0;
+    const redeemed = awarded - totalBalance;
+
+    return {
+      budgetAmount: budget,
+      budgetPercentage: 100,
+      awardedAmount: awarded,
+      awardedPercentage: parseFloat(((awarded / budget) * 100).toFixed(3)),
+      redeemedAmount: redeemed,
+      redeemedPercentage: parseFloat(((redeemed / budget) * 100).toFixed(3)),
+    };
   },
   getTapByCheckIn: async (restaurantId: string, selectedInterval: string) => {
     //need to do update on interval
@@ -108,5 +121,85 @@ group by location
             u.id, r.id
     ) AS subquery`.execute(db);
     return data.rows;
+  },
+  getTotals: async (restaurantId: string) => {
+    const { totalAmount } = await tapRepository.getTotalAmountByRestaurantId(
+      restaurantId
+    );
+    const { totalBalance } =
+      await userCardReposity.getTotalBalanceByRestaurantId(restaurantId);
+
+    const awarded = totalAmount || 0;
+    const redeemed = awarded - totalBalance;
+
+    const currentDate = new Date();
+
+    const dateMonthBefore = new Date();
+    dateMonthBefore.setMonth(dateMonthBefore.getMonth() - 1);
+
+    const dateTwoMonthsBefore = new Date();
+    dateTwoMonthsBefore.setMonth(dateTwoMonthsBefore.getMonth() - 2);
+
+    const previousMonthTap = await tapRepository.getCountByRestaurantId(
+      restaurantId,
+      dateTwoMonthsBefore,
+      dateMonthBefore
+    );
+    const currentMonthTap = await tapRepository.getCountByRestaurantId(
+      restaurantId,
+      dateMonthBefore,
+      currentDate
+    );
+
+    const previousMonthUserCards =
+      await userCardReposity.getCountByRestaurantId(
+        restaurantId,
+        dateTwoMonthsBefore,
+        dateMonthBefore
+      );
+    const currentMonthUserCards = await userCardReposity.getCountByRestaurantId(
+      restaurantId,
+      dateMonthBefore,
+      currentDate
+    );
+
+    const previousMonthUsedBonus =
+      await userCardReposity.getCountByRestaurantId(
+        restaurantId,
+        dateTwoMonthsBefore,
+        dateMonthBefore
+      );
+    const currentMonthUsedBonus = await userCardReposity.getCountByRestaurantId(
+      restaurantId,
+      dateMonthBefore,
+      currentDate
+    );
+
+    return {
+      members: {
+        count: currentMonthUserCards.count,
+        percentageDifferential:
+          currentMonthUserCards.count / previousMonthUserCards.count - 1,
+      },
+      taps: {
+        count: currentMonthTap.count,
+        percentageDifferential: parseFloat(
+          (currentMonthTap.count / previousMonthTap.count - 1).toFixed(2)
+        ),
+      },
+      redeems: {
+        count: redeemed,
+        percentageDifferential: 0,
+      },
+      usedBonus: {
+        count: currentMonthUsedBonus.count,
+        percentageDifferential: parseFloat(
+          (
+            currentMonthUsedBonus.count / previousMonthUsedBonus.count -
+            1
+          ).toFixed(2)
+        ),
+      },
+    };
   },
 };

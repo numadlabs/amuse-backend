@@ -1,4 +1,4 @@
-import { Insertable, Updateable } from "kysely";
+import { Insertable, Updateable, sql } from "kysely";
 import { db } from "../utils/db";
 import { UserCard } from "../types/db/types";
 
@@ -97,10 +97,56 @@ export const userCardReposity = {
         "UserCard.userId",
         "UserCard.ownedAt",
         "UserCard.visitCount",
-        "UserCard.isFirstTap",
+        "UserCard.balance",
       ])
       .executeTakeFirst();
 
     return userCards;
+  },
+  reduceBalanceByUserId: async (userId: string, percentage: number) => {
+    const userCards = await db
+      .updateTable("UserCard as uc")
+      .returningAll()
+      .set({
+        balance: sql`FLOOR(uc."balance" * ${percentage} * 1e8) / 1e8`,
+      })
+      .where("uc.userId", "=", userId)
+      .execute();
+
+    return userCards;
+  },
+  getTotalBalanceByRestaurantId: async (restaurantId: string) => {
+    const amount = await db
+      .selectFrom("UserCard")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .select(({ fn }) => [
+        fn.sum<number>("UserCard.balance").as("totalBalance"),
+      ])
+      .where("Restaurant.id", "=", restaurantId)
+      .executeTakeFirstOrThrow(
+        () => new Error("Error fetching userCard data.")
+      );
+
+    return amount;
+  },
+  getCountByRestaurantId: async (
+    restaurantId: string,
+    startDate: Date,
+    endDate: Date
+  ) => {
+    const count = await db
+      .selectFrom("UserCard")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .select(({ fn }) => [fn.count<number>("UserCard.id").as("count")])
+      .where("Restaurant.id", "=", restaurantId)
+      .where("UserCard.ownedAt", ">=", startDate)
+      .where("UserCard.ownedAt", "<", endDate)
+      .executeTakeFirstOrThrow(
+        () => new Error("Error fetching userCard data.")
+      );
+
+    return count;
   },
 };

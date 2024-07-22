@@ -109,8 +109,7 @@ export const UserController = {
         success: true,
         data: {
           user: sanitizedUser,
-          convertedBalance:
-            user.balance * btc.currentPrice * currency.currentPrice,
+          convertedBalance: user.balance * btc.price * currency.price,
         },
       });
     } catch (e) {
@@ -194,7 +193,7 @@ export const UserController = {
               eb(fn.count<number>("UserBonus.id"), ">", 0).as("count"),
             ])
             .where("UserBonus.userCardId", "=", eb.ref("UserCard.id"))
-            .where("UserBonus.status", "=", "UNUSED")
+            .where("UserBonus.isUsed", "=", false)
             .as("hasBonus"),
         ])
         .orderBy("UserCard.ownedAt desc");

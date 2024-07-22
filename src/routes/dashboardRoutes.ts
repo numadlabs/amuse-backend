@@ -15,6 +15,10 @@ dashboardRoutes.get(
   dashboardController.getTapLineGraph
 );
 dashboardRoutes.get(
+  "/totals/:restaurantId/restaurant",
+  dashboardController.getTotals
+);
+dashboardRoutes.get(
   "/taps/:restaurantId/restaurant/checkin",
   dashboardController.getTapByCheckIn
 );

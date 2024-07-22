@@ -4,7 +4,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-import type { ROLES, BONUS_TYPE, BONUS_STATUS, TRANSACTION_TYPE } from "./enums";
+import type { ROLES, BONUS_TYPE, TRANSACTION_TYPE } from "./enums";
 
 export type Bonus = {
     id: Generated<string>;
@@ -34,8 +34,8 @@ export type Category = {
 export type Currency = {
     id: Generated<string>;
     ticker: string;
-    currentPrice: number;
-    setPrice: number | null;
+    price: Generated<number>;
+    updatedAt: Generated<Timestamp | null>;
 };
 export type Device = {
     id: Generated<string>;
@@ -134,8 +134,9 @@ export type User = {
 };
 export type UserBonus = {
     id: Generated<string>;
-    status: Generated<BONUS_STATUS>;
+    isUsed: Generated<boolean>;
     createdAt: Generated<Timestamp>;
+    usedAt: Timestamp | null;
     userId: string;
     userCardId: string;
     bonusId: string;
@@ -143,10 +144,10 @@ export type UserBonus = {
 export type UserCard = {
     id: Generated<string>;
     visitCount: Generated<number>;
+    balance: Generated<number>;
     ownedAt: Generated<Timestamp>;
     cardId: string;
     userId: string;
-    isFirstTap: Generated<boolean>;
 };
 export type UserTier = {
     id: Generated<string>;

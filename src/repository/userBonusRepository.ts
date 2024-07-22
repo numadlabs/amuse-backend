@@ -39,7 +39,7 @@ export const userBonusRepository = {
       .innerJoin("Bonus", "Bonus.id", "UserBonus.bonusId")
       .selectAll()
       .where("UserBonus.userCardId", "=", userCardId)
-      .where("UserBonus.status", "=", "UNUSED")
+      .where("UserBonus.isUsed", "=", false)
       .execute();
 
     return userBonus;
@@ -55,17 +55,36 @@ export const userBonusRepository = {
       .innerJoin("Card", "Card.id", "UserCard.cardId")
       .where("Card.restaurantId", "=", restaurantId)
       .where("UserBonus.userId", "=", userId)
-      .where("UserBonus.status", "=", "UNUSED")
+      .where("UserBonus.isUsed", "=", false)
       .select([
         "UserBonus.id",
         "UserBonus.bonusId",
         "UserBonus.userId",
         "UserBonus.userCardId",
-        "UserBonus.status",
+        "UserBonus.isUsed",
         "Bonus.name",
       ])
       .execute();
 
     return userBonuses;
+  },
+  getCountByRestaurantId: async (
+    restaurantId: string,
+    startDate: Date,
+    endDate: Date
+  ) => {
+    const count = await db
+      .selectFrom("UserBonus")
+      .innerJoin("UserCard", "UserCard.id", "UserBonus.userCardId")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .select(({ fn }) => [fn.count<number>("UserBonus.id").as("count")])
+      .where("Restaurant.id", "=", restaurantId)
+      .where("UserBonus.isUsed", "=", true)
+      .where("UserBonus.usedAt", ">=", startDate)
+      .where("UserBonus.usedAt", "<", endDate)
+      .execute();
+
+    return count;
   },
 };
