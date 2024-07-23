@@ -124,8 +124,6 @@ export type User = {
     visitCount: Generated<number>;
     email: string | null;
     emailVerificationCode: string | null;
-    isEmailVerified: Generated<boolean>;
-    emailVerifiedAt: Timestamp | null;
     prefix: string;
     telNumber: string;
     telVerificationCode: string | null;

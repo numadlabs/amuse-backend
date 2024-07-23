@@ -158,15 +158,15 @@ export const authController = {
     res: Response,
     next: NextFunction
   ) => {
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Could retrieve id from the token.",
-      });
+    const { email } = req.body;
 
     try {
-      const user = await userServices.setEmailVerification(req.user?.id);
+      if (!req.user?.id)
+        throw new CustomError("Could not parse the id from the token.", 400);
+
+      if (!email) throw new CustomError("Please provide an email.", 400);
+
+      const user = await userServices.sendVerificationEmail(req.user.id, email);
       const sanitizedUser = hideDataHelper.sanitizeUserData(user);
       return res.status(200).json({
         success: true,
@@ -183,25 +183,21 @@ export const authController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { emailVerificationCode } = req.body;
-
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Could retrieve id from the token.",
-      });
-
-    if (!emailVerificationCode)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "No verification code provided.",
-      });
+    const { emailVerificationCode, email } = req.body;
 
     try {
+      if (!req.user?.id)
+        throw new CustomError("Could not parse the id from the token.", 400);
+
+      if (!emailVerificationCode)
+        throw new CustomError(
+          "Please provide both an email and verification code .",
+          400
+        );
+
       const user = await userServices.verifyEmailVerification(
         req.user.id,
+        email,
         emailVerificationCode
       );
       const sanitizedUser = hideDataHelper.sanitizeUserData(user);

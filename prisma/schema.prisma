@@ -30,8 +30,6 @@ model User {
 
   email                 String?   @unique
   emailVerificationCode String?
-  isEmailVerified       Boolean   @default(false)
-  emailVerifiedAt       DateTime?
 
   prefix              String
   telNumber           String

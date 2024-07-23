@@ -128,14 +128,13 @@ export const userServices = {
 
     return updatedUser;
   },
-  setEmailVerification: async (id: string) => {
+  sendVerificationEmail: async (id: string, email: string) => {
     const userById = await userRepository.getUserById(id);
+    if (!userById) throw new CustomError("User does not exist.", 400);
 
-    if (!userById || !userById.email)
-      throw new CustomError("User does not exist or Has no email.", 400);
-
-    if (userById.isEmailVerified)
-      throw new CustomError("User's email is already verified.", 400);
+    const emailCheck = await userRepository.getByEmail(email);
+    if (emailCheck)
+      throw new CustomError("Email has already been registered.", 400);
 
     const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
     const emailVerificationToken = generateVerificationToken(
@@ -146,7 +145,7 @@ export const userServices = {
     await sendEmail(
       "Amuse Bouche OTP",
       `Your Amuse Bouche verification code is: ${randomNumber}`,
-      userById.email
+      email
     );
 
     userById.emailVerificationCode = emailVerificationToken;
@@ -154,16 +153,21 @@ export const userServices = {
 
     return user;
   },
-  verifyEmailVerification: async (id: string, verificationCode: number) => {
+  verifyEmailVerification: async (
+    id: string,
+    email: string,
+    verificationCode: number
+  ) => {
     const foundUser = await userRepository.getUserById(id);
-    if (!foundUser || !foundUser.email)
-      throw new CustomError("User does not exist or Has no email.", 400);
-
-    if (!foundUser.emailVerificationCode || foundUser.isEmailVerified)
+    if (!foundUser || !foundUser.emailVerificationCode)
       throw new CustomError(
-        "No verification code send/recorded or email is already verified.",
+        "User does not exist or has no recorded verification code.",
         400
       );
+
+    const emailCheck = await userRepository.getByEmail(email);
+    if (emailCheck)
+      throw new CustomError("Email has already been registered.", 400);
 
     const emailVerificationCode = extractVerification(
       foundUser.emailVerificationCode
@@ -172,8 +176,7 @@ export const userServices = {
     if (emailVerificationCode !== verificationCode)
       throw new CustomError("Invalid verification code.", 400);
 
-    foundUser.isEmailVerified = true;
-    foundUser.emailVerifiedAt = new Date();
+    foundUser.email = email;
     foundUser.emailVerificationCode = null;
 
     const user = await userRepository.update(foundUser.id, foundUser);

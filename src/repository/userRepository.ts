@@ -90,4 +90,13 @@ export const userRepository = {
 
     return deletedUser;
   },
+  getByEmail: async (email: string) => {
+    const user = await db
+      .selectFrom("User")
+      .where("User.email", "=", email)
+      .selectAll()
+      .executeTakeFirst();
+
+    return user;
+  },
 };
