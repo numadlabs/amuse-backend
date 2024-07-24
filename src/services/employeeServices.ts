@@ -59,8 +59,18 @@ export const employeeServices = {
 
     if (!employee.restaurantId)
       await sendEmail(
-        "Amuse Bouche authentication info(RESTAURANT_OWNER for walkthrough)",
-        `email: ${data.email}, password: ${password}`,
+        "Welcome to Amuse Bouche – Your Login Details",
+        `
+Welcome to Amuse Bouche! We’re excited to have you on board and look forward to helping you set up your restaurant profile.
+
+To get started, please use the following credentials to log in to your account and complete your profile setup:
+
+Login Email: ${employee.email}
+Password: ${password}
+
+Best regards,  
+The Amuse Bouche Team
+`,
         employee.email
       );
 
