@@ -27,16 +27,36 @@ export const employeeServices = {
         400
       );
 
+    if (!data.restaurantId)
+      throw new CustomError("Please provide a restaurantId.", 400);
+
+    const restaurant = await restaurantRepository.getById(data.restaurantId);
+    if (!restaurant) throw new CustomError("Restaurant not found.", 400);
+
     const password = data.password;
 
     const hashedPassword = await encryptionHelper.encrypt(password);
     data.password = hashedPassword;
+    data.firstname = restaurant.name;
+    data.lastname = "Waiter";
 
     const employee = await employeeRepository.create(data);
 
     await sendEmail(
-      "Amuse Bouche authentication info(RESTAURANT_WAITER)",
-      `email: ${data.email}, password: ${password}`,
+      "Welcome to Amuse Bouche – Your Login Details",
+      `
+Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
+
+To get started, please use the following credentials to log in to your account:
+
+Login Email: ${data.email}
+Password: ${password}
+
+Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
+
+Best regards,  
+The Amuse Bouche Team
+`,
       employee.email
     );
 
