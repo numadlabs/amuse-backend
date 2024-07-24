@@ -39,7 +39,7 @@ restaurantRoutes.put(
 restaurantRoutes.delete(
   "/:id",
   authenticateToken,
-  authorize("SUPER_ADMIN"),
+  // authorize("SUPER_ADMIN"),
   restaurantController.deleteRestaurant
 );
 export = restaurantRoutes;

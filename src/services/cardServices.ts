@@ -73,6 +73,14 @@ export const cardServices = {
   delete: async (id: string) => {
     const card = await cardRepository.getById(id);
 
+    if (card.nftImageUrl)
+      await s3
+        .deleteObject({
+          Bucket: s3BucketName,
+          Key: `restaurant/${card.nftImageUrl}`,
+        })
+        .promise();
+
     const deletedCard = await cardRepository.delete(card.id);
 
     return deletedCard;

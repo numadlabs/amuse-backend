@@ -153,6 +153,14 @@ export const restaurantServices = {
     if (!restaurant)
       throw new CustomError("No restaurant found with the given id.", 400);
 
+    if (restaurant.logo)
+      await s3
+        .deleteObject({
+          Bucket: s3BucketName,
+          Key: `restaurant/${restaurant.logo}`,
+        })
+        .promise();
+
     const deletedRestaurant = await restaurantRepository.delete(restaurant.id);
 
     return deletedRestaurant;
