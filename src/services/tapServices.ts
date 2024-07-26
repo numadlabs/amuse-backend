@@ -50,7 +50,10 @@ export const tapServices = {
     const userSocketId = connections.get(user.id);
     if (!userCard) {
       if (userSocketId)
-        io.to(userSocketId).emit("tap-scan", { isOwned: false });
+        io.to(userSocketId).emit("tap-scan", {
+          isOwned: false,
+          restaurantId: restaurant.id,
+        });
       throw new CustomError(
         "Customer does not have a membership card for this restaurant.",
         400
@@ -159,6 +162,7 @@ export const tapServices = {
       io.to(userSocketId).emit("tap-scan", {
         isOwned: true,
         data: {
+          restaurantId: restaurant.id,
           increment: incrementBtc * btc.price * currency.price,
           ticker: "EUR",
           bonus: bonus,

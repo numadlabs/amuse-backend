@@ -33,7 +33,7 @@ export const userBonusServices = {
     )
       throw new CustomError("This bonus cannot be purchased.", 400);
 
-    if (user?.balance < bonus.price)
+    if (user.balance < bonus.price)
       throw new CustomError("Insufficient balance.", 400);
 
     if (userCard.cardId !== bonus.cardId)
