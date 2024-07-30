@@ -173,13 +173,13 @@ export const UserController = {
           "Restaurant.name",
           "Restaurant.logo",
           "UserCard.visitCount",
-          sql`ST_Distance(ST_MakePoint(${eb.ref(
-            "Restaurant.latitude"
-          )}, ${eb.ref(
-            "Restaurant.longitude"
-          )}), ST_MakePoint(${latitude}, ${longitude})::geography)`.as(
-            "distance"
-          ),
+          // sql`ST_Distance(ST_MakePoint(${eb.ref(
+          //   "Restaurant.latitude"
+          // )}, ${eb.ref(
+          //   "Restaurant.longitude"
+          // )}), ST_MakePoint(${latitude}, ${longitude})::geography)`.as(
+          //   "distance"
+          // ),
           db
             .selectFrom("UserBonus")
             .select(({ eb, fn }) => [
