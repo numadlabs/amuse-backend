@@ -2,6 +2,7 @@ import { Insertable } from "kysely";
 import { Device } from "../types/db/types";
 import { deviceRepository } from "../repository/deviceRepository";
 import { CustomError } from "../exceptions/CustomError";
+import { Expo } from "expo-server-sdk";
 
 export const deviceServices = {
   create: async (data: Insertable<Device>) => {
@@ -11,6 +12,10 @@ export const deviceServices = {
         "This device has already been registered for the push notifications.",
         400
       );
+
+    if (!Expo.isExpoPushToken(data.pushToken)) {
+      throw new CustomError("Provided is not valid expopushtoken.", 400);
+    }
 
     const device = await deviceRepository.create(data);
 
