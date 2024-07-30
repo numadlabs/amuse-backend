@@ -7,6 +7,7 @@ import { employeeRepository } from "../repository/employeeRepository";
 import { extractVerification, generateVerificationToken } from "../utils/jwt";
 import { Employee } from "../types/db/types";
 import { restaurantRepository } from "../repository/restaurantRepository";
+import { ROLES } from "../types/db/enums";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
@@ -38,7 +39,7 @@ export const employeeServices = {
     const hashedPassword = await encryptionHelper.encrypt(password);
     data.password = hashedPassword;
     data.firstname = restaurant.name;
-    data.lastname = "Waiter";
+    data.lastname = "Employee";
 
     const employee = await employeeRepository.create(data);
 
@@ -96,17 +97,25 @@ The Amuse Bouche Team
 
     return employee;
   },
-  update: async (data: Updateable<Employee>, id: string) => {
-    if (data.role || data.password || data.id || data.emailVerificationCode)
+  updateInfo: async (
+    data: Updateable<Employee>,
+    id: string,
+    issuerId: string
+  ) => {
+    if (
+      data.role ||
+      data.password ||
+      data.id ||
+      data.emailVerificationCode ||
+      data.restaurantId
+    )
       throw new CustomError("These fields cannot be updated.", 400);
-
-    if (data.restaurantId) {
-      const restaurant = await restaurantRepository.getById(data.restaurantId);
-      if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
-    }
 
     const checkExists = await employeeRepository.getById(id);
     if (!checkExists) throw new CustomError("Invalid employeeId.", 400);
+
+    if (issuerId !== checkExists.id)
+      throw new CustomError("You are not allowed to do this action.", 400);
 
     const employee = await employeeRepository.update(data, id);
 
@@ -166,7 +175,7 @@ The Amuse Bouche Team
 
     return employee;
   },
-  changePassword: async (
+  forgotPassword: async (
     email: string,
     verificationCode: number,
     password: string
@@ -181,6 +190,60 @@ The Amuse Bouche Team
     employee.password = encryptedPassword;
     employee.emailVerificationCode = null;
 
+    const updatedEmployee = await employeeRepository.update(
+      employee,
+      employee.id
+    );
+
+    return updatedEmployee;
+  },
+  checkIfEligible: async (employeeId: string, restaurantId: string) => {
+    const employee = await employeeRepository.getById(employeeId);
+    if (!employee) throw new CustomError("Employee does not exist.", 400);
+
+    if (!employee.restaurantId)
+      throw new CustomError("You are not authorized to do this action.", 400);
+
+    if (employee.restaurantId !== restaurantId)
+      throw new CustomError("You are not authorized to do this action.", 400);
+
+    return employee;
+  },
+  updateRole: async (role: ROLES, id: string, issuerId: string) => {
+    if (role === "SUPER_ADMIN" || role === "USER")
+      throw new CustomError(
+        "Could not update the employees role into the given one.",
+        400
+      );
+
+    const checkExists = await employeeRepository.getById(id);
+    if (!checkExists) throw new CustomError("Invalid employeeId.", 400);
+
+    const issuer = await employeeRepository.getById(issuerId);
+    if (!issuer || issuer.restaurantId !== checkExists.restaurantId)
+      throw new CustomError("You are not allowed to do this action.", 400);
+
+    const employee = await employeeRepository.update({ role: role }, id);
+
+    return employee;
+  },
+  changePassword: async (
+    id: string,
+    oldPassword: string,
+    newPassword: string
+  ) => {
+    const employee = await employeeRepository.getById(id);
+    if (!employee) throw new CustomError("Invalid employeeId.", 400);
+
+    const isMatchingPassword = await encryptionHelper.compare(
+      oldPassword,
+      employee.password
+    );
+    if (!isMatchingPassword) throw new CustomError("Invalid password.", 400);
+
+    const encryptedPassword = await encryptionHelper.encrypt(newPassword);
+
+    employee.password = encryptedPassword;
     const updatedEmployee = await employeeRepository.update(
       employee,
       employee.id

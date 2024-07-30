@@ -26,5 +26,5 @@ export async function sendEmail(
     text: text,
   });
 
-  console.log("Sent successfully: ", info);
+  return info;
 }

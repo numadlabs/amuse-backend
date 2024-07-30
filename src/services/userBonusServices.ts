@@ -110,8 +110,10 @@ export const userBonusServices = {
     );
 
     const userSocketId = connections.get(userCard.userId);
-    if (userSocketId)
+    if (userSocketId) {
+      console.log("Emitting bonus-scan to: ", userSocketId);
       io.to(userSocketId).emit("bonus-scan", { bonus: updatedUserBonus });
+    }
 
     return updatedUserBonus;
   },

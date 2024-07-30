@@ -27,14 +27,7 @@ model User {
   createdAt      DateTime  @default(now())
   balance        Float     @default(0)
   visitCount     Int       @default(0)
-
-  email                 String?   @unique
-  emailVerificationCode String?
-
-  prefix              String
-  telNumber           String
-  telVerificationCode String?
-  telVerifiedAt       DateTime?
+  email          String?   @unique
 
   userTierId String
   Tier       UserTier @relation(references: [id], fields: [userTierId])
@@ -61,12 +54,12 @@ model Employee {
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
 
-model TempUser {
-  id                  String   @id @default(dbgenerated("gen_random_uuid()"))
-  prefix              String
-  telNumber           String
-  telVerificationCode String?
-  createdAt           DateTime @default(now())
+model EmailOtp {
+  id               String   @id @default(dbgenerated("gen_random_uuid()"))
+  email            String
+  verificationCode String?
+  isUsed           Boolean @default(false)
+  createdAt        DateTime @default(now())
 }
 
 model UserTier {
@@ -98,8 +91,8 @@ model Restaurant {
   longitude     Float
   logo          String?
   balance       Float    @default(0)
-  rewardAmount  Float @default(1)
-  perkOccurence Int @default(3)
+  rewardAmount  Float    @default(1)
+  perkOccurence Int      @default(3)
 
   categoryId String
   Category   Category @relation(fields: [categoryId], references: [id])
@@ -155,14 +148,14 @@ model Card {
 model UserCard {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
   visitCount Int      @default(0)
-  balance Float @default(0)
+  balance    Float    @default(0)
   ownedAt    DateTime @default(now())
 
   cardId String
   Card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
 
-  userId     String
-  User       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   Tap       Tap[]
   UserBonus UserBonus[]
@@ -181,11 +174,11 @@ model Tap {
 }
 
 model Bonus {
-  id            String @id @default(dbgenerated("gen_random_uuid()"))
+  id            String   @id @default(dbgenerated("gen_random_uuid()"))
   name          String
   totalSupply   Int
-  currentSupply Int    @default(0)
-  createdAt DateTime @default(now())
+  currentSupply Int      @default(0)
+  createdAt     DateTime @default(now())
 
   price   Float?
   visitNo Int?
@@ -198,10 +191,10 @@ model Bonus {
 }
 
 model UserBonus {
-  id     String       @id @default(dbgenerated("gen_random_uuid()"))
-  isUsed Boolean @default(false)
-  createdAt DateTime @default(now())
-  usedAt DateTime?
+  id        String    @id @default(dbgenerated("gen_random_uuid()"))
+  isUsed    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  usedAt    DateTime?
 
   userId String
   User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -215,9 +208,9 @@ model UserBonus {
 }
 
 model Notification {
-  id      String  @id @default(dbgenerated("gen_random_uuid()"))
-  message String
-  isRead  Boolean
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  message   String
+  isRead    Boolean
   createdAt DateTime @default(now())
 
   userId String
@@ -225,9 +218,9 @@ model Notification {
 }
 
 model Currency {
-  id           String @id @default(dbgenerated("gen_random_uuid()"))
-  ticker       String
-  price Float @default(0)
+  id        String    @id @default(dbgenerated("gen_random_uuid()"))
+  ticker    String
+  price     Float     @default(0)
   updatedAt DateTime? @default(now())
 }
 

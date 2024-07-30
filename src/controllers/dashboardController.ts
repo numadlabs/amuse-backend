@@ -2,33 +2,31 @@ import { NextFunction, Request, Response } from "express";
 import { dashboardRepository } from "../repository/dashboardRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
+import { AuthenticatedRequest } from "../../custom";
+import { CustomError } from "../exceptions/CustomError";
+import { dashboardServices } from "../services/dashboardServices";
 
 export const dashboardController = {
-  getTapLineGraph: async (req: Request, res: Response, next: NextFunction) => {
+  getTapLineGraph: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const { restaurantId } = req.params;
-
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    currentDate.setHours(0, 0, 0, 0);
-    console.log(currentDate);
-
-    let newMonth = currentMonth - 3;
-    let newYear = currentYear;
-
-    if (newMonth < 0) {
-      newMonth += 12;
-      newYear -= 1;
-    }
-
-    const startDate = new Date(newYear, newMonth + 1, 0);
-    startDate.setHours(0, 0, 0, 0);
+    const dayNo = Number(req.query.dayNo);
 
     try {
-      const data = await dashboardRepository.getTapByDate(
+      if (!req.user?.id)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+      if (!dayNo) throw new CustomError("Please provide the dayNo.", 400);
+
+      const data = await dashboardServices.getTapByDate(
+        req.user.id,
         restaurantId,
-        startDate,
-        currentDate
+        dayNo
       );
 
       return res.status(200).json({ success: true, data: data });
@@ -37,44 +35,25 @@ export const dashboardController = {
     }
   },
   getTapByAreaTable: async (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
     const { restaurantId } = req.params;
+    const dayNo = Number(req.query.dayNo);
 
     try {
-      const data = await dashboardRepository.getTapByArea(restaurantId);
+      if (!req.user?.id)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+      if (!dayNo) throw new CustomError("Please provide the dayNo.", 400);
 
-      return res.status(200).json({ success: true, data: data });
-    } catch (e) {
-      next(e);
-    }
-  },
-  getBudgetPieChart: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const { restaurantId } = req.params;
-
-    try {
-      const result = await dashboardRepository.getBudgetPieChart(restaurantId);
-
-      return res.status(200).json({ success: true, data: result });
-    } catch (e) {
-      next(e);
-    }
-  },
-  getTapByCheckIn: async (req: Request, res: Response, next: NextFunction) => {
-    const { restaurantId } = req.params;
-    const interval = req.body.interval;
-    const selectedInterval: string = interval;
-
-    try {
-      const data = await dashboardRepository.getTapByCheckIn(
+      const data = await dashboardServices.getTapByArea(
+        req.user.id,
         restaurantId,
-        selectedInterval
+        dayNo
       );
 
       return res.status(200).json({ success: true, data: data });
@@ -82,11 +61,75 @@ export const dashboardController = {
       next(e);
     }
   },
-  getTotals: async (req: Request, res: Response, next: NextFunction) => {
+  getBudgetPieChart: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const { restaurantId } = req.params;
 
     try {
-      const result = await dashboardRepository.getTotals(restaurantId);
+      if (!req.user?.id)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const result = await dashboardServices.getBudgetPieChart(
+        req.user.id,
+        restaurantId
+      );
+
+      return res.status(200).json({ success: true, data: result });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getTapByFrequency: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { restaurantId } = req.params;
+    const dayNo = Number(req.query.dayNo);
+
+    try {
+      if (!req.user?.id)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+      if (!dayNo) throw new CustomError("Please provide the dayNo.", 400);
+
+      const data = await dashboardServices.getTapByFrequency(
+        req.user.id,
+        restaurantId,
+        dayNo
+      );
+
+      return res.status(200).json({ success: true, data: data });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getTotals: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { restaurantId } = req.params;
+
+    try {
+      if (!req.user?.id)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const result = await dashboardServices.getTotals(
+        req.user?.id,
+        restaurantId
+      );
 
       return res.status(200).json({ success: true, data: result });
     } catch (e) {

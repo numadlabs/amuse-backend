@@ -58,7 +58,7 @@ export const userBonusController = {
         throw new CustomError("Could not parse the id from the token", 400);
 
       if (!encryptedData)
-        throw new CustomError("Please provide the NFC info.", 400);
+        throw new CustomError("Please provide the QR data.", 400);
 
       const userBonus = await userBonusServices.use(
         encryptedData,

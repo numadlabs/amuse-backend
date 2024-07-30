@@ -24,6 +24,11 @@ employeeRouter.get(
   "/:restaurantId/restaurant",
   employeeController.getByRestaurantId
 );
-employeeRouter.put("/:id", employeeController.update);
+employeeRouter.put("/:id", employeeController.updateInfo);
+employeeRouter.put(
+  "/:id/role",
+  authorize("RESTAURANT_OWNER"),
+  employeeController.updateRole
+);
 
 export = employeeRouter;

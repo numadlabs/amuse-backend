@@ -6,7 +6,7 @@ export function authorize(...roles: ROLES[]) {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user || !req.user.role)
       throw new Error(
-        "Not authenticated/No role provided for authorization check"
+        "Not authenticated or no role was provided for authorization."
       );
 
     if (!roles.includes(req.user.role)) {

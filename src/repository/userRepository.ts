@@ -3,16 +3,6 @@ import { Insertable, Updateable } from "kysely";
 import { User } from "../types/db/types";
 
 export const userRepository = {
-  getUserByPhoneNumber: async (phoneNumber: string, prefix: string) => {
-    const user = await db
-      .selectFrom("User")
-      .where("User.telNumber", "=", phoneNumber)
-      .where("prefix", "=", prefix)
-      .selectAll()
-      .executeTakeFirst();
-
-    return user;
-  },
   getUserById: async (id: string) => {
     const user = await db
       .selectFrom("User")

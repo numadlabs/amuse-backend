@@ -1,4 +1,3 @@
-import { sendOTP } from "../lib/otpHelper";
 import { userRepository } from "../repository/userRepository";
 import { sendEmail } from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
@@ -8,36 +7,37 @@ import { s3BucketName, verificationCodeConstants } from "../lib/constants";
 import { s3 } from "../utils/aws";
 import { randomUUID } from "crypto";
 import { Insertable, Updateable } from "kysely";
-import { TempUser, User } from "../types/db/types";
+import { EmailOtp, User } from "../types/db/types";
 import { userTierRepository } from "../repository/userTierRepository";
-import { tempUserRepository } from "../repository/tempUserRepository";
+import { emailOtpRepository } from "../repository/emailOtpRepository";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
 
 export const userServices = {
   create: async (data: Insertable<User>, verificationCode: number) => {
-    const hasUser = await userRepository.getUserByPhoneNumber(
-      data.telNumber,
-      data.prefix
-    );
+    if (!data.email || !data.password)
+      throw new CustomError("Please provide a email and password.", 400);
+
+    const hasUser = await userRepository.getByEmail(data.email);
     if (hasUser)
       throw new CustomError("User already exists with this phone number.", 400);
 
-    const tempUser = await tempUserRepository.getByTelNumber(
-      data.prefix,
-      data.telNumber
-    );
-    if (!tempUser || !tempUser.telVerificationCode)
+    const emailOtp = await emailOtpRepository.getByEmail(data.email);
+    if (!emailOtp || !emailOtp.verificationCode)
       throw new CustomError(
-        "Please send OTP and and provide the verificationCode.",
+        "Please send OTP first and then provide the verificationCode.",
         400
       );
-    const telVerificationCode = extractVerification(
-      tempUser.telVerificationCode
+
+    if (emailOtp.isUsed)
+      throw new CustomError("OTP has already been used.", 400);
+
+    const emailVerificationCode = extractVerification(
+      emailOtp.verificationCode
     );
 
-    if (telVerificationCode !== verificationCode)
+    if (emailVerificationCode !== verificationCode)
       throw new CustomError("Invalid verification code!", 400);
 
     const hashedPassword = await encryptionHelper.encrypt(data.password);
@@ -48,140 +48,87 @@ export const userServices = {
 
     const user = await userRepository.create(data);
 
+    emailOtp.isUsed = true;
+    await emailOtpRepository.update(emailOtp.id, emailOtp);
+
     return user;
   },
   login: async (data: Insertable<User>) => {
-    const user = await userRepository.getUserByPhoneNumber(
-      data.telNumber,
-      data.prefix
-    );
+    if (!data.email || !data.password)
+      throw new CustomError("Please provide a email and password.", 400);
 
+    const user = await userRepository.getByEmail(data.email);
     if (!user) throw new CustomError("User not found.", 400);
 
     const isUser = await encryptionHelper.compare(data.password, user.password);
-
     if (!isUser) throw new CustomError("Invalid login info.", 400);
 
     return user;
   },
-  //user return hiihiin orond dugaariin avj boloh ym
-  setOTP: async (data: Insertable<User>) => {
-    const hasUser = await userRepository.getUserByPhoneNumber(
-      data.telNumber,
-      data.prefix
-    );
-
-    if (!hasUser) throw new CustomError("User does not exist!", 400);
-
+  sendOTP: async (email: string) => {
     const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
-    const telVerificationToken = generateVerificationToken(
-      randomNumber,
-      verificationCodeConstants.TEL_EXPIRATION_TIME
-    );
-
-    const isSent = await sendOTP(data.prefix, data.telNumber, randomNumber);
-    if (!isSent) throw new Error("Error has occured while sending the OTP.");
-
-    hasUser.telVerificationCode = telVerificationToken;
-    const user = await userRepository.update(hasUser.id, hasUser);
-
-    return user;
-  },
-  checkOTP: async (
-    prefix: string,
-    telNumber: string,
-    verificationCode: number
-  ) => {
-    const user = await userRepository.getUserByPhoneNumber(telNumber, prefix);
-
-    if (!user || !user.telVerificationCode)
-      throw new CustomError("User does not exist!", 400);
-
-    const telVerificationCode = extractVerification(user.telVerificationCode);
-
-    if (
-      telVerificationCode !== verificationCode ||
-      user.telVerificationCode === null
-    )
-      throw new CustomError("Invalid verification code!", 400);
-
-    return user;
-  },
-  forgotPassword: async (
-    prefix: string,
-    telNumber: string,
-    verificationCode: number,
-    password: string
-  ) => {
-    const user = await userServices.checkOTP(
-      prefix,
-      telNumber,
-      verificationCode
-    );
-
-    const encryptedPassword = await encryptionHelper.encrypt(password);
-
-    user.password = encryptedPassword;
-    user.telVerificationCode = null;
-
-    const updatedUser = await userRepository.update(user.id, user);
-
-    return updatedUser;
-  },
-  sendVerificationEmail: async (id: string, email: string) => {
-    const userById = await userRepository.getUserById(id);
-    if (!userById) throw new CustomError("User does not exist.", 400);
-
-    const emailCheck = await userRepository.getByEmail(email);
-    if (emailCheck)
-      throw new CustomError("Email has already been registered.", 400);
-
-    const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
-    const emailVerificationToken = generateVerificationToken(
+    const emailVerificationCode = generateVerificationToken(
       randomNumber,
       verificationCodeConstants.EMAIL_EXPIRATION_TIME
     );
 
-    await sendEmail(
+    const isSent = await sendEmail(
       "Amuse Bouche OTP",
       `Your Amuse Bouche verification code is: ${randomNumber}`,
       email
     );
+    if (!isSent.accepted)
+      throw new Error("Error has occured while sending the OTP.");
 
-    userById.emailVerificationCode = emailVerificationToken;
-    const user = await userRepository.update(userById.id, userById);
+    const emailOtp = await emailOtpRepository.create({
+      email: email,
+      verificationCode: emailVerificationCode,
+    });
 
-    return user;
+    return emailOtp;
   },
-  verifyEmailVerification: async (
-    id: string,
-    email: string,
-    verificationCode: number
-  ) => {
-    const foundUser = await userRepository.getUserById(id);
-    if (!foundUser || !foundUser.emailVerificationCode)
-      throw new CustomError(
-        "User does not exist or has no recorded verification code.",
-        400
-      );
+  checkOTP: async (email: string, verificationCode: number) => {
+    const emailOtp = await emailOtpRepository.getByEmail(email);
 
-    const emailCheck = await userRepository.getByEmail(email);
-    if (emailCheck)
-      throw new CustomError("Email has already been registered.", 400);
+    if (!emailOtp || !emailOtp.verificationCode)
+      throw new CustomError("No recorded of OTP found!", 400);
+
+    if (emailOtp.isUsed)
+      throw new CustomError("OTP has already been used.", 400);
 
     const emailVerificationCode = extractVerification(
-      foundUser.emailVerificationCode
+      emailOtp.verificationCode
     );
 
-    if (emailVerificationCode !== verificationCode)
-      throw new CustomError("Invalid verification code.", 400);
+    if (
+      emailVerificationCode !== verificationCode ||
+      emailOtp.verificationCode === null
+    )
+      throw new CustomError("Invalid verification code!", 400);
 
-    foundUser.email = email;
-    foundUser.emailVerificationCode = null;
+    return emailOtp;
+  },
+  forgotPassword: async (
+    email: string,
+    verificationCode: number,
+    password: string
+  ) => {
+    const user = await userRepository.getByEmail(email);
+    if (!user)
+      throw new CustomError("No user with the given email exists!", 400);
 
-    const user = await userRepository.update(foundUser.id, foundUser);
+    const otpCheck = await userServices.checkOTP(email, verificationCode);
+    if (!otpCheck || otpCheck.isUsed)
+      throw new CustomError("Invalid OTP!", 400);
 
-    return user;
+    const encryptedPassword = await encryptionHelper.encrypt(password);
+    user.password = encryptedPassword;
+    const updatedUser = await userRepository.update(user.id, user);
+
+    otpCheck.isUsed = true;
+    await emailOtpRepository.update(otpCheck.id, otpCheck);
+
+    return updatedUser;
   },
   update: async (
     id: string,
@@ -218,7 +165,6 @@ export const userServices = {
 
     return user;
   },
-  //add cascading effects
   delete: async (id: string) => {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
@@ -236,42 +182,54 @@ export const userServices = {
 
     return user;
   },
-  sendRegisterOTP: async (data: Insertable<TempUser>) => {
-    const user = await userRepository.getUserByPhoneNumber(
-      data.telNumber,
-      data.prefix
+  updateEmail: async (id: string, email: string, verificationCode: number) => {
+    const foundUser = await userRepository.getUserById(id);
+    if (!foundUser) throw new CustomError("User does not exist.", 400);
+
+    const emailCheck = await userRepository.getByEmail(email);
+    if (emailCheck)
+      throw new CustomError("Email has already been registered.", 400);
+
+    const emailOtp = await emailOtpRepository.getByEmail(email);
+    if (!emailOtp || !emailOtp.verificationCode)
+      throw new CustomError("No record of OTP was found.", 400);
+    if (emailOtp.isUsed)
+      throw new CustomError("OTP has already been used.", 400);
+
+    const emailVerificationCode = extractVerification(
+      emailOtp.verificationCode
     );
 
-    const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
-    const telVerificationToken = generateVerificationToken(
-      randomNumber,
-      verificationCodeConstants.TEL_EXPIRATION_TIME
-    );
+    if (emailVerificationCode !== verificationCode)
+      throw new CustomError("Invalid verification code.", 400);
 
-    data.telVerificationCode = telVerificationToken;
-    const tempUser = await tempUserRepository.create(data);
+    foundUser.email = email;
 
-    const isSent = await sendOTP(data.prefix, data.telNumber, randomNumber);
-    if (!isSent) throw new Error("Error has occured while sending the OTP.");
+    const user = await userRepository.update(foundUser.id, foundUser);
+    emailOtp.isUsed = true;
+    await emailOtpRepository.update(emailOtp.id, emailOtp);
 
-    return tempUser;
+    return user;
   },
-  checkRegisterOTP: async (
-    prefix: string,
-    telNumber: string,
-    verificationCode: number
+  changePassword: async (
+    id: string,
+    oldPassword: string,
+    newPassword: string
   ) => {
-    const tempUser = await tempUserRepository.getByTelNumber(prefix, telNumber);
-    if (!tempUser || !tempUser.telVerificationCode)
-      throw new CustomError("No record of sent OTP was found.", 400);
+    const user = await userRepository.getUserById(id);
+    if (!user) throw new CustomError("User not found.", 400);
 
-    const telVerificationCode = extractVerification(
-      tempUser.telVerificationCode
+    const isMatchingPassword = await encryptionHelper.compare(
+      oldPassword,
+      user.password
     );
+    if (!isMatchingPassword) throw new CustomError("Invalid password.", 400);
 
-    if (telVerificationCode !== verificationCode)
-      throw new CustomError("Invalid verification code!", 400);
+    const encryptedPassword = await encryptionHelper.encrypt(newPassword);
 
-    return true;
+    user.password = encryptedPassword;
+    const updatedUser = await userRepository.update(user.id, user);
+
+    return updatedUser;
   },
 };

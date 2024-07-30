@@ -43,8 +43,7 @@ const userTier: Insertable<UserTier>[] = [
 
 const user: Insertable<User> = {
   nickname: "gombochir",
-  prefix: "976",
-  telNumber: "99090280",
+  email: "gombochir.dev@gmail.com",
   password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
   userTierId: "b2207e15-18ca-4a90-9fd0-88186443f2bd",
 };

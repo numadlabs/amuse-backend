@@ -7,6 +7,7 @@ import { Insertable } from "kysely";
 import { Employee } from "../types/db/types";
 import { employeeRepository } from "../repository/employeeRepository";
 import { AuthenticatedRequest } from "../../custom";
+import { ROLES } from "../types/db/enums";
 
 export const employeeController = {
   create: async (
@@ -118,7 +119,7 @@ export const employeeController = {
       if (!email || !verificationCode || !password)
         throw new CustomError("Please provide all the required inputs.", 400);
 
-      const employee = await employeeServices.changePassword(
+      const employee = await employeeServices.forgotPassword(
         email,
         verificationCode,
         password
@@ -155,12 +156,75 @@ export const employeeController = {
       next(e);
     }
   },
-  update: async (req: Request, res: Response, next: NextFunction) => {
+  updateInfo: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     const { id } = req.params;
     const data: Insertable<Employee> = req.body;
 
     try {
-      const employee = await employeeServices.update(data, id);
+      if (!req.user?.id)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const employee = await employeeServices.updateInfo(data, id, req.user.id);
+
+      return res.status(200).json({
+        success: true,
+        data: employee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  updateRole: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { id } = req.params;
+    const role: ROLES = req.body.role;
+
+    try {
+      if (!req.user?.id)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const employee = await employeeServices.updateRole(role, id, req.user.id);
+
+      return res.status(200).json({
+        success: true,
+        data: employee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  changePassword: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { oldPassword, newPassword } = req.body;
+
+    try {
+      if (!req.user?.id)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const employee = await employeeServices.changePassword(
+        req.user.id,
+        oldPassword,
+        newPassword
+      );
 
       return res.status(200).json({
         success: true,

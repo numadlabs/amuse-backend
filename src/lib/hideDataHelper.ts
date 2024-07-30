@@ -3,8 +3,7 @@ import { Updateable } from "kysely";
 
 export const hideDataHelper = {
   sanitizeUserData: (data: Updateable<User>) => {
-    const { password, emailVerificationCode, telVerificationCode, ...user } =
-      data;
+    const { password, ...user } = data;
     return user;
   },
   sanitizeEmployeeData: (data: Updateable<Employee>) => {

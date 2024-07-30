@@ -4,12 +4,14 @@ import { UserController } from "../controllers/userController";
 import { authenticateToken } from "../middlewares/authenticateToken";
 import { parseFile } from "../middlewares/fileParser";
 
+userRoutes.put("/updateEmail", authenticateToken, UserController.updateEmail);
 userRoutes.put(
   "/:id",
   authenticateToken,
   parseFile("profilePicture"),
   UserController.updateUser
 );
+
 userRoutes.delete("/", authenticateToken, UserController.deleteUser);
 
 userRoutes.get("/cards", authenticateToken, UserController.getUserCards);

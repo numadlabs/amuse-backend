@@ -42,6 +42,13 @@ export type Device = {
     pushToken: string;
     createdAt: Generated<Timestamp>;
 };
+export type EmailOtp = {
+    id: Generated<string>;
+    email: string;
+    verificationCode: string | null;
+    isUsed: Generated<boolean>;
+    createdAt: Generated<Timestamp>;
+};
 export type Employee = {
     id: Generated<string>;
     password: string;
@@ -86,13 +93,6 @@ export type Tap = {
     userId: string;
     userCardId: string;
 };
-export type TempUser = {
-    id: Generated<string>;
-    prefix: string;
-    telNumber: string;
-    telVerificationCode: string | null;
-    createdAt: Generated<Timestamp>;
-};
 export type Timetable = {
     id: Generated<string>;
     dayNoOfTheWeek: number;
@@ -123,11 +123,6 @@ export type User = {
     balance: Generated<number>;
     visitCount: Generated<number>;
     email: string | null;
-    emailVerificationCode: string | null;
-    prefix: string;
-    telNumber: string;
-    telVerificationCode: string | null;
-    telVerifiedAt: Timestamp | null;
     userTierId: string;
 };
 export type UserBonus = {
@@ -160,12 +155,12 @@ export type DB = {
     Category: Category;
     Currency: Currency;
     Device: Device;
+    EmailOtp: EmailOtp;
     Employee: Employee;
     Notification: Notification;
     Purchase: Purchase;
     Restaurant: Restaurant;
     Tap: Tap;
-    TempUser: TempUser;
     Timetable: Timetable;
     Transaction: Transaction;
     User: User;

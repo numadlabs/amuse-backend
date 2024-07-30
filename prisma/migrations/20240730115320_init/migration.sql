@@ -5,9 +5,6 @@ CREATE TYPE "ROLES" AS ENUM ('SUPER_ADMIN', 'RESTAURANT_OWNER', 'RESTAURANT_WAIT
 CREATE TYPE "BONUS_TYPE" AS ENUM ('SINGLE', 'RECURRING', 'REDEEMABLE');
 
 -- CreateEnum
-CREATE TYPE "BONUS_STATUS" AS ENUM ('UNUSED', 'USED', 'SERVED');
-
--- CreateEnum
 CREATE TYPE "TRANSACTION_TYPE" AS ENUM ('WITHDRAW', 'DEPOSIT');
 
 -- CreateTable
@@ -23,13 +20,6 @@ CREATE TABLE "User" (
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "visitCount" INTEGER NOT NULL DEFAULT 0,
     "email" TEXT,
-    "emailVerificationCode" TEXT,
-    "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
-    "emailVerifiedAt" TIMESTAMP(3),
-    "prefix" TEXT NOT NULL,
-    "telNumber" TEXT NOT NULL,
-    "telVerificationCode" TEXT,
-    "telVerifiedAt" TIMESTAMP(3),
     "userTierId" TEXT NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -51,14 +41,14 @@ CREATE TABLE "Employee" (
 );
 
 -- CreateTable
-CREATE TABLE "TempUser" (
+CREATE TABLE "EmailOtp" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
-    "prefix" TEXT NOT NULL,
-    "telNumber" TEXT NOT NULL,
-    "telVerificationCode" TEXT,
+    "email" TEXT NOT NULL,
+    "verificationCode" TEXT,
+    "isUsed" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "TempUser_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "EmailOtp_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -138,10 +128,10 @@ CREATE TABLE "Card" (
 CREATE TABLE "UserCard" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "visitCount" INTEGER NOT NULL DEFAULT 0,
+    "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "ownedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "cardId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "isFirstTap" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "UserCard_pkey" PRIMARY KEY ("id")
 );
@@ -175,8 +165,9 @@ CREATE TABLE "Bonus" (
 -- CreateTable
 CREATE TABLE "UserBonus" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
-    "status" "BONUS_STATUS" NOT NULL DEFAULT 'UNUSED',
+    "isUsed" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "usedAt" TIMESTAMP(3),
     "userId" TEXT NOT NULL,
     "userCardId" TEXT NOT NULL,
     "bonusId" TEXT NOT NULL,
@@ -199,8 +190,8 @@ CREATE TABLE "Notification" (
 CREATE TABLE "Currency" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "ticker" TEXT NOT NULL,
-    "currentPrice" DOUBLE PRECISION NOT NULL,
-    "setPrice" DOUBLE PRECISION,
+    "price" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Currency_pkey" PRIMARY KEY ("id")
 );

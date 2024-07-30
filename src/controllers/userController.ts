@@ -9,6 +9,7 @@ import { db } from "../utils/db";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
 import { sql } from "kysely";
 import { currencyRepository } from "../repository/currencyRepository";
+import { CustomError } from "../exceptions/CustomError";
 
 export const UserController = {
   updateUser: async (
@@ -34,15 +35,7 @@ export const UserController = {
         error: "You are not allowed to update this user.",
       });
 
-    if (
-      data.id ||
-      data.role ||
-      data.telVerificationCode ||
-      data.emailVerificationCode ||
-      data.telNumber ||
-      data.prefix ||
-      data.password
-    )
+    if (data.id || data.role || data.password)
       return res.status(400).json({
         success: false,
         data: null,
@@ -241,6 +234,40 @@ export const UserController = {
       return res
         .status(200)
         .json({ success: true, data: { userBonuses: userBonuses } });
+    } catch (e) {
+      next(e);
+    }
+  },
+  updateEmail: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { emailVerificationCode, email } = req.body;
+
+    try {
+      if (!req.user?.id)
+        throw new CustomError("Could not parse the id from the token.", 400);
+
+      if (!emailVerificationCode || !email)
+        throw new CustomError(
+          "Please provide both an email and verification code .",
+          400
+        );
+
+      const user = await userServices.updateEmail(
+        req.user.id,
+        email,
+        emailVerificationCode
+      );
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: sanitizedUser,
+        },
+      });
     } catch (e) {
       next(e);
     }

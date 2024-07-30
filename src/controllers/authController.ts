@@ -5,17 +5,13 @@ import { hideDataHelper } from "../lib/hideDataHelper";
 import { AuthenticatedRequest } from "../../custom";
 import jwt from "jsonwebtoken";
 import { Insertable } from "kysely";
-import { TempUser, User } from "../types/db/types";
+import { User } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
 import { userRepository } from "../repository/userRepository";
 
 export const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
     const data: Insertable<User> = { ...req.body };
-    if (!data.prefix || !data.telNumber || !data.password)
-      return res
-        .status(400)
-        .json({ success: false, data: null, error: "Bad request" });
 
     try {
       const user = await userServices.login(data);
@@ -36,13 +32,48 @@ export const authController = {
       next(e);
     }
   },
+  sendOTP: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email } = req.body;
+
+      const otp = await userServices.sendOTP(email);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          otp: otp,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  checkOTP: async (req: Request, res: Response, next: NextFunction) => {
+    const { email, verificationCode } = req.body;
+    try {
+      if (!email)
+        throw new CustomError(
+          "Please provide the prefix and phone number.",
+          400
+        );
+      const isValidOTP = await userServices.checkOTP(email, verificationCode);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          isValidOTP,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
   register: async (req: Request, res: Response, next: NextFunction) => {
     const { verificationCode, ...rest } = req.body;
     const data: Insertable<User> = { ...rest };
 
     if (
-      !data.prefix ||
-      !data.telNumber ||
+      !data.email ||
       !data.password ||
       !data.nickname ||
       data.role ||
@@ -65,147 +96,6 @@ export const authController = {
             accessToken,
             refreshToken,
           },
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  sendOTP: async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const data: Insertable<User> = { ...req.body };
-
-      if (!data.telNumber || !data.prefix)
-        return res.status(400).json({
-          success: false,
-          data: null,
-          error: "Please provide a phone number.",
-        });
-
-      const user = await userServices.setOTP(data);
-      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
-
-      return res.status(200).json({
-        success: true,
-        data: {
-          user: sanitizedUser,
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  checkOTP: async (req: Request, res: Response, next: NextFunction) => {
-    const { prefix, telNumber } = req.body;
-    const { telVerificationCode } = req.body;
-    try {
-      if (!prefix || !telNumber)
-        throw new CustomError(
-          "Please provide the prefix and phone number.",
-          400
-        );
-      const isValidOTP = await userServices.checkOTP(
-        prefix,
-        telNumber,
-        telVerificationCode
-      );
-      if (!isValidOTP)
-        return res.status(400).json({
-          success: false,
-          data: null,
-          error: "Invalid verification.",
-        });
-
-      const user = hideDataHelper.sanitizeUserData(isValidOTP);
-
-      return res.status(200).json({
-        success: true,
-        data: {
-          user: user,
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  forgotPassword: async (req: Request, res: Response, next: NextFunction) => {
-    const { prefix, telNumber } = req.body;
-    const { telVerificationCode, password } = req.body;
-    try {
-      if (!prefix || !telNumber || !telVerificationCode || !password)
-        throw new CustomError("Please provide all the required inputs.", 400);
-
-      const user = await userServices.forgotPassword(
-        prefix,
-        telNumber,
-        telVerificationCode,
-        password
-      );
-      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
-
-      return res.status(200).json({
-        success: true,
-        data: {
-          user: sanitizedUser,
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  sendVerificationEmail: async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const { email } = req.body;
-
-    try {
-      if (!req.user?.id)
-        throw new CustomError("Could not parse the id from the token.", 400);
-
-      if (!email) throw new CustomError("Please provide an email.", 400);
-
-      const user = await userServices.sendVerificationEmail(req.user.id, email);
-      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
-      return res.status(200).json({
-        success: true,
-        data: {
-          user: sanitizedUser,
-        },
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  verifyEmailVerification: async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const { emailVerificationCode, email } = req.body;
-
-    try {
-      if (!req.user?.id)
-        throw new CustomError("Could not parse the id from the token.", 400);
-
-      if (!emailVerificationCode)
-        throw new CustomError(
-          "Please provide both an email and verification code .",
-          400
-        );
-
-      const user = await userServices.verifyEmailVerification(
-        req.user.id,
-        email,
-        emailVerificationCode
-      );
-      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
-
-      return res.status(200).json({
-        success: true,
-        data: {
-          user: sanitizedUser,
         },
       });
     } catch (e) {
@@ -245,24 +135,37 @@ export const authController = {
       });
     });
   },
-  checkTelNumber: async (req: Request, res: Response, next: NextFunction) => {
-    const { prefix, telNumber } = req.body;
+  forgotPassword: async (req: Request, res: Response, next: NextFunction) => {
+    const { verificationCode, password, email } = req.body;
     try {
-      if (!prefix || !telNumber)
-        throw new CustomError(
-          "Please provide the prefix and phone number.",
-          400
-        );
-      const checkExists = await userRepository.getUserByPhoneNumber(
-        telNumber,
-        prefix
+      if (!verificationCode || !password)
+        throw new CustomError("Please provide all the required inputs.", 400);
+
+      const user = await userServices.forgotPassword(
+        email,
+        verificationCode,
+        password
       );
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: sanitizedUser,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  checkEmail: async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+    try {
+      if (!email) throw new CustomError("Please provide the email.", 400);
+      const checkExists = await userRepository.getByEmail(email);
 
       if (checkExists)
-        throw new CustomError(
-          "This phone number has already been registered.",
-          400
-        );
+        throw new CustomError("This email has already been registered.", 400);
 
       return res.status(200).json({
         success: true,
@@ -274,47 +177,28 @@ export const authController = {
       next(e);
     }
   },
-  sendRegisterOTP: async (req: Request, res: Response, next: NextFunction) => {
+  changePassword: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { oldPassword, newPassword } = req.body;
     try {
-      const data: Insertable<TempUser> = { ...req.body };
+      if (!oldPassword || !newPassword || !req.user?.id)
+        throw new CustomError("Please provide all the required inputs.", 400);
 
-      if (!data.telNumber || !data.prefix)
-        return res.status(400).json({
-          success: false,
-          data: null,
-          error: "Please provide a phone number.",
-        });
-
-      await userServices.sendRegisterOTP(data);
-
-      return res.status(200).json({
-        success: true,
-        data: null,
-      });
-    } catch (e) {
-      next(e);
-    }
-  },
-  checkRegisterOTP: async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { telVerificationCode, prefix, telNumber } = req.body;
-
-      if (!telNumber || !prefix || !telVerificationCode)
-        return res.status(400).json({
-          success: false,
-          data: null,
-          error: "Please provide a phone number.",
-        });
-
-      await userServices.checkRegisterOTP(
-        prefix,
-        telNumber,
-        telVerificationCode
+      const user = await userServices.changePassword(
+        req.user.id,
+        oldPassword,
+        newPassword
       );
+      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
 
       return res.status(200).json({
         success: true,
-        data: null,
+        data: {
+          user: sanitizedUser,
+        },
       });
     } catch (e) {
       next(e);
