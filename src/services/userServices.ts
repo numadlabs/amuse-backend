@@ -42,6 +42,7 @@ export const userServices = {
 
     const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;
+    data.email = data.email.toLowerCase();
 
     const userTier = await userTierRepository.getStartingTier();
     data.userTierId = userTier.id;
@@ -81,7 +82,7 @@ export const userServices = {
       throw new Error("Error has occured while sending the OTP.");
 
     const emailOtp = await emailOtpRepository.create({
-      email: email,
+      email: email.toLowerCase(),
       verificationCode: emailVerificationCode,
     });
 
@@ -203,7 +204,7 @@ export const userServices = {
     if (emailVerificationCode !== verificationCode)
       throw new CustomError("Invalid verification code.", 400);
 
-    foundUser.email = email;
+    foundUser.email = email.toLowerCase();
 
     const user = await userRepository.update(foundUser.id, foundUser);
     emailOtp.isUsed = true;

@@ -35,11 +35,11 @@ export const UserController = {
         error: "You are not allowed to update this user.",
       });
 
-    if (data.id || data.role || data.password)
+    if (data.id || data.role || data.password || data.email)
       return res.status(400).json({
         success: false,
         data: null,
-        error: "Cannot change id, role and verification codes.",
+        error: "Cannot change id, role, email and verification codes.",
       });
 
     try {

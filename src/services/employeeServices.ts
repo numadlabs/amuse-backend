@@ -40,6 +40,7 @@ export const employeeServices = {
     data.password = hashedPassword;
     data.firstname = restaurant.name;
     data.lastname = "Employee";
+    data.email = data.email.toLowerCase();
 
     const employee = await employeeRepository.create(data);
 
@@ -75,6 +76,7 @@ The Amuse Bouche Team
 
     const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;
+    data.email = data.email.toLowerCase();
 
     const employee = await employeeRepository.create(data);
 
@@ -107,7 +109,8 @@ The Amuse Bouche Team
       data.password ||
       data.id ||
       data.emailVerificationCode ||
-      data.restaurantId
+      data.restaurantId ||
+      data.email
     )
       throw new CustomError("These fields cannot be updated.", 400);
 
