@@ -26,6 +26,7 @@ import { Server } from "socket.io";
 const { createServer } = require("node:http");
 import { createAdapter } from "@socket.io/redis-adapter";
 import { config } from "./config/config";
+import { hostname } from "os";
 
 const app = express();
 export const server = createServer(app);
@@ -37,9 +38,11 @@ const subClient = pubClient.duplicate();
 io.adapter(createAdapter(pubClient, subClient));
 
 app.get("/", (req: Request, res: Response) => {
+  const hostName = hostname();
   res.status(200).json({
     message: "API - 👋🌎🌍",
     version: "0.0.1",
+    host: hostName,
   });
 });
 
