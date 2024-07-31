@@ -38,7 +38,7 @@ io.adapter(createAdapter(pubClient, subClient));
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
-    message: "API - 👋🌎🌍🌏",
+    message: "API - 👋🌎🌍",
     version: "0.0.1",
   });
 });
