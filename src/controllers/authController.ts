@@ -8,6 +8,7 @@ import { Insertable } from "kysely";
 import { User } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
 import { userRepository } from "../repository/userRepository";
+import { config } from "../config/config";
 
 export const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
@@ -104,7 +105,7 @@ export const authController = {
   },
   refreshToken: async (req: Request, res: Response) => {
     const refreshToken = req.body.refreshToken;
-    const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
+    const jwtRefreshSecret = config.JWT_REFRESH_SECRET;
 
     if (!refreshToken)
       return res.status(401).json({

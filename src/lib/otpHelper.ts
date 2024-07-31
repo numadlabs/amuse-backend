@@ -1,8 +1,10 @@
+import { config } from "../config/config";
+
 require("dotenv").config();
 
-const accountSid = process.env.TWILLIO_ACCOUNT_SID;
-const authToken = process.env.TWILLIO_AUTH_TOKEN;
-const fromPhoneNumber = process.env.TWILLIO_PHONE_NUMBER;
+const accountSid = config.TWILLIO_ACCOUNT_SID;
+const authToken = config.TWILLIO_AUTH_TOKEN;
+const fromPhoneNumber = config.TWILLIO_PHONE_NUMBER;
 
 const client = require("twilio")(accountSid, authToken);
 

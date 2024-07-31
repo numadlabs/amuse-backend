@@ -7,8 +7,6 @@ export const verificationCodeConstants = {
 //IN NUMBER OF SECONDS
 export const TAP_EXPIRATION_TIME = 600;
 export const BONUS_REDEEM_EXPIRATION_TIME = 600;
-
-export const s3BucketName = "numadlabs-amuse";
 export const fileSizeLimit = 3145728; //3MB in binary
 
 export const BOOST_MULTIPLIER = 1.2;

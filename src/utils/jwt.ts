@@ -3,14 +3,15 @@ import { Secret } from "jsonwebtoken"; // Import the Secret type
 import { User } from "../types/db/types";
 import { Insertable } from "kysely";
 import { Employee } from "@prisma/client";
+import { config } from "../config/config";
 
-const ACCESS_TOKEN_EXPIRATION_TIME = process.env.JWT_ACCESS_EXPIRATION_TIME;
-const REFRESH_TOKEN_EXPIRATION_TIME = process.env.JWT_REFRESH_EXPIRATION_TIME;
+const ACCESS_TOKEN_EXPIRATION_TIME = config.JWT_ACCESS_EXPIRATION_TIME;
+const REFRESH_TOKEN_EXPIRATION_TIME = config.JWT_REFRESH_EXPIRATION_TIME;
 
 export function generateAccessToken(
   user: Insertable<User> | Insertable<Employee>
 ) {
-  const jwtAccesSecret: Secret | undefined = process.env.JWT_ACCESS_SECRET;
+  const jwtAccesSecret: Secret | undefined = config.JWT_ACCESS_SECRET;
   if (!jwtAccesSecret) {
     throw new Error("JWT_REFRESH_SECRET is not defined.");
   }
@@ -23,7 +24,7 @@ export function generateVerificationToken(
   verificationCode: number,
   duration: string
 ) {
-  const jwtVerificationSecret = process.env.JWT_VERIFICATION_SECRET;
+  const jwtVerificationSecret = config.JWT_VERIFICATION_SECRET;
   if (!jwtVerificationSecret) {
     throw new Error("JWT_REFRESH_SECRET is not defined.");
   }
@@ -33,7 +34,7 @@ export function generateVerificationToken(
 }
 //turn it into function that just returns JWT-payload
 export function extractVerification(token: string) {
-  const jwtVerificationSecret = process.env.JWT_VERIFICATION_SECRET;
+  const jwtVerificationSecret = config.JWT_VERIFICATION_SECRET;
   if (!jwtVerificationSecret) {
     throw new Error("JWT_REFRESH_SECRET is not defined.");
   }
@@ -48,7 +49,7 @@ export function extractVerification(token: string) {
 export function generateRefreshToken(
   user: Insertable<User> | Insertable<Employee>
 ) {
-  const jwtRefreshSecret: Secret | undefined = process.env.JWT_REFRESH_SECRET;
+  const jwtRefreshSecret: Secret | undefined = config.JWT_REFRESH_SECRET;
   if (!jwtRefreshSecret) {
     throw new Error("JWT_REFRESH_SECRET is not defined.");
   }

@@ -3,11 +3,13 @@ import { restaurantRepository } from "../repository/restaurantRepository";
 import { CustomError } from "../exceptions/CustomError";
 import { Restaurant, Timetable } from "../types/db/types";
 import { s3 } from "../utils/aws";
-import { s3BucketName } from "../lib/constants";
 import { randomUUID } from "crypto";
 import { timetableRepository } from "../repository/timetableRepository";
 import { employeeRepository } from "../repository/employeeRepository";
 import { parseLatLong } from "../lib/locationParser";
+import { config } from "../config/config";
+
+const s3BucketName = config.AWS_S3_BUCKET_NAME;
 
 export const restaurantServices = {
   create: async (

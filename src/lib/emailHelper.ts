@@ -1,13 +1,14 @@
 import nodemailer from "nodemailer";
+import { config } from "../config/config";
 
-const config = {
+const template = {
   service: "Gmail",
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
-    user: process.env.EMAIL_ADDRESS,
-    pass: process.env.EMAIL_PASS,
+    user: config.EMAIL_ADDRESS,
+    pass: config.EMAIL_PASS,
   },
   tls: { rejectUnauthorized: false },
 };
@@ -17,10 +18,10 @@ export async function sendEmail(
   text: string,
   toEmail: string
 ) {
-  const transporter = nodemailer.createTransport(config);
+  const transporter = nodemailer.createTransport(template);
 
   const info = await transporter.sendMail({
-    from: process.env.EMAIL_ADDRESS,
+    from: config.EMAIL_ADDRESS,
     to: toEmail,
     subject: subject,
     text: text,

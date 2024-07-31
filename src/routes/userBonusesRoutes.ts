@@ -2,6 +2,7 @@ import express from "express";
 import { authenticateToken } from "../middlewares/authenticateToken";
 import { userBonusController } from "../controllers/userBonusController";
 import { authorize } from "../middlewares/authorization";
+import blockSimultaneousRequests from "../middlewares/blockSimultaneousRequests";
 const userBonusesRoutes = express.Router();
 
 userBonusesRoutes.post(
@@ -26,6 +27,11 @@ userBonusesRoutes.post(
   authorize("USER"),
   userBonusController.generate
 );
-userBonusesRoutes.post("/buy", authenticateToken, userBonusController.buy);
+userBonusesRoutes.post(
+  "/buy",
+  authenticateToken,
+  blockSimultaneousRequests,
+  userBonusController.buy
+);
 
 export = userBonusesRoutes;

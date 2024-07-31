@@ -1,4 +1,4 @@
-import { connections, io } from "../app";
+import { pubClient, io } from "../app";
 import { CustomError } from "../exceptions/CustomError";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";
@@ -109,7 +109,7 @@ export const userBonusServices = {
       userBonus
     );
 
-    const userSocketId = connections.get(userCard.userId);
+    const userSocketId = await pubClient.get(`socket:${userCard.userId}`);
     if (userSocketId) {
       console.log("Emitting bonus-scan to: ", userSocketId);
       io.to(userSocketId).emit("bonus-scan", { bonus: updatedUserBonus });
@@ -151,6 +151,8 @@ export const userBonusServices = {
         current: userCard.visitCount % restaurant.perkOccurence,
         target: restaurant.perkOccurence,
       };
+
+      if (userCard.visitCount === 0) followingBonus.target = 1;
     }
 
     return { userBonuses, followingBonus };
@@ -182,6 +184,8 @@ export const userBonusServices = {
         current: userCard.visitCount % restaurant.perkOccurence,
         target: restaurant.perkOccurence,
       };
+
+      if (userCard.visitCount === 0) followingBonus.target = 1;
     }
 
     const userBonuses = await userBonusRepository.getByUserCardId(userCardId);

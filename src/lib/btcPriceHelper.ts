@@ -1,8 +1,9 @@
 import axios from "axios";
+import { config } from "../config/config";
 
-const cryptoApiURL = process.env.BITCOIN_API_URL;
-const cryptoApiKey = process.env.BITCOIN_API_KEY;
-const currencyApiURL = process.env.CURRENCY_API_URL;
+const cryptoApiURL = config.BITCOIN_API_URL;
+const cryptoApiKey = config.BITCOIN_API_KEY;
+const currencyApiURL = config.CURRENCY_API_URL;
 
 export async function getBtcPrice() {
   if (!cryptoApiURL) throw new Error("Error retrieving BTC price.");

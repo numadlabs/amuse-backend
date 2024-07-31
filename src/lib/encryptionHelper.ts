@@ -1,9 +1,10 @@
 import * as bcrypt from "bcrypt";
 import * as crypto from "crypto";
+import { config } from "../config/config";
 
-const algorithm = process.env.ENCRYPTION_ALGORITHM;
-const secretKey = process.env.ENCRYPTION_SECRET;
-const iv = process.env.ENCRYPTION_IV;
+const algorithm = config.ENCRYPTION_ALGORITHM;
+const secretKey = config.ENCRYPTION_SECRET;
+const iv = config.ENCRYPTION_IV;
 
 export const encryptionHelper = {
   encrypt: async (data: string) => {

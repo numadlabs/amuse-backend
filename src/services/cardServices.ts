@@ -3,9 +3,11 @@ import { cardRepository } from "../repository/cardRepository";
 import { Card } from "../types/db/types";
 import { s3 } from "../utils/aws";
 import { randomUUID } from "crypto";
-import { s3BucketName } from "../lib/constants";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { CustomError } from "../exceptions/CustomError";
+import { config } from "../config/config";
+
+const s3BucketName = config.AWS_S3_BUCKET_NAME;
 
 export const cardServices = {
   create: async (data: Insertable<Card>, file: Express.Multer.File) => {

@@ -21,18 +21,25 @@ import employeeRouter from "./routes/employeeRoutes";
 import userTierRouter from "./routes/userTierRoutes";
 import categoryRouter from "./routes/categoryRoutes";
 import transactionRouter from "./routes/transactionRoutes";
-
+import Redis from "ioredis";
 import { Server } from "socket.io";
-import { insertSeed } from "./seeders/main";
 const { createServer } = require("node:http");
+import { createAdapter } from "@socket.io/redis-adapter";
+import { config } from "./config/config";
 
 const app = express();
 export const server = createServer(app);
 export const io = new Server(server);
 
+console.log(config.REDIS_CONNECTION_STRING);
+export const pubClient = new Redis(config.REDIS_CONNECTION_STRING);
+const subClient = pubClient.duplicate();
+io.adapter(createAdapter(pubClient, subClient));
+
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     message: "API - 👋🌎🌍🌏",
+    version: "0.0.1",
   });
 });
 
@@ -66,12 +73,10 @@ updateCurrencyPrice();
 //   console.log(`Inserted seed data to DB: ${process.env.PGDATABASE}`)
 // );
 
-export const connections = new Map();
-
 io.on("connection", (socket) => {
   console.log(`socket ID of ${socket.id} connected`);
   socket.on("register", (userId) => {
-    connections.set(userId, socket.id);
+    pubClient.set(`socket:${userId}`, socket.id, "EX", 300);
     console.log(`User ${userId} registered with socket ID ${socket.id}`);
   });
 
@@ -79,3 +84,5 @@ io.on("connection", (socket) => {
     console.log("A user disconnected", socket.id);
   });
 });
+
+export default app;

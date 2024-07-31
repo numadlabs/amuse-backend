@@ -3,16 +3,18 @@ import { sendEmail } from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { extractVerification, generateVerificationToken } from "../utils/jwt";
 import { CustomError } from "../exceptions/CustomError";
-import { s3BucketName, verificationCodeConstants } from "../lib/constants";
+import { verificationCodeConstants } from "../lib/constants";
 import { s3 } from "../utils/aws";
 import { randomUUID } from "crypto";
 import { Insertable, Updateable } from "kysely";
 import { EmailOtp, User } from "../types/db/types";
 import { userTierRepository } from "../repository/userTierRepository";
 import { emailOtpRepository } from "../repository/emailOtpRepository";
+import { config } from "../config/config";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
+const s3BucketName = config.AWS_S3_BUCKET_NAME;
 
 export const userServices = {
   create: async (data: Insertable<User>, verificationCode: number) => {

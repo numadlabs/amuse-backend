@@ -12,7 +12,7 @@ import { userRepository } from "../repository/userRepository";
 import { currencyRepository } from "../repository/currencyRepository";
 import { userTierRepository } from "../repository/userTierRepository";
 import { employeeRepository } from "../repository/employeeRepository";
-import { connections, io } from "../app";
+import { io, pubClient } from "../app";
 
 export const tapServices = {
   generate: async (userId: string) => {
@@ -47,7 +47,7 @@ export const tapServices = {
       restaurant.id
     );
 
-    const userSocketId = connections.get(user.id);
+    const userSocketId = await pubClient.get(`socket:${user.id}`);
     if (!userCard) {
       if (userSocketId)
         io.to(userSocketId).emit("tap-scan", {
