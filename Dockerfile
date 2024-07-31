@@ -19,7 +19,7 @@ COPY . .
 RUN npm run build
 
 # Expose port 3000
-EXPOSE 3000
+EXPOSE 3001
 
 # Command to run the app using PM2
 CMD ["pm2-runtime", "dist/index.js"]

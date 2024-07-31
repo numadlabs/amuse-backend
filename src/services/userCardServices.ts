@@ -1,8 +1,8 @@
-import { UserCard } from "@prisma/client";
 import { Insertable } from "kysely";
 import { cardRepository } from "../repository/cardRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { CustomError } from "../exceptions/CustomError";
+import { UserCard } from "../types/db/types";
 
 export const userCardServices = {
   buy: async (data: Insertable<UserCard>) => {

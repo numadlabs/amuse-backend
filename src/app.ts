@@ -31,7 +31,7 @@ const app = express();
 export const server = createServer(app);
 export const io = new Server(server);
 
-console.log(config.REDIS_CONNECTION_STRING);
+console.log(config.REDIS_CONNECTION_STRING.substring(0, 5));
 export const pubClient = new Redis(config.REDIS_CONNECTION_STRING);
 const subClient = pubClient.duplicate();
 io.adapter(createAdapter(pubClient, subClient));

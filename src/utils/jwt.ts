@@ -1,8 +1,6 @@
-import { sign, verify } from "jsonwebtoken";
-import { Secret } from "jsonwebtoken"; // Import the Secret type
-import { User } from "../types/db/types";
+import { sign, verify, Secret } from "jsonwebtoken";
+import { Employee, User } from "../types/db/types";
 import { Insertable } from "kysely";
-import { Employee } from "@prisma/client";
 import { config } from "../config/config";
 
 const ACCESS_TOKEN_EXPIRATION_TIME = config.JWT_ACCESS_EXPIRATION_TIME;

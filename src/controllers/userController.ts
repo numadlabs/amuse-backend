@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from "express";
 import { userServices } from "../services/userServices";
-import { Prisma } from "@prisma/client";
 import { AuthenticatedRequest } from "../../custom";
 
 import { hideDataHelper } from "../lib/hideDataHelper";
 import { userRepository } from "../repository/userRepository";
 import { db } from "../utils/db";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
-import { sql } from "kysely";
+import { Updateable } from "kysely";
 import { currencyRepository } from "../repository/currencyRepository";
 import { CustomError } from "../exceptions/CustomError";
+import { User } from "../types/db/types";
 
 export const UserController = {
   updateUser: async (
@@ -18,7 +18,7 @@ export const UserController = {
     next: NextFunction
   ) => {
     const { id } = req.params;
-    const data: Prisma.UserCreateInput = { ...req.body };
+    const data: Updateable<User> = { ...req.body };
     const file = req.file as Express.Multer.File;
 
     if (!req.user?.id)

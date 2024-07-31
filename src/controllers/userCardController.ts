@@ -1,8 +1,8 @@
 import { NextFunction, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import { Insertable } from "kysely";
-import { UserCard } from "@prisma/client";
 import { userCardServices } from "../services/userCardServices";
+import { UserCard } from "../types/db/types";
 
 export const userCardController = {
   buyUserCard: async (
