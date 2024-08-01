@@ -25,15 +25,9 @@ restaurantRoutes.put(
   restaurantController.updateRewardDetail
 );
 restaurantRoutes.get(
-  "/:id/asEmployee",
-  authenticateToken,
-  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER"),
-  restaurantController.getRestaurantByIdAsEmployee
-);
-restaurantRoutes.get(
   "/:id",
   authenticateToken,
-  restaurantController.getRestaurantByIdAsUser
+  restaurantController.getRestaurantById
 );
 restaurantRoutes.put(
   "/:id",

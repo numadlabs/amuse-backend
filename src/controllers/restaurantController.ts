@@ -211,7 +211,7 @@ export const restaurantController = {
       next(e);
     }
   },
-  getRestaurantByIdAsUser: async (
+  getRestaurantById: async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
@@ -220,8 +220,8 @@ export const restaurantController = {
     const { time, dayNoOfTheWeek } = req.query;
 
     try {
-      if (!req.user?.id)
-        throw new CustomError("Could not retrieve data from the token.", 400);
+      if (!req.user?.id || !req.user.role)
+        throw new CustomError("Could not retrieve info from the token.", 400);
 
       if (!time || !dayNoOfTheWeek)
         throw new CustomError(
@@ -236,11 +236,28 @@ export const restaurantController = {
         Number(dayNoOfTheWeek)
       );
 
+      let convertedBalance = null;
+      let data;
+
+      if (req.user.role !== "USER") {
+        const btc = await currencyRepository.getByTicker("BTC");
+        const currency = await currencyRepository.getByTicker("EUR");
+
+        convertedBalance = restaurant.balance * btc.price * currency.price;
+        data = {
+          restaurant: restaurant,
+          convertedBalance: convertedBalance,
+        };
+      } else {
+        const { balance, ...omittedRestaurant } = restaurant;
+        data = {
+          restaurant: omittedRestaurant,
+        };
+      }
+
       return res.status(200).json({
         success: true,
-        data: {
-          restaurant: restaurant,
-        },
+        data: data,
       });
     } catch (e) {
       next(e);
@@ -260,33 +277,6 @@ export const restaurantController = {
       const restaurant = await restaurantServices.updateRewardDetail(id, data);
 
       return res.status(200).json({ success: true, restaurant: restaurant });
-    } catch (e) {
-      next(e);
-    }
-  },
-  getRestaurantByIdAsEmployee: async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const { id } = req.params;
-
-    try {
-      if (!req.user?.id)
-        throw new CustomError("Could not retrieve data from the token.", 400);
-
-      const restaurant = await restaurantRepository.getById(id);
-
-      const btc = await currencyRepository.getByTicker("BTC");
-      const currency = await currencyRepository.getByTicker("EUR");
-
-      return res.status(200).json({
-        success: true,
-        data: {
-          restaurant: restaurant,
-          convertedBalance: restaurant.balance * btc.price * currency.price,
-        },
-      });
     } catch (e) {
       next(e);
     }
