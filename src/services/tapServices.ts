@@ -37,7 +37,7 @@ export const tapServices = {
 
     const waiter = await employeeRepository.getById(waiterId);
     if (!waiter || !waiter.restaurantId)
-      throw new CustomError("Invalid waiterId.", 400);
+      throw new CustomError("Invalid employeeId.", 400);
 
     const restaurant = await restaurantRepository.getById(waiter.restaurantId);
     if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);

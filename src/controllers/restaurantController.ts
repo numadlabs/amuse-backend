@@ -211,7 +211,7 @@ export const restaurantController = {
       next(e);
     }
   },
-  getRestaurantById: async (
+  getRestaurantByIdAsUser: async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
@@ -235,14 +235,11 @@ export const restaurantController = {
         time.toString(),
         Number(dayNoOfTheWeek)
       );
-      const btc = await currencyRepository.getByTicker("BTC");
-      const currency = await currencyRepository.getByTicker("EUR");
 
       return res.status(200).json({
         success: true,
         data: {
           restaurant: restaurant,
-          convertedBalance: restaurant.balance * btc.price * currency.price,
         },
       });
     } catch (e) {
@@ -263,6 +260,33 @@ export const restaurantController = {
       const restaurant = await restaurantServices.updateRewardDetail(id, data);
 
       return res.status(200).json({ success: true, restaurant: restaurant });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getRestaurantByIdAsEmployee: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { id } = req.params;
+
+    try {
+      if (!req.user?.id)
+        throw new CustomError("Could not retrieve data from the token.", 400);
+
+      const restaurant = await restaurantRepository.getById(id);
+
+      const btc = await currencyRepository.getByTicker("BTC");
+      const currency = await currencyRepository.getByTicker("EUR");
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          restaurant: restaurant,
+          convertedBalance: restaurant.balance * btc.price * currency.price,
+        },
+      });
     } catch (e) {
       next(e);
     }

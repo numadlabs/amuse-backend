@@ -25,9 +25,15 @@ restaurantRoutes.put(
   restaurantController.updateRewardDetail
 );
 restaurantRoutes.get(
+  "/:id/asEmployee",
+  authenticateToken,
+  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER"),
+  restaurantController.getRestaurantByIdAsEmployee
+);
+restaurantRoutes.get(
   "/:id",
   authenticateToken,
-  restaurantController.getRestaurantById
+  restaurantController.getRestaurantByIdAsUser
 );
 restaurantRoutes.put(
   "/:id",
@@ -39,7 +45,7 @@ restaurantRoutes.put(
 restaurantRoutes.delete(
   "/:id",
   authenticateToken,
-  // authorize("SUPER_ADMIN"),
+  authorize("SUPER_ADMIN"),
   restaurantController.deleteRestaurant
 );
 export = restaurantRoutes;

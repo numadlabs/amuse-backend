@@ -44,7 +44,6 @@ export const restaurantRepository = {
         "r.latitude",
         "r.longitude",
         "r.logo",
-        "r.balance",
         "Card.id as cardId",
         "Card.benefits",
         "Card.instruction",
