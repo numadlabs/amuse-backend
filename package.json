@@ -4,13 +4,14 @@
   "description": "Amuse Bouche Backend",
   "main": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=development nodemon src/index.ts",
-    "build": "npx tsc",
-    "start": "NODE_ENV=production node dist/index.js",
-    "migrate:dev": "dotenv -e .env -- npx prisma migrate dev",
-    "migrate:prod": "dotenv -e .env.prod -- npx prisma migrate deploy",
     "test": "jest",
-    "seed": "dotenv -e .env.prod -- nodemon src/index.ts"
+    "build": "npx tsc",
+    "dev": "NODE_ENV=development | dotenv -e .env.development -- nodemon src/index.ts",
+    "start:staging": "NODE_ENV=staging node dist/index.js",
+    "start:production": "NODE_ENV=production node dist/index.js",
+    "migrate:development": "dotenv -e .env.development -- npx prisma migrate dev",
+    "migrate:staging": "dotenv -e .env.staging -- npx prisma migrate deploy",
+    "migrate:production": "dotenv -e .env.production -- npx prisma migrate deploy"
   },
   "author": "gombochir.dev@gmail.com",
   "license": "Proprietary",
@@ -36,6 +37,7 @@
     "pg": "^8.11.3",
     "prisma-kysely": "^1.7.1",
     "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
     "twilio": "^4.21.0"
   },
   "devDependencies": {

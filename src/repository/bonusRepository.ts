@@ -83,7 +83,7 @@ export const bonusRepository = {
       .where("Bonus.type", "=", "SINGLE")
       .where("Bonus.visitNo", "=", visitNo)
       .where((eb) =>
-        eb("Bonus.currentSupply", "<=", eb.ref("Bonus.totalSupply"))
+        eb("Bonus.currentSupply", "<", eb.ref("Bonus.totalSupply"))
       )
       .select([
         "Bonus.id",

@@ -37,6 +37,10 @@ export const pubClient = new Redis(config.REDIS_CONNECTION_STRING);
 const subClient = pubClient.duplicate();
 io.adapter(createAdapter(pubClient, subClient));
 
+pubClient.on("error", (err) => {
+  console.error("Redis error:", err);
+});
+
 app.get("/", (req: Request, res: Response) => {
   const hostName = hostname();
   res.status(200).json({

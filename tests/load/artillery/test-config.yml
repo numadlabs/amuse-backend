@@ -1,0 +1,19 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 10
+  engines:
+    socketio: {}
+
+scenarios:
+  - name: My sample scenario
+    engine: socketio
+    flow:
+      # wait for the WebSocket upgrade (optional)
+      - think: 1
+
+      # basic emit
+      - emit:
+          channel: "register"
+          data: "world"
