@@ -1,14 +1,5 @@
 import { sql } from "kysely";
 import { db } from "../utils/db";
-import { transactionRepository } from "./transactionRepository";
-import { tapRepository } from "./tapRepository";
-import { userCardReposity } from "./userCardRepository";
-
-enum Interval {
-  ONE_WEEK = "1 week",
-  ONE_MONTH = "1 month",
-  THREE_MONTHS = "3 months",
-}
 
 export const dashboardRepository = {
   getTapByDate: async (

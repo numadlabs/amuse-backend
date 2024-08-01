@@ -21,7 +21,6 @@ export const dashboardController = {
           "Could not parse the info from the auth token.",
           400
         );
-      if (!dayNo) throw new CustomError("Please provide the dayNo.", 400);
 
       const data = await dashboardServices.getTapByDate(
         req.user.id,
@@ -48,7 +47,6 @@ export const dashboardController = {
           "Could not parse the info from the auth token.",
           400
         );
-      if (!dayNo) throw new CustomError("Please provide the dayNo.", 400);
 
       const data = await dashboardServices.getTapByArea(
         req.user.id,
@@ -99,7 +97,6 @@ export const dashboardController = {
           "Could not parse the info from the auth token.",
           400
         );
-      if (!dayNo) throw new CustomError("Please provide the dayNo.", 400);
 
       const data = await dashboardServices.getTapByFrequency(
         req.user.id,

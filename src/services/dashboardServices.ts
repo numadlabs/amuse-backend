@@ -1,4 +1,5 @@
 import { dashboardRepository } from "../repository/dashboardRepository";
+import { restaurantRepository } from "../repository/restaurantRepository";
 import { tapRepository } from "../repository/tapRepository";
 import { transactionRepository } from "../repository/transactionRepository";
 import { userCardReposity } from "../repository/userCardRepository";
@@ -8,13 +9,22 @@ export const dashboardServices = {
   getTapByDate: async (
     employeeId: string,
     restaurantId: string,
-    dayNo: number
+    dayNo: number | null
   ) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
+    const restaurant = await restaurantRepository.getById(restaurantId);
 
     const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - dayNo);
+    let startDate = new Date();
+    const createdDate = new Date(restaurant.createdAt);
+
+    if (!dayNo) {
+      startDate = new Date(restaurant.createdAt);
+    } else {
+      startDate.setDate(startDate.getDate() - dayNo);
+    }
+
+    if (startDate < createdDate) startDate = createdDate;
 
     const data = await dashboardRepository.getTapByDate(
       restaurantId,
@@ -31,9 +41,19 @@ export const dashboardServices = {
   ) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
 
+    const restaurant = await restaurantRepository.getById(restaurantId);
+
     const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - dayNo);
+    let startDate = new Date();
+    const createdDate = new Date(restaurant.createdAt);
+
+    if (!dayNo) {
+      startDate = new Date(restaurant.createdAt);
+    } else {
+      startDate.setDate(startDate.getDate() - dayNo);
+    }
+
+    if (startDate < createdDate) startDate = createdDate;
 
     const data = await dashboardRepository.getTapByArea(
       restaurantId,
@@ -76,9 +96,19 @@ export const dashboardServices = {
   ) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
 
+    const restaurant = await restaurantRepository.getById(restaurantId);
+
     const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - dayNo);
+    let startDate = new Date();
+    const createdDate = new Date(restaurant.createdAt);
+
+    if (!dayNo) {
+      startDate = new Date(restaurant.createdAt);
+    } else {
+      startDate.setDate(startDate.getDate() - dayNo);
+    }
+
+    if (startDate < createdDate) startDate = createdDate;
 
     const data = await dashboardRepository.getTapByFrequency(
       restaurantId,
