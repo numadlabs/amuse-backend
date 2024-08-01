@@ -44,7 +44,7 @@ const userTier: Insertable<UserTier>[] = [
 const user: Insertable<User> = {
   nickname: "gombochir",
   email: "gombochir.dev@gmail.com",
-  password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
+  password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
   userTierId: "b2207e15-18ca-4a90-9fd0-88186443f2bd",
 };
 
@@ -206,7 +206,7 @@ const employee: Insertable<Employee>[] = [
     lastname: "owner",
     role: "RESTAURANT_OWNER",
     email: "owner@sasazu.com",
-    password: "$2b$10$UaHxXjkleWhQZpHdNFPJ0.jylGtOAUE6nxs/RigdndMVwEnaMejGG",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "8cbfece9-bc33-4089-af7d-7a327a5e7faf",
   },
   {
@@ -214,7 +214,7 @@ const employee: Insertable<Employee>[] = [
     lastname: "waiter",
     role: "RESTAURANT_WAITER",
     email: "waiter@sasazu.com",
-    password: "$2a$10$TzTO0dXIi.dnngNCmfo.ger0VVOBtol9VyCX7CLHIzCL.qHSRfH22",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "8cbfece9-bc33-4089-af7d-7a327a5e7faf",
   },
   {
@@ -222,7 +222,7 @@ const employee: Insertable<Employee>[] = [
     lastname: "owner",
     role: "RESTAURANT_OWNER",
     email: "owner@sansho.com",
-    password: "$2b$10$UaHxXjkleWhQZpHdNFPJ0.jylGtOAUE6nxs/RigdndMVwEnaMejGG",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "34dbdac2-05f8-426e-926a-1983f3b9f144",
   },
   {
@@ -230,7 +230,7 @@ const employee: Insertable<Employee>[] = [
     lastname: "waiter",
     role: "RESTAURANT_WAITER",
     email: "waiter@sansho.com",
-    password: "$2a$10$TzTO0dXIi.dnngNCmfo.ger0VVOBtol9VyCX7CLHIzCL.qHSRfH22",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "34dbdac2-05f8-426e-926a-1983f3b9f144",
   },
   {
@@ -238,7 +238,7 @@ const employee: Insertable<Employee>[] = [
     lastname: "owner",
     role: "RESTAURANT_OWNER",
     email: "owner@kro.com",
-    password: "$2b$10$UaHxXjkleWhQZpHdNFPJ0.jylGtOAUE6nxs/RigdndMVwEnaMejGG",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "ac9d78f5-4c18-418e-928e-162457adf328",
   },
   {
@@ -246,7 +246,7 @@ const employee: Insertable<Employee>[] = [
     lastname: "waiter",
     role: "RESTAURANT_WAITER",
     email: "waiter@kro.com",
-    password: "$2a$10$TzTO0dXIi.dnngNCmfo.ger0VVOBtol9VyCX7CLHIzCL.qHSRfH22",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "ac9d78f5-4c18-418e-928e-162457adf328",
   },
   {
@@ -254,7 +254,7 @@ const employee: Insertable<Employee>[] = [
     lastname: "owner",
     role: "RESTAURANT_OWNER",
     email: "owner@louvre.com",
-    password: "$2b$10$UaHxXjkleWhQZpHdNFPJ0.jylGtOAUE6nxs/RigdndMVwEnaMejGG",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "1d7d5b1f-f591-4dcd-af15-c5bebf40dac3",
   },
   {
@@ -262,7 +262,7 @@ const employee: Insertable<Employee>[] = [
     lastname: "waiter",
     role: "RESTAURANT_WAITER",
     email: "waiter@louvre.com",
-    password: "$2a$10$TzTO0dXIi.dnngNCmfo.ger0VVOBtol9VyCX7CLHIzCL.qHSRfH22",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "1d7d5b1f-f591-4dcd-af15-c5bebf40dac3",
   },
 ];
