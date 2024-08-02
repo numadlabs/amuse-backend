@@ -2,6 +2,7 @@ import http from "k6/http";
 import { check, sleep } from "k6";
 import ws from "k6/ws";
 import { SharedArray } from "k6/data";
+import { client } from "./client";
 
 const users = new SharedArray("users data", function () {
   const fileContent = open("./auth-data.json");

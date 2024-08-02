@@ -65,7 +65,7 @@ export const cardServices = {
         })
         .promise();
 
-      card.nftImageUrl = randomKey;
+      data.nftImageUrl = randomKey;
     }
 
     const updatedCard = await cardRepository.update(card.id, data);

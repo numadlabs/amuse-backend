@@ -1,19 +1,21 @@
 config:
-  target: "http://localhost:3000"
-  phases:
-    - duration: 60
-      arrivalRate: 10
-  engines:
-    socketio: {}
-
+  target: "http://localhost:3001"
+  socketio:
+    transports: ["websocket"]
 scenarios:
-  - name: My sample scenario
-    engine: socketio
+  - name: My Socket.IO test
+    engine: socketio # Enable the Socket.IO engine
     flow:
-      # wait for the WebSocket upgrade (optional)
-      - think: 1
+      - on:
+        channel: "haha"
+        handler:
+          - log: "Received response: {{ response }}"
+        url: "http://localhost:3001"
 
-      # basic emit
-      - emit:
-          channel: "register"
-          data: "world"
+      # - think: 2 # Wait for 2 seconds before closing the connection
+      # - emit:
+      #     channel: "register"
+      #     data: "Hello world!"
+      #     response:
+      #       channel: "oz_response"
+      #       data: "hello"

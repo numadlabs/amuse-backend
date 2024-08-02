@@ -4,6 +4,7 @@ import { Card } from "../types/db/types";
 import { cardRepository } from "../repository/cardRepository";
 import { cardServices } from "../services/cardServices";
 import { AuthenticatedRequest } from "../../custom";
+import { CustomError } from "../exceptions/CustomError";
 
 export const cardController = {
   createCard: async (req: Request, res: Response, next: NextFunction) => {
@@ -16,6 +17,8 @@ export const cardController = {
         .json({ success: false, data: null, error: "Cannot set id field" });
 
     try {
+      if (!file) throw new CustomError("Please provide the image.", 400);
+
       const card = await cardServices.create(data, file);
 
       return res.status(200).json({ success: true, data: { card: card } });
