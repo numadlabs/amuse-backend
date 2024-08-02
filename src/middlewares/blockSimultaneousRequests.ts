@@ -5,8 +5,6 @@ import { CustomError } from "../exceptions/CustomError";
 
 const BLOCKED_REQUEST_TIMEOUT = 60;
 
-const requests = new Map();
-
 const blockSimultaneousRequests = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -16,8 +14,7 @@ const blockSimultaneousRequests = async (
   if (!userId) throw new CustomError("Error parsing the auth token.", 400);
 
   try {
-    //const active = await pubClient.get(`req:${userId}`);
-    const active = requests.get(`req:${userId}`);
+    const active = await pubClient.get(`req:${userId}`);
 
     if (active) {
       res
@@ -26,17 +23,15 @@ const blockSimultaneousRequests = async (
           "Too many requests. Please wait until the previous request is complete."
         );
     } else {
-      requests.set(`req:${userId}`, 1);
-      // await pubClient.set(
-      //   `req:${userId}`,
-      //   "active",
-      //   "EX",
-      //   BLOCKED_REQUEST_TIMEOUT
-      // );
+      await pubClient.set(
+        `req:${userId}`,
+        "active",
+        "EX",
+        BLOCKED_REQUEST_TIMEOUT
+      );
 
       res.on("finish", async () => {
-        // await pubClient.del(`req:${userId}`);
-        requests.delete(`req:${userId}`);
+        await pubClient.del(`req:${userId}`);
       });
 
       next();
