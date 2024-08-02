@@ -44,7 +44,7 @@ app.get("/", (req: Request, res: Response) => {
   const hostName = hostname();
   res.status(200).json({
     message: "API - 👋🌎🌍",
-    version: "1.0.0",
+    version: "1.0.1",
     host: hostName,
   });
 });

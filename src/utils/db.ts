@@ -2,7 +2,6 @@ import { Kysely } from "kysely";
 
 import { PostgresDialect } from "kysely";
 import { Pool } from "pg";
-// import type { DB } from "@/lib/db/types";
 import type { DB } from "../types/db/types";
 import { config } from "../config/config";
 
