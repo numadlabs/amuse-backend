@@ -111,7 +111,6 @@ export const userBonusServices = {
 
     const userSocketId = await pubClient.get(`socket:${userCard.userId}`);
     if (userSocketId) {
-      console.log("Emitting bonus-scan to: ", userSocketId);
       io.to(userSocketId).emit("bonus-scan", { bonus: updatedUserBonus });
     }
 
