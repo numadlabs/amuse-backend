@@ -1,3 +1,4 @@
+import { currencyRepository } from "../repository/currencyRepository";
 import { dashboardRepository } from "../repository/dashboardRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { tapRepository } from "../repository/tapRepository";
@@ -80,12 +81,15 @@ export const dashboardServices = {
     const awarded = totalAmount || 0;
     const redeemed = awarded - totalBalance;
 
+    const btc = await currencyRepository.getByTicker("BTC");
+    const currency = await currencyRepository.getByTicker("EUR");
+
     return {
-      budgetAmount: budget,
+      budgetAmount: budget * btc.price * currency.price,
       budgetPercentage: 100,
-      awardedAmount: awarded,
+      awardedAmount: awarded * btc.price * currency.price,
       awardedPercentage: parseFloat(((awarded / budget) * 100).toFixed(3)),
-      redeemedAmount: redeemed,
+      redeemedAmount: redeemed * btc.price * currency.price,
       redeemedPercentage: parseFloat(((redeemed / budget) * 100).toFixed(3)),
     };
   },
