@@ -74,16 +74,18 @@ export const userBonusRepository = {
     endDate: Date
   ) => {
     const count = await db
-      .selectFrom("UserBonus")
-      .innerJoin("UserCard", "UserCard.id", "UserBonus.userCardId")
+      .selectFrom("UserBonus as ub")
+      .innerJoin("UserCard", "UserCard.id", "ub.userCardId")
       .innerJoin("Card", "Card.id", "UserCard.cardId")
       .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
-      .select(({ fn }) => [fn.count<number>("UserBonus.id").as("count")])
+      .select(({ fn }) => [fn.count<number>("ub.id").as("count")])
       .where("Restaurant.id", "=", restaurantId)
-      .where("UserBonus.isUsed", "=", true)
-      .where("UserBonus.usedAt", ">=", startDate)
-      .where("UserBonus.usedAt", "<", endDate)
-      .execute();
+      .where("ub.isUsed", "=", true)
+      .where("ub.usedAt", ">=", startDate)
+      .where("ub.usedAt", "<", endDate)
+      .executeTakeFirstOrThrow(
+        () => new Error("Error fetching user's bonus data.")
+      );
 
     return count;
   },

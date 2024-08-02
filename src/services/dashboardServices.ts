@@ -3,6 +3,7 @@ import { dashboardRepository } from "../repository/dashboardRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { tapRepository } from "../repository/tapRepository";
 import { transactionRepository } from "../repository/transactionRepository";
+import { userBonusRepository } from "../repository/userBonusRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { employeeServices } from "./employeeServices";
 
@@ -125,14 +126,15 @@ export const dashboardServices = {
   getTotals: async (employeeId: string, restaurantId: string) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
 
-    const { totalAmount } = await tapRepository.getTotalAmountByRestaurantId(
+    const result = await tapRepository.getTotalAmountByRestaurantId(
       restaurantId
     );
+    const totalAmount = Number(result.totalAmount);
     const { totalBalance } =
       await userCardReposity.getTotalBalanceByRestaurantId(restaurantId);
 
-    const awarded = totalAmount || 0;
-    const redeemed = awarded - totalBalance;
+    const awarded = totalAmount;
+    const redeemed = Number(awarded - totalBalance);
 
     const currentDate = new Date();
 
@@ -147,11 +149,13 @@ export const dashboardServices = {
       dateTwoMonthsBefore,
       dateMonthBefore
     );
+    previousMonthTap.count = Number(previousMonthTap.count);
     const currentMonthTap = await tapRepository.getCountByRestaurantId(
       restaurantId,
       dateMonthBefore,
       currentDate
     );
+    currentMonthTap.count = Number(currentMonthTap.count);
 
     const previousMonthUserCards =
       await userCardReposity.getCountByRestaurantId(
@@ -159,48 +163,71 @@ export const dashboardServices = {
         dateTwoMonthsBefore,
         dateMonthBefore
       );
+    previousMonthUserCards.count = Number(previousMonthUserCards.count);
     const currentMonthUserCards = await userCardReposity.getCountByRestaurantId(
       restaurantId,
       dateMonthBefore,
       currentDate
     );
+    currentMonthUserCards.count = Number(currentMonthUserCards.count);
 
     const previousMonthUsedBonus =
-      await userCardReposity.getCountByRestaurantId(
+      await userBonusRepository.getCountByRestaurantId(
         restaurantId,
         dateTwoMonthsBefore,
         dateMonthBefore
       );
-    const currentMonthUsedBonus = await userCardReposity.getCountByRestaurantId(
-      restaurantId,
-      dateMonthBefore,
-      currentDate
-    );
+    previousMonthUsedBonus.count = Number(previousMonthUsedBonus.count);
+    const currentMonthUsedBonus =
+      await userBonusRepository.getCountByRestaurantId(
+        restaurantId,
+        dateMonthBefore,
+        currentDate
+      );
+    previousMonthUsedBonus.count = Number(previousMonthUsedBonus.count);
 
     return {
       members: {
         count: currentMonthUserCards.count,
         percentageDifferential:
-          currentMonthUserCards.count / previousMonthUserCards.count - 1,
+          previousMonthUserCards.count === 0
+            ? 0
+            : parseFloat(
+                (
+                  (currentMonthUserCards.count / previousMonthUserCards.count -
+                    1) *
+                  100
+                ).toFixed(2)
+              ),
       },
       taps: {
         count: currentMonthTap.count,
-        percentageDifferential: parseFloat(
-          (currentMonthTap.count / previousMonthTap.count - 1).toFixed(2)
-        ),
+        percentageDifferential:
+          previousMonthTap.count === 0
+            ? 0
+            : parseFloat(
+                (
+                  (currentMonthTap.count / previousMonthTap.count - 1) *
+                  100
+                ).toFixed(2)
+              ),
       },
       redeems: {
         count: redeemed,
         percentageDifferential: 0,
       },
       usedBonus: {
-        count: currentMonthUsedBonus.count,
-        percentageDifferential: parseFloat(
-          (
-            currentMonthUsedBonus.count / previousMonthUsedBonus.count -
-            1
-          ).toFixed(2)
-        ),
+        count: Number(currentMonthUsedBonus.count),
+        percentageDifferential:
+          previousMonthUsedBonus.count === 0
+            ? 0
+            : parseFloat(
+                (
+                  (currentMonthUsedBonus.count / previousMonthUsedBonus.count -
+                    1) *
+                  100
+                ).toFixed(2)
+              ),
       },
     };
   },
