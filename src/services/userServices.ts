@@ -25,7 +25,9 @@ export const userServices = {
     if (hasUser)
       throw new CustomError("User already exists with this phone number.", 400);
 
-    const emailOtp = await emailOtpRepository.getByEmail(data.email);
+    const emailOtp = await emailOtpRepository.getByEmail(
+      data.email.toLowerCase()
+    );
     if (!emailOtp || !emailOtp.verificationCode)
       throw new CustomError(
         "Please send OTP first and then provide the verificationCode.",
@@ -91,7 +93,7 @@ export const userServices = {
     return emailOtp;
   },
   checkOTP: async (email: string, verificationCode: number) => {
-    const emailOtp = await emailOtpRepository.getByEmail(email);
+    const emailOtp = await emailOtpRepository.getByEmail(email.toLowerCase());
 
     if (!emailOtp || !emailOtp.verificationCode)
       throw new CustomError("No recorded of OTP found!", 400);
@@ -193,7 +195,7 @@ export const userServices = {
     if (emailCheck)
       throw new CustomError("Email has already been registered.", 400);
 
-    const emailOtp = await emailOtpRepository.getByEmail(email);
+    const emailOtp = await emailOtpRepository.getByEmail(email.toLowerCase());
     if (!emailOtp || !emailOtp.verificationCode)
       throw new CustomError("No record of OTP was found.", 400);
     if (emailOtp.isUsed)
