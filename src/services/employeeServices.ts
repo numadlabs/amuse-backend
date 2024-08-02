@@ -35,10 +35,7 @@ export const employeeServices = {
     const restaurant = await restaurantRepository.getById(data.restaurantId);
     if (!restaurant) throw new CustomError("Restaurant not found.", 400);
 
-    const password = crypto
-      .randomBytes(length)
-      .toString("base64")
-      .slice(0, length);
+    const password = crypto.randomBytes(16).toString("base64").slice(0, 16);
 
     const hashedPassword = await encryptionHelper.encrypt(password);
     data.password = hashedPassword;
@@ -76,10 +73,7 @@ The Amuse Bouche Team
     if (emailCheck)
       throw new CustomError("Email has already been registed.", 400);
 
-    const password = crypto
-      .randomBytes(length)
-      .toString("base64")
-      .slice(0, length);
+    const password = crypto.randomBytes(16).toString("base64").slice(0, 16);
 
     const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;
