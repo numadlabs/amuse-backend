@@ -42,8 +42,13 @@ export const restaurantController = {
     const file = req.file as Express.Multer.File;
 
     try {
-      if (data.id || data.perkOccurence || data.rewardAmount)
-        throw new Error("You cannot change id.");
+      if (
+        data.id ||
+        data.perkOccurence ||
+        data.rewardAmount ||
+        data.perkOccurence === 0
+      )
+        throw new Error("Bad input.");
 
       const restaurant = await restaurantServices.update(
         id,
@@ -272,7 +277,7 @@ export const restaurantController = {
     const data: Updateable<Restaurant> = { ...req.body };
 
     try {
-      if (data.id) throw new Error("You cannot change id.");
+      if (data.id || data.perkOccurence === 0) throw new Error("Bad input.");
 
       const restaurant = await restaurantServices.updateRewardDetail(id, data);
 
