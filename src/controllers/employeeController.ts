@@ -24,6 +24,14 @@ export const employeeController = {
       if (!req.user?.id || !req.user?.role)
         throw new CustomError("Could not parse info from the token.", 400);
 
+      if (
+        !data.email ||
+        data.password ||
+        data.email === "" ||
+        data.password === ""
+      )
+        throw new CustomError("Bad inputs.", 400);
+
       const employee = await employeeServices.create(data, req.user.id);
 
       return res.status(200).json({
@@ -43,6 +51,14 @@ export const employeeController = {
 
     try {
       const employee = await employeeServices.createAsSuperAdmin(data);
+
+      if (
+        !data.email ||
+        data.password ||
+        data.email === "" ||
+        data.password === ""
+      )
+        throw new CustomError("Bad inputs.", 400);
 
       return res.status(200).json({
         success: true,

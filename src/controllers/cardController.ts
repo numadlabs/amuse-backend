@@ -11,10 +11,16 @@ export const cardController = {
     const data: Insertable<Card> = { ...req.body };
     const file = req.file as Express.Multer.File;
 
-    if (data.id)
+    if (
+      data.id ||
+      data.nftImageUrl ||
+      data.restaurantId ||
+      data.nftImageUrl === "" ||
+      data.restaurantId === ""
+    )
       return res
         .status(400)
-        .json({ success: false, data: null, error: "Cannot set id field" });
+        .json({ success: false, data: null, error: "Bad inputs." });
 
     try {
       if (!file) throw new CustomError("Please provide the image.", 400);
@@ -31,10 +37,16 @@ export const cardController = {
     const file = req.file as Express.Multer.File;
     const id = req.params.id;
 
-    if (data.id)
+    if (
+      data.id ||
+      data.nftImageUrl ||
+      data.restaurantId ||
+      data.nftImageUrl === "" ||
+      data.restaurantId === ""
+    )
       return res
         .status(400)
-        .json({ success: false, data: null, error: "Cannot update id field" });
+        .json({ success: false, data: null, error: "Bad inputs." });
 
     try {
       const card = await cardServices.update(id, data, file);

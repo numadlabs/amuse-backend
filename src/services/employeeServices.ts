@@ -8,6 +8,7 @@ import { extractVerification, generateVerificationToken } from "../utils/jwt";
 import { Employee } from "../types/db/types";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { ROLES } from "../types/db/enums";
+const crypto = require("crypto");
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
@@ -34,7 +35,10 @@ export const employeeServices = {
     const restaurant = await restaurantRepository.getById(data.restaurantId);
     if (!restaurant) throw new CustomError("Restaurant not found.", 400);
 
-    const password = data.password;
+    const password = crypto
+      .randomBytes(length)
+      .toString("base64")
+      .slice(0, length);
 
     const hashedPassword = await encryptionHelper.encrypt(password);
     data.password = hashedPassword;
@@ -72,7 +76,10 @@ The Amuse Bouche Team
     if (emailCheck)
       throw new CustomError("Email has already been registed.", 400);
 
-    const password = data.password;
+    const password = crypto
+      .randomBytes(length)
+      .toString("base64")
+      .slice(0, length);
 
     const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;

@@ -23,7 +23,7 @@ export const userServices = {
 
     const hasUser = await userRepository.getByEmail(data.email);
     if (hasUser)
-      throw new CustomError("User already exists with this phone number.", 400);
+      throw new CustomError("User already exists with this email.", 400);
 
     const emailOtp = await emailOtpRepository.getByEmail(
       data.email.toLowerCase()
