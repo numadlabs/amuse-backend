@@ -53,8 +53,8 @@ export const userServices = {
 
     const user = await userRepository.create(data);
 
-    // emailOtp.isUsed = true;
-    // await emailOtpRepository.update(emailOtp.id, emailOtp);
+    emailOtp.isUsed = true;
+    await emailOtpRepository.update(emailOtp.id, emailOtp);
 
     return user;
   },
