@@ -49,11 +49,14 @@ export const tapServices = {
 
     const userSocketId = await pubClient.get(`socket:${user.id}`);
     if (!userCard) {
-      if (userSocketId)
+      if (userSocketId) {
+        console.log(`Emitting tap-scan to ${userSocketId}`);
         io.to(userSocketId).emit("tap-scan", {
           isOwned: false,
           restaurantId: restaurant.id,
         });
+      }
+
       throw new CustomError(
         "Customer does not have a membership card for this restaurant.",
         400
@@ -158,7 +161,8 @@ export const tapServices = {
       updatedUserTier = await userTierRepository.getById(tier.nextTierId);
     }
 
-    if (userSocketId)
+    if (userSocketId) {
+      console.log(`Emitting tap-scan to ${userSocketId}`);
       io.to(userSocketId).emit("tap-scan", {
         isOwned: true,
         data: {
@@ -170,6 +174,7 @@ export const tapServices = {
           bonusCheck: hasRecurringBonus,
         },
       });
+    }
 
     return {
       increment: incrementBtc * btc.price * currency.price,

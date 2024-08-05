@@ -6,7 +6,7 @@ import { hideDataHelper } from "../lib/hideDataHelper";
 import { userRepository } from "../repository/userRepository";
 import { db } from "../utils/db";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
-import { Updateable } from "kysely";
+import { sql, Updateable } from "kysely";
 import { currencyRepository } from "../repository/currencyRepository";
 import { CustomError } from "../exceptions/CustomError";
 import { User } from "../types/db/types";
@@ -158,7 +158,7 @@ export const UserController = {
         .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
         .innerJoin("Category", "Category.id", "Restaurant.categoryId")
         .where("UserCard.userId", "=", req.user.id)
-        .select(({ eb }) => [
+        .select(({ eb, fn }) => [
           "UserCard.id",
           "Card.benefits",
           "Card.instruction",
@@ -173,13 +173,6 @@ export const UserController = {
           "Restaurant.name",
           "Restaurant.logo",
           "UserCard.visitCount",
-          // sql`ST_Distance(ST_MakePoint(${eb.ref(
-          //   "Restaurant.latitude"
-          // )}, ${eb.ref(
-          //   "Restaurant.longitude"
-          // )}), ST_MakePoint(${latitude}, ${longitude})::geography)`.as(
-          //   "distance"
-          // ),
           db
             .selectFrom("UserBonus")
             .select(({ eb, fn }) => [
@@ -188,6 +181,17 @@ export const UserController = {
             .where("UserBonus.userCardId", "=", eb.ref("UserCard.id"))
             .where("UserBonus.isUsed", "=", false)
             .as("hasBonus"),
+          sql`MOD(${eb.ref("UserCard.visitCount")}, ${eb.ref(
+            "Restaurant.perkOccurence"
+          )})`.as("current"),
+          "Restaurant.perkOccurence as target",
+          // sql`ST_Distance(ST_MakePoint(${eb.ref(
+          //   "Restaurant.latitude"
+          // )}, ${eb.ref(
+          //   "Restaurant.longitude"
+          // )}), ST_MakePoint(${latitude}, ${longitude})::geography)`.as(
+          //   "distance"
+          // ),
         ])
         .orderBy("UserCard.ownedAt desc");
 
