@@ -9,12 +9,6 @@ import { userCardReposity } from "../repository/userCardRepository";
 
 export const transactionServices = {
   deposit: async (data: Insertable<Transaction>) => {
-    if (data.restaurantId && data.userId)
-      throw new CustomError(
-        "Cannot provide both restaurantId and userId.",
-        400
-      );
-
     const eur = await currencyRepository.getByTicker("EUR");
     const bitcoin = await currencyRepository.getByTicker("BTC");
     //converting the amount to bitcoin
@@ -43,9 +37,6 @@ export const transactionServices = {
     return transaction;
   },
   withdraw: async (data: Insertable<Transaction>) => {
-    if (data.restaurantId && data.userId)
-      throw new CustomError("Cannot provide both restaurantId and userId", 400);
-
     const eur = await currencyRepository.getByTicker("EUR");
     const bitcoin = await currencyRepository.getByTicker("BTC");
     const amount = data.amount / (bitcoin.price * eur.price);

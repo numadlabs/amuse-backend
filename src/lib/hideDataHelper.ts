@@ -1,11 +1,13 @@
 import { Employee, User } from "../types/db/types";
 import { Updateable } from "kysely";
 
-export function hideSensitiveData<T extends Record<string, any>>(
-  obj: T,
-  keys: Array<keyof T>
-): Omit<T, keyof T> {
-  const newObj = { ...obj };
-  keys.forEach((key) => delete newObj[key]);
-  return newObj as Omit<T, keyof T>;
-}
+export const hideDataHelper = {
+  sanitizeUserData: (data: Updateable<User>) => {
+    const { password, ...user } = data;
+    return user;
+  },
+  sanitizeEmployeeData: (data: Updateable<Employee>) => {
+    const { password, emailVerificationCode, ...employee } = data;
+    return employee;
+  },
+};

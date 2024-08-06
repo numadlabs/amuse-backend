@@ -1,16 +1,12 @@
 import { Insertable, Updateable, sql } from "kysely";
 import { db } from "../utils/db";
 import { UserCard } from "../types/db/types";
-import { CustomError } from "../exceptions/CustomError";
 
 export const userCardReposity = {
-  create: async (userId: string, cardId: string) => {
+  create: async (data: Insertable<UserCard>) => {
     const userCard = await db
       .insertInto("UserCard")
-      .values({
-        userId: userId,
-        cardId: cardId,
-      })
+      .values(data)
       .returningAll()
       .executeTakeFirstOrThrow(
         () => new Error("Could not create the userCard.")
@@ -57,7 +53,7 @@ export const userCardReposity = {
       .where("UserCard.id", "=", id)
       .selectAll()
       .executeTakeFirstOrThrow(
-        () => new CustomError("No userCard found.", 404)
+        () => new Error("No userCard found with given id.")
       );
 
     return userCard;
@@ -71,8 +67,8 @@ export const userCardReposity = {
 
     return userCards;
   },
-  getByUserIdCardId: async (userId: string, cardId: string) => {
-    const userCard = await db
+  getByRestaurantId: async (restaurantId: string, userId: string) => {
+    const userCards = await db
       .selectFrom("UserCard")
       .innerJoin("Card", "Card.id", "UserCard.cardId")
       .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
@@ -82,13 +78,12 @@ export const userCardReposity = {
         "UserCard.userId",
         "UserCard.ownedAt",
         "UserCard.visitCount",
-        "Restaurant.id as restaurantId",
       ])
-      .where("Card.id", "=", cardId)
+      .where("Restaurant.id", "=", restaurantId)
       .where("UserCard.userId", "=", userId)
       .executeTakeFirst();
 
-    return userCard;
+    return userCards;
   },
   getByUserIdRestaurantId: async (userId: string, restaurantId: string) => {
     const userCards = await db

@@ -34,7 +34,15 @@ export const employeeRepository = {
     const employee = await db
       .updateTable("Employee")
       .set(data)
-      .returningAll()
+      .returning([
+        "Employee.id",
+        "Employee.firstname",
+        "Employee.lastname",
+        "Employee.email",
+        "Employee.restaurantId",
+        "Employee.role",
+        "Employee.createdAt",
+      ])
       .where("Employee.id", "=", id)
       .executeTakeFirstOrThrow(
         () => new Error("Could not update the employee.")

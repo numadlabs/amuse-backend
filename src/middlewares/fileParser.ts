@@ -1,4 +1,4 @@
-import e, { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import { fileSizeLimit } from "../lib/constants";
 
@@ -14,8 +14,10 @@ export function parseFile(fieldName: string) {
     const upload = uploader.single(fieldName);
 
     upload(req, res, function (err: any) {
-      if (err) {
-        next(err);
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json(err);
+      } else if (err) {
+        return res.status(400).json("Error has occured.");
       }
       next();
     });

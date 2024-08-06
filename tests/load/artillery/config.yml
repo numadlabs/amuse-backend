@@ -1,0 +1,35 @@
+config:
+  target: "http://localhost:3001" # Your HTTP server URL
+  phases:
+    - duration: 60 # Duration of the test in seconds
+      arrivalRate: 1 # Requests per second
+  plugins:
+    http:
+      # No special configuration needed for basic HTTP plugin
+    socketio:
+      url: "http://localhost:3001" # Your Socket.IO server URL
+      options:
+        transports: ["websocket"]
+      events:
+        connect:
+          - log: "Connected to Socket.IO server"
+          - emit:
+              channel: "register"
+              data:
+                userId: "{{ userId }}" # Replace with dynamic data if needed
+        tap-scan:
+          - log: "Received tap-scan event"
+        disconnect:
+          - log: "Disconnected from Socket.IO server"
+  processor: "./processor.js" # Path to the JavaScript file for custom logic
+
+scenarios:
+  - flow:
+      - function: "login"
+      - function: "getRestaurants"
+      - function: "conditionalUserCard"
+      - function: "registerSocket"
+      - function: "listenTapScan"
+      - function: "loginEmployee"
+      - function: "generateTap"
+      - function: "redeemTap"

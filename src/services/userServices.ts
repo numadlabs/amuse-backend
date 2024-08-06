@@ -1,11 +1,7 @@
 import { userRepository } from "../repository/userRepository";
 import { sendEmail } from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
-import {
-  extractVerification,
-  generateTokens,
-  generateVerificationToken,
-} from "../utils/jwt";
+import { extractVerification, generateVerificationToken } from "../utils/jwt";
 import { CustomError } from "../exceptions/CustomError";
 import { verificationCodeConstants } from "../lib/constants";
 import { s3 } from "../utils/aws";
@@ -15,24 +11,23 @@ import { EmailOtp, User } from "../types/db/types";
 import { userTierRepository } from "../repository/userTierRepository";
 import { emailOtpRepository } from "../repository/emailOtpRepository";
 import { config } from "../config/config";
-import { hideSensitiveData } from "../lib/hideDataHelper";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
 const s3BucketName = config.AWS_S3_BUCKET_NAME;
 
 export const userServices = {
-  create: async (
-    email: string,
-    password: string,
-    nickname: string,
-    verificationCode: number
-  ) => {
-    const hasUser = await userRepository.getByEmail(email);
+  create: async (data: Insertable<User>, verificationCode: number) => {
+    if (!data.email || !data.password)
+      throw new CustomError("Please provide a email and password.", 400);
+
+    const hasUser = await userRepository.getByEmail(data.email);
     if (hasUser)
       throw new CustomError("User already exists with this email.", 400);
 
-    const emailOtp = await emailOtpRepository.getByEmail(email);
+    const emailOtp = await emailOtpRepository.getByEmail(
+      data.email.toLowerCase()
+    );
     if (!emailOtp || !emailOtp.verificationCode)
       throw new CustomError(
         "Please send OTP first and then provide the verificationCode.",
@@ -49,37 +44,31 @@ export const userServices = {
     if (emailVerificationCode !== verificationCode)
       throw new CustomError("Invalid verification code!", 400);
 
-    const hashedPassword = await encryptionHelper.encrypt(password);
-    const userTier = await userTierRepository.getStartingTier();
+    const hashedPassword = await encryptionHelper.encrypt(data.password);
+    data.password = hashedPassword;
+    data.email = data.email.toLowerCase();
 
-    const user = await userRepository.create({
-      email: email,
-      password: hashedPassword,
-      nickname,
-      userTierId: userTier.id,
-    });
+    const userTier = await userTierRepository.getStartingTier();
+    data.userTierId = userTier.id;
+
+    const user = await userRepository.create(data);
 
     emailOtp.isUsed = true;
     await emailOtpRepository.update(emailOtp.id, emailOtp);
 
-    const { accessToken, refreshToken } = generateTokens(user);
-
-    const sanitizedUser = hideSensitiveData(user, ["password"]);
-
-    return { user: sanitizedUser, accessToken, refreshToken };
+    return user;
   },
-  login: async (email: string, password: string) => {
-    const user = await userRepository.getByEmail(email);
+  login: async (data: Insertable<User>) => {
+    if (!data.email || !data.password)
+      throw new CustomError("Please provide a email and password.", 400);
+
+    const user = await userRepository.getByEmail(data.email);
     if (!user) throw new CustomError("User not found.", 400);
 
-    const isUser = await encryptionHelper.compare(password, user.password);
+    const isUser = await encryptionHelper.compare(data.password, user.password);
     if (!isUser) throw new CustomError("Invalid login info.", 400);
 
-    const { accessToken, refreshToken } = generateTokens(user);
-
-    const sanitizedUser = hideSensitiveData(user, ["password"]);
-
-    return { user: sanitizedUser, accessToken, refreshToken };
+    return user;
   },
   sendOTP: async (email: string) => {
     const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
@@ -144,9 +133,7 @@ export const userServices = {
     otpCheck.isUsed = true;
     await emailOtpRepository.update(otpCheck.id, otpCheck);
 
-    const sanitizedUser = hideSensitiveData(user, ["password"]);
-
-    return sanitizedUser;
+    return updatedUser;
   },
   update: async (
     id: string,
@@ -180,9 +167,8 @@ export const userServices = {
     }
 
     const user = await userRepository.update(findUser.id, data);
-    const sanitizedUser = hideSensitiveData(user, ["password"]);
 
-    return sanitizedUser;
+    return user;
   },
   delete: async (id: string) => {
     const findUser = await userRepository.getUserById(id);
@@ -198,9 +184,8 @@ export const userServices = {
     }
 
     const user = await userRepository.delete(findUser.id);
-    const sanitizedUser = hideSensitiveData(user, ["password"]);
 
-    return sanitizedUser;
+    return user;
   },
   updateEmail: async (id: string, email: string, verificationCode: number) => {
     const foundUser = await userRepository.getUserById(id);
@@ -229,9 +214,7 @@ export const userServices = {
     emailOtp.isUsed = true;
     await emailOtpRepository.update(emailOtp.id, emailOtp);
 
-    const sanitizedUser = hideSensitiveData(user, ["password"]);
-
-    return sanitizedUser;
+    return user;
   },
   changePassword: async (
     id: string,
@@ -252,8 +235,6 @@ export const userServices = {
     user.password = encryptedPassword;
     const updatedUser = await userRepository.update(user.id, user);
 
-    const sanitizedUser = hideSensitiveData(updatedUser, ["password"]);
-
-    return sanitizedUser;
+    return updatedUser;
   },
 };

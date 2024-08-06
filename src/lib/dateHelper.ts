@@ -1,4 +1,4 @@
-export function calculateStartDate(dayNo: number | undefined, createdAt: Date) {
+export function calculateStartDate(dayNo: number | null, createdAt: Date) {
   let startDate = new Date();
 
   if (!dayNo) {

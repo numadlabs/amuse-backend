@@ -11,12 +11,20 @@ import { userCardReposity } from "../repository/userCardRepository";
 import { userRepository } from "../repository/userRepository";
 
 export const userBonusServices = {
-  buy: async (userId: string, bonusId: string) => {
+  buy: async (userId: string, restaurantId: string, bonusId: string) => {
     const user = await userRepository.getUserById(userId);
     if (!user) throw new CustomError("No user found.", 400);
 
+    const userCard = await userCardReposity.getByRestaurantId(
+      restaurantId,
+      userId
+    );
+    if (!userCard) throw new CustomError("No userCard found.", 400);
+    if (userCard.userId !== userId)
+      throw new CustomError("You are not allowed to buy from this card.", 400);
+
     const bonus = await bonusRepository.getById(bonusId);
-    if (!bonus || !bonus.cardId) throw new CustomError("No bonus found.", 400);
+    if (!bonus) throw new CustomError("No bonus found.", 400);
 
     if (
       bonus.type !== "REDEEMABLE" ||
@@ -28,13 +36,8 @@ export const userBonusServices = {
     if (user.balance < bonus.price)
       throw new CustomError("Insufficient balance.", 400);
 
-    const userCard = await userCardReposity.getByUserIdCardId(
-      userId,
-      bonus.cardId
-    );
-    if (!userCard) throw new CustomError("No userCard found.", 400);
-    if (userCard.userId !== userId)
-      throw new CustomError("You are not allowed to buy from this card.", 400);
+    if (userCard.cardId !== bonus.cardId)
+      throw new CustomError("Invalid card, bonus relation.", 400);
 
     const reducePercentage = Math.ceil(1 - bonus.price / user.balance);
     await userCardReposity.reduceBalanceByUserId(user.id, reducePercentage);
@@ -48,11 +51,9 @@ export const userBonusServices = {
     user.balance -= bonus.price;
     await userRepository.update(user.id, user);
 
-    const restaurant = await restaurantRepository.getById(
-      userCard.restaurantId
-    );
+    const restaurant = await restaurantRepository.getById(restaurantId);
     restaurant.balance += bonus.price;
-    restaurantRepository.update(userCard.restaurantId, restaurant);
+    restaurantRepository.update(restaurantId, restaurant);
 
     await purchaseRepository.create({ userBonusId: userBonus.id });
     bonus.currentSupply++;

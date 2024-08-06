@@ -4,8 +4,6 @@ import { Timetable } from "../types/db/types";
 import { Insertable, Updateable } from "kysely";
 import { CustomError } from "../exceptions/CustomError";
 import { timetableServices } from "../services/timetableServices";
-import { idSchema, restaurantIdSchema } from "../validations/sharedSchema";
-import { updateTimetableSchema } from "../validations/timetableSchema";
 
 export const timetableController = {
   getByRestaurantId: async (
@@ -13,9 +11,8 @@ export const timetableController = {
     res: Response,
     next: NextFunction
   ) => {
+    const { restaurantId } = req.params;
     try {
-      const { restaurantId } = restaurantIdSchema.parse(req.params);
-
       const timetable = await timetableRepository.getByRestaurantId(
         restaurantId
       );
@@ -29,9 +26,15 @@ export const timetableController = {
     }
   },
   update: async (req: Request, res: Response, next: NextFunction) => {
+    const data: Updateable<Timetable> = { ...req.body };
+    const { id } = req.params;
+
     try {
-      const data: Updateable<Timetable> = updateTimetableSchema.parse(req.body);
-      const { id } = idSchema.parse(req.params);
+      if (data.id || data.restaurantId)
+        throw new CustomError(
+          "You are not allowed to update this fields.",
+          400
+        );
 
       const timetable = await timetableServices.update(data, id);
 

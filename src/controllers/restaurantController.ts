@@ -7,16 +7,6 @@ import { restaurantServices } from "../services/restaurantServices";
 import { AuthenticatedRequest } from "../../custom";
 import { CustomError } from "../exceptions/CustomError";
 import { currencyRepository } from "../repository/currencyRepository";
-import {
-  createRestaurantSchema,
-  rewardSystemSchema,
-  updateRestaurantSchema,
-} from "../validations/restaurantSchema";
-import {
-  idSchema,
-  paginationSchema,
-  timeSchema,
-} from "../validations/sharedSchema";
 
 export const restaurantController = {
   createRestaurant: async (
@@ -24,15 +14,13 @@ export const restaurantController = {
     res: Response,
     next: NextFunction
   ) => {
+    const { googleMapsUrl, ...rest } = req.body;
+    const data: Insertable<Restaurant> = { ...rest };
+    const file = req.file as Express.Multer.File;
+
     try {
-      req.body = createRestaurantSchema.parse(req.body);
-      const { googleMapsUrl, ...input } = req.body;
-      const data: Insertable<Restaurant> = { ...input };
-      const file = req.file as Express.Multer.File;
-
-      if (!req.user)
-        throw new CustomError("Could not retrieve info from the token.", 400);
-
+      if (!req.user?.id)
+        throw new CustomError("Could not retrive info from the token.", 400);
       const restaurant = await restaurantServices.create(
         data,
         file,
@@ -48,11 +36,19 @@ export const restaurantController = {
     }
   },
   updateRestaurant: async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { googleMapsUrl, ...rest } = req.body;
+    const data: Updateable<Restaurant> = { ...rest };
+    const file = req.file as Express.Multer.File;
+
     try {
-      const { id } = idSchema.parse(req.params);
-      const { googleMapsUrl, ...rest } = updateRestaurantSchema.parse(req.body);
-      const data: Updateable<Restaurant> = { ...rest };
-      const file = req.file as Express.Multer.File;
+      if (
+        data.id ||
+        data.perkOccurence ||
+        data.rewardAmount ||
+        data.perkOccurence === 0
+      )
+        throw new Error("Bad input.");
 
       const restaurant = await restaurantServices.update(
         id,
@@ -67,9 +63,9 @@ export const restaurantController = {
     }
   },
   deleteRestaurant: async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { id } = idSchema.parse(req.params);
+    const { id } = req.params;
 
+    try {
       const restaurant = await restaurantServices.delete(id);
 
       return res.status(200).json({ success: true, restaurant: restaurant });
@@ -82,21 +78,37 @@ export const restaurantController = {
     res: Response,
     next: NextFunction
   ) => {
+    if (!req.user?.id)
+      return res
+        .status(401)
+        .json({ success: false, data: null, error: "Unauthenticated." });
+
+    let userId: string = req.user.id;
+
     try {
-      if (!req.user)
-        throw new CustomError("Could not retrieve info from the token.", 401);
-      let userId: string = req.user.id;
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      //const distance = Number(req.query.distance) || 5000;
+      const offset = (page - 1) * limit;
+      let search = req.query.search;
 
-      const inputQuery = paginationSchema.parse(req.query);
-      const page = inputQuery.page || 1;
-      const pageSize = inputQuery.pageSize || 20;
-      const offset = (page - 1) * pageSize;
-      // let search = req.query.search;
-      //const distance = Number(req.query.distance) || 5000
-      // const categories = req.query.categories;
-      // const { latitude, longitude } = req.query;
+      const categories = req.query.categories;
+      const { latitude, longitude, time, dayNoOfTheWeek } = req.query;
 
-      const { time, dayNoOfTheWeek } = timeSchema.parse(req.query);
+      if (!time || !dayNoOfTheWeek)
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Please provide the local time/dayNo.",
+        });
+
+      const dayNo = Number(dayNoOfTheWeek);
+      if (dayNo < 1 || dayNo > 7)
+        return res.status(401).json({
+          success: false,
+          data: null,
+          error: "Please valid dayNoOfTheWeek.",
+        });
 
       /* if (!latitude && !longitude)
         return res.status(400).json({
@@ -164,7 +176,7 @@ export const restaurantController = {
                     SELECT 1
                     FROM "Timetable" t
                     WHERE t."restaurantId" = r."id"
-                      AND t."dayNoOfTheWeek" = ${dayNoOfTheWeek}
+                      AND t."dayNoOfTheWeek" = ${dayNo}
                       AND (
                           (CAST(t."closesAt" AS TIME) < CAST(t."opensAt" AS TIME)
                           AND CAST(${time} AS TIME) > CAST(t."closesAt" AS TIME)
@@ -194,7 +206,7 @@ export const restaurantController = {
       //   );
       // }
 
-      query = query.offset(offset).limit(pageSize);
+      query = query.offset(offset).limit(limit);
       let restaurants = await query.execute();
 
       return res
@@ -209,18 +221,24 @@ export const restaurantController = {
     res: Response,
     next: NextFunction
   ) => {
-    try {
-      const { id } = idSchema.parse(req.params);
-      const { time, dayNoOfTheWeek } = timeSchema.parse(req.query);
+    const { id } = req.params;
+    const { time, dayNoOfTheWeek } = req.query;
 
-      if (!req.user)
-        throw new CustomError("Could not retrieve info from the token.", 401);
+    try {
+      if (!req.user?.id || !req.user.role)
+        throw new CustomError("Could not retrieve info from the token.", 400);
+
+      if (!time || !dayNoOfTheWeek)
+        throw new CustomError(
+          "Please provide the time and dayNoOfTheWeek.",
+          400
+        );
 
       const restaurant = await restaurantRepository.getByIdWithCardInfo(
         id,
         req.user.id,
-        time,
-        dayNoOfTheWeek
+        time.toString(),
+        Number(dayNoOfTheWeek)
       );
 
       let convertedBalance = null;
@@ -255,9 +273,11 @@ export const restaurantController = {
     res: Response,
     next: NextFunction
   ) => {
+    const { id } = req.params;
+    const data: Updateable<Restaurant> = { ...req.body };
+
     try {
-      const { id } = idSchema.parse(req.params);
-      const data: Updateable<Restaurant> = rewardSystemSchema.parse(req.body);
+      if (data.id || data.perkOccurence === 0) throw new Error("Bad input.");
 
       const restaurant = await restaurantServices.updateRewardDetail(id, data);
 

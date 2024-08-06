@@ -1,7 +1,6 @@
 import { Insertable, Updateable, sql } from "kysely";
 import { Restaurant } from "../types/db/types";
 import { db } from "../utils/db";
-import { CustomError } from "../exceptions/CustomError";
 
 export const restaurantRepository = {
   create: async (data: Insertable<Restaurant>) => {
@@ -20,9 +19,7 @@ export const restaurantRepository = {
       .selectFrom("Restaurant")
       .where("Restaurant.id", "=", id)
       .selectAll()
-      .executeTakeFirstOrThrow(
-        () => new CustomError("No restaurant found.", 404)
-      );
+      .executeTakeFirstOrThrow(() => new Error("Restaurant does not exists"));
 
     return restaurant;
   },
@@ -91,9 +88,7 @@ export const restaurantRepository = {
             END
           `.as("isOpen"),
       ])
-      .executeTakeFirstOrThrow(
-        () => new CustomError("No restaurant found.", 404)
-      );
+      .executeTakeFirstOrThrow(() => new Error("Restaurant does not exists"));
 
     return restaurant;
   },

@@ -21,17 +21,21 @@ export const bonusServices = {
     return bonus;
   },
   update: async (data: Updateable<Bonus>, id: string) => {
-    const bonus = await bonusRepository.getById(id);
-
-    if (data.totalSupply && data.totalSupply < bonus.currentSupply) {
-      throw new CustomError(
-        "Total supply cannot be lower than the current supply.",
-        400
-      );
+    if (data.cardId) {
+      const card = await cardRepository.getById(data.cardId);
+      if (!card) throw new CustomError("Card not found.", 400);
     }
 
-    const updatedBonus = await bonusRepository.update(data, id);
+    if (data.type) {
+      if (data.type === "SINGLE" && !data.visitNo)
+        throw new CustomError("Invalid input for given type.", 400);
 
-    return updatedBonus;
+      if (data.type === "REDEEMABLE" && !data.price)
+        throw new CustomError("Invalid input for given type.", 400);
+    }
+
+    const bonus = await bonusRepository.update(data, id);
+
+    return bonus;
   },
 };

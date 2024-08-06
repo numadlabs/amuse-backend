@@ -1,7 +1,6 @@
 import { Insertable, Updateable } from "kysely";
 import { EmailOtp } from "../types/db/types";
 import { db } from "../utils/db";
-import { CustomError } from "../exceptions/CustomError";
 
 export const emailOtpRepository = {
   create: async (data: Insertable<EmailOtp>) => {
@@ -21,7 +20,7 @@ export const emailOtpRepository = {
       .selectAll()
       .where("EmailOtp.email", "=", email)
       .orderBy("EmailOtp.createdAt desc")
-      .executeTakeFirstOrThrow(() => new CustomError("No OTP found.", 404));
+      .executeTakeFirst();
 
     return emailOtp;
   },
