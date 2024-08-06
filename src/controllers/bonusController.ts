@@ -4,16 +4,21 @@ import { Bonus } from "../types/db/types";
 import { bonusRepository } from "../repository/bonusRepository";
 import { bonusServices } from "../services/bonusServices";
 import { BONUS_TYPE } from "../types/db/enums";
+import {
+  createBonusSchema,
+  updateBonusSchema,
+} from "../validations/bonusSchema";
+import {
+  bonusTypeSchema,
+  idSchema,
+  restaurantIdSchema,
+} from "../validations/sharedSchema";
 
 export const bonusController = {
   createBonus: async (req: Request, res: Response, next: NextFunction) => {
-    const data: Insertable<Bonus> = { ...req.body };
-    if (!data.cardId || !data.name || data.id)
-      return res
-        .status(400)
-        .json({ success: false, data: null, error: "Bad request." });
-
     try {
+      const data: Insertable<Bonus> = createBonusSchema.parse(req.body);
+
       const createdBonus = await bonusServices.create(data);
 
       return res.status(200).json({
@@ -27,28 +32,21 @@ export const bonusController = {
     }
   },
   updateBonus: async (req: Request, res: Response, next: NextFunction) => {
-    const data: Updateable<Bonus> = { ...req.body };
-    const { id } = req.params;
-
-    if (data.id)
-      return res
-        .status(400)
-        .json({ success: false, data: null, error: "Cannot update id field." });
-
     try {
-      const updatedBonus = await bonusServices.update(data, id);
+      const data: Updateable<Bonus> = updateBonusSchema.parse(req.body);
+      const { id } = idSchema.parse(req.params);
 
-      return res
-        .status(200)
-        .json({ success: true, data: { bonus: updatedBonus } });
+      const bonus = await bonusServices.update(data, id);
+
+      return res.status(200).json({ success: true, data: { bonus: bonus } });
     } catch (e) {
       next(e);
     }
   },
   deleteBonus: async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
-
     try {
+      const { id } = idSchema.parse(req.params);
+
       const deletedBonus = await bonusRepository.delete(id);
 
       return res
@@ -63,10 +61,10 @@ export const bonusController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { restaurantId } = req.params;
-    const { type } = req.query;
-
     try {
+      const { restaurantId } = restaurantIdSchema.parse(req.params);
+      const { type } = bonusTypeSchema.parse(req.query);
+
       const bonuses = await bonusRepository.getByRestaurantId(
         restaurantId,
         type as BONUS_TYPE

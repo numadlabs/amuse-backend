@@ -1,26 +1,35 @@
 import { NextFunction, Request, Response } from "express";
 import { CustomError } from "../exceptions/CustomError";
+import { ZodError } from "zod";
+import { MulterError } from "multer";
 
 export function errorHandler(
-  err: CustomError,
+  err: CustomError | ZodError | MulterError,
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  const statusCode =
-    err.errorCode === undefined
-      ? res.statusCode !== 200
-        ? res.statusCode
-        : 500
-      : err.errorCode;
+  let statusCode = 500,
+    message = err.message;
+  if (err instanceof CustomError) {
+    statusCode =
+      err.errorCode === undefined
+        ? res.statusCode !== 200
+          ? res.statusCode
+          : 500
+        : err.errorCode;
+  } else if (err instanceof ZodError) {
+    statusCode = 400;
+    message = `Invalid ${err.errors[0].path} input.`;
+  } else if (err instanceof MulterError) {
+    message = err.message;
+    statusCode = 400;
+  }
 
-  console.log(err.message, err.stack);
-
-  res.status(statusCode);
-  res.json({
+  res.status(statusCode).json({
     success: false,
     data: null,
-    error: err.message,
+    error: message,
     stack: process.env.NODE_ENV === "production" ? "🥞" : err.stack,
   });
 }

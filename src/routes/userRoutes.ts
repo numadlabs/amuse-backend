@@ -10,7 +10,7 @@ userRoutes.put(
   "/:id",
   authenticateToken,
   parseFile("profilePicture"),
-  UserController.updateUser
+  UserController.updateInfo
 );
 
 userRoutes.delete("/", authenticateToken, UserController.deleteUser);

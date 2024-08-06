@@ -2,14 +2,14 @@ import { NextFunction, Request, Response } from "express";
 import { Insertable } from "kysely";
 import { Device } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
-import { deviceRepository } from "../repository/deviceRepository";
 import { deviceServices } from "../services/deviceServices";
+import { deviceSchema } from "../validations/deviceSchema";
 
 export const deviceController = {
   create: async (req: Request, res: Response, next: NextFunction) => {
-    const data: Insertable<Device> = { ...req.body };
-
     try {
+      const data: Insertable<Device> = deviceSchema.parse(req.body);
+
       if (!data.pushToken)
         throw new CustomError("Please provide push token.", 400);
 

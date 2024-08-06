@@ -5,17 +5,14 @@ import { CustomError } from "../exceptions/CustomError";
 import { UserCard } from "../types/db/types";
 
 export const userCardServices = {
-  buy: async (data: Insertable<UserCard>) => {
-    const isValidCard = await cardRepository.getById(data.cardId);
+  buy: async (userId: string, cardId: string) => {
+    const isValidCard = await cardRepository.getById(cardId);
     if (!isValidCard) throw new CustomError("Invalid restaurant id.", 400);
 
-    const userCard = await userCardReposity.checkExists(
-      data.userId,
-      data.cardId
-    );
+    const userCard = await userCardReposity.checkExists(userId, cardId);
     if (userCard) throw new CustomError("You already have this card.", 400);
 
-    const createdUserCard = await userCardReposity.create(data);
+    const createdUserCard = await userCardReposity.create(userId, cardId);
     return createdUserCard;
   },
   delete: async (id: string) => {

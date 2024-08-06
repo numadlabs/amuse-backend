@@ -12,7 +12,7 @@ export const dashboardServices = {
   getTapByDate: async (
     employeeId: string,
     restaurantId: string,
-    dayNo: number | null,
+    dayNo: number | undefined,
     location: string
   ) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
@@ -33,7 +33,7 @@ export const dashboardServices = {
   getTapByArea: async (
     employeeId: string,
     restaurantId: string,
-    dayNo: number
+    dayNo: number | undefined
   ) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
 
@@ -82,7 +82,7 @@ export const dashboardServices = {
   getTapByFrequency: async (
     employeeId: string,
     restaurantId: string,
-    dayNo: number
+    dayNo: number | undefined
   ) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
 
