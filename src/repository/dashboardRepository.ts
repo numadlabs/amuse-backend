@@ -8,7 +8,6 @@ export const dashboardRepository = {
     endDate: Date,
     location: string
   ) => {
-    console.log(location);
     const data =
       await sql`select gs.date::date AS date, COALESCE(query_result.tapCount, 0) AS "tapCount"
 FROM generate_series(${startDate}::date, ${endDate}::date, '1 day'::interval) gs(date)
@@ -19,7 +18,7 @@ LEFT JOIN (
 	    inner join "Card" c on c.id = uc."cardId" 
 	    inner join "Restaurant" r on r.id = c."restaurantId"
 	    inner join "User" u on u.id = uc."userId"
-	    where r.id = ${restaurantId} AND (${location}=1 OR u."location" = ${location})
+	    where r.id = ${restaurantId} AND (${location}='1' OR u."location" = ${location})
 	    group by t."tappedAt"::date, r.id
 	    order by t."tappedAt"::date
         ) query_result ON gs.date = query_result.creation_date
