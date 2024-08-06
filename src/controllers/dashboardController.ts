@@ -1,7 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { dashboardRepository } from "../repository/dashboardRepository";
-import { userCardReposity } from "../repository/userCardRepository";
-import { userBonusRepository } from "../repository/userBonusRepository";
 import { AuthenticatedRequest } from "../../custom";
 import { CustomError } from "../exceptions/CustomError";
 import { dashboardServices } from "../services/dashboardServices";
@@ -14,6 +11,7 @@ export const dashboardController = {
   ) => {
     const { restaurantId } = req.params;
     const dayNo = Number(req.query.dayNo);
+    let location = req.query.location?.toString();
 
     try {
       if (!req.user?.id)
@@ -22,10 +20,13 @@ export const dashboardController = {
           400
         );
 
+      if (!location) location = "1";
+
       const data = await dashboardServices.getTapByDate(
         req.user.id,
         restaurantId,
-        dayNo
+        dayNo,
+        location
       );
 
       return res.status(200).json({ success: true, data: data });

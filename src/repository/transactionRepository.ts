@@ -23,6 +23,15 @@ export const transactionRepository = {
 
     return transaction;
   },
+  getByUserId: async (userId: string) => {
+    const transaction = await db
+      .selectFrom("Transaction")
+      .selectAll()
+      .where("Transaction.userId", "=", userId)
+      .execute();
+
+    return transaction;
+  },
   getTotalDepositByRestaurantId: async (restaurantId: string) => {
     const amount = await db
       .selectFrom("Transaction")

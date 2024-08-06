@@ -13,7 +13,7 @@ transactionRouter.post(
 transactionRouter.post(
   "/withdraw",
   authenticateToken,
-  authorize("RESTAURANT_OWNER"),
+  authorize("RESTAURANT_OWNER", "USER"),
   transactionController.withdraw
 );
 transactionRouter.get(
@@ -21,6 +21,12 @@ transactionRouter.get(
   authenticateToken,
   authorize("RESTAURANT_OWNER"),
   transactionController.getByRestaurantId
+);
+transactionRouter.get(
+  "/:userId/user",
+  authenticateToken,
+  authorize("USER"),
+  transactionController.getByUserId
 );
 
 export = transactionRouter;

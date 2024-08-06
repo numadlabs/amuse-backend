@@ -39,7 +39,7 @@ export const userBonusServices = {
     if (userCard.cardId !== bonus.cardId)
       throw new CustomError("Invalid card, bonus relation.", 400);
 
-    const reducePercentage = 1 - bonus.price / user.balance;
+    const reducePercentage = Math.ceil(1 - bonus.price / user.balance);
     await userCardReposity.reduceBalanceByUserId(user.id, reducePercentage);
 
     const userBonus = await userBonusRepository.create({

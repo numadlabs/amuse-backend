@@ -5,11 +5,13 @@ import { restaurantRepository } from "../repository/restaurantRepository";
 import { CustomError } from "../exceptions/CustomError";
 import { userRepository } from "../repository/userRepository";
 import { currencyRepository } from "../repository/currencyRepository";
+import { userCardReposity } from "../repository/userCardRepository";
 
 export const transactionServices = {
   deposit: async (data: Insertable<Transaction>) => {
     const eur = await currencyRepository.getByTicker("EUR");
     const bitcoin = await currencyRepository.getByTicker("BTC");
+    //converting the amount to bitcoin
     const amount = data.amount / (bitcoin.price * eur.price);
 
     if (data.restaurantId) {
@@ -55,8 +57,11 @@ export const transactionServices = {
       if (user.balance < amount)
         throw new CustomError("Insufficient balance.", 400);
 
+      const reducePercentage = Math.ceil((amount / user.balance) * 100);
       user.balance -= amount;
       await userRepository.update(data.userId, user);
+
+      await userCardReposity.reduceBalanceByUserId(user.id, reducePercentage);
     }
 
     data.type = "WITHDRAW";

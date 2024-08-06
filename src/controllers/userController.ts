@@ -276,4 +276,23 @@ export const UserController = {
       next(e);
     }
   },
+  getDistinctUserLocations: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      if (!req.user?.id)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const locations = await userRepository.getDistinctLocations();
+
+      return res.status(200).json({ success: true, data: locations });
+    } catch (e) {
+      next(e);
+    }
+  },
 };

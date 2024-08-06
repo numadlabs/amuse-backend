@@ -1,5 +1,5 @@
 import { db } from "../utils/db";
-import { Insertable, Updateable } from "kysely";
+import { Insertable, sql, Updateable } from "kysely";
 import { User } from "../types/db/types";
 
 export const userRepository = {
@@ -88,5 +88,17 @@ export const userRepository = {
       .executeTakeFirst();
 
     return user;
+  },
+  getDistinctLocations: async () => {
+    const locations = await db
+      .selectFrom("User")
+      .select(({ eb, fn }) => [
+        fn.coalesce("User.location", sql<string>`'undefined'`).as("location"),
+      ])
+      .distinct()
+      .orderBy("location desc")
+      .execute();
+
+    return locations;
   },
 };
