@@ -102,7 +102,7 @@ export const restaurantServices = {
     id: string,
     data: Updateable<Restaurant>,
     file: Express.Multer.File,
-    googleMapsUrl: string
+    googleMapsUrl: string | undefined
   ) => {
     const restaurant = await restaurantRepository.getById(id);
     if (!restaurant)

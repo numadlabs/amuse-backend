@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { userServices } from "../services/userServices";
 import { AuthenticatedRequest } from "../../custom";
-
-import { hideDataHelper } from "../lib/hideDataHelper";
 import { userRepository } from "../repository/userRepository";
 import { db } from "../utils/db";
 import { to_tsquery, to_tsvector } from "../lib/queryHelper";
@@ -10,46 +8,41 @@ import { sql, Updateable } from "kysely";
 import { currencyRepository } from "../repository/currencyRepository";
 import { CustomError } from "../exceptions/CustomError";
 import { User } from "../types/db/types";
+import { hideSensitiveData } from "../lib/hideDataHelper";
+import {
+  idSchema,
+  queryFilterSchema,
+  userCardIdSchema,
+} from "../validations/sharedSchema";
+import { updateUserInfoSchema } from "../validations/userSchema";
+import { otpSchema, tempSchema } from "../validations/authSchema";
 
 export const UserController = {
-  updateUser: async (
+  updateInfo: async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
-    const { id } = req.params;
-    const data: Updateable<User> = { ...req.body };
-    const file = req.file as Express.Multer.File;
-
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Could retrieve id from the token.",
-      });
-
-    if (req.user.role !== "SUPER_ADMIN" && req.user.id !== id)
-      return res.status(200).json({
-        success: false,
-        data: null,
-        error: "You are not allowed to update this user.",
-      });
-
-    if (data.id || data.role || data.password || data.email)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Cannot change id, role, email and verification codes.",
-      });
-
     try {
+      const { id } = idSchema.parse(req.params);
+      const data: Updateable<User> = updateUserInfoSchema.parse(req.body);
+      const file = req.file as Express.Multer.File;
+
+      if (!req.user)
+        throw new CustomError("Could not parse the id from the token.", 400);
+
+      if (req.user.id !== id)
+        throw new CustomError(
+          "You are not authorized to update this user.",
+          401
+        );
+
       const user = await userServices.update(req.user.id, data, file);
-      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
 
       return res.status(200).json({
         success: true,
         data: {
-          user: sanitizedUser,
+          user: user,
         },
       });
     } catch (e) {
@@ -61,20 +54,12 @@ export const UserController = {
     res: Response,
     next: NextFunction
   ) => {
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Could retrieve id from the token.",
-      });
-
     try {
-      const deletedUser = await userServices.delete(req.user.id);
-      const sanitizedUser = hideDataHelper.sanitizeUserData(deletedUser);
+      if (!req.user)
+        throw new CustomError("Could not parse the id from the token.", 400);
+      const user = await userServices.delete(req.user.id);
 
-      return res
-        .status(200)
-        .json({ success: true, data: { user: sanitizedUser } });
+      return res.status(200).json({ success: true, data: { user: user } });
     } catch (e) {
       next(e);
     }
@@ -84,9 +69,9 @@ export const UserController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { id } = req.params;
-
     try {
+      const { id } = idSchema.parse(req.params);
+
       const user = await userRepository.getUserById(id);
 
       if (!user)
@@ -94,7 +79,7 @@ export const UserController = {
           .status(200)
           .json({ success: false, data: null, error: "User does not exist." });
 
-      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
+      const sanitizedUser = hideSensitiveData(user, ["password"]);
       const btc = await currencyRepository.getByTicker("BTC");
       const currency = await currencyRepository.getByTicker("EUR");
 
@@ -114,14 +99,10 @@ export const UserController = {
     res: Response,
     next: NextFunction
   ) => {
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Could retrieve id from the token.",
-      });
-
     try {
+      if (!req.user)
+        throw new CustomError("Could not parse the id from the token.", 400);
+
       const taps = await userRepository.getUserTaps(req.user.id);
 
       return res.status(200).json({ success: true, data: { taps } });
@@ -134,24 +115,21 @@ export const UserController = {
     res: Response,
     next: NextFunction
   ) => {
-    let { search } = req.query;
-    const { latitude, longitude } = req.query;
-
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Error on parsing id from the token.",
-      });
-
-    if (!latitude || !longitude)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Please provide location.",
-      });
-
     try {
+      const { search, latitude, longitude } = queryFilterSchema.parse(
+        req.query
+      );
+
+      if (!req.user)
+        throw new CustomError("Could not parse the id from the token.", 400);
+
+      // if (!latitude || !longitude)
+      //   return res.status(400).json({
+      //     success: false,
+      //     data: null,
+      //     error: "Please provide location.",
+      //   });
+
       let query = db
         .selectFrom("UserCard")
         .innerJoin("Card", "Card.id", "UserCard.cardId")
@@ -212,9 +190,9 @@ export const UserController = {
     }
   },
   getUserBonuses: async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
-
     try {
+      const { id } = idSchema.parse(req.params);
+
       const userBonuses = await userRepository.getUserBonuses(id);
 
       return res
@@ -229,8 +207,9 @@ export const UserController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { userCardId } = req.params;
     try {
+      const { userCardId } = userCardIdSchema.parse(req.params);
+
       const userBonuses = await userRepository.getUserBonusesByUserCardId(
         userCardId
       );
@@ -247,29 +226,22 @@ export const UserController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { emailVerificationCode, email } = req.body;
-
     try {
-      if (!req.user?.id)
-        throw new CustomError("Could not parse the id from the token.", 400);
+      const { emailVerificationCode, email } = tempSchema.parse(req.body);
 
-      if (!emailVerificationCode || !email)
-        throw new CustomError(
-          "Please provide both an email and verification code .",
-          400
-        );
+      if (!req.user)
+        throw new CustomError("Could not parse the id from the token.", 400);
 
       const user = await userServices.updateEmail(
         req.user.id,
         email,
         emailVerificationCode
       );
-      const sanitizedUser = hideDataHelper.sanitizeUserData(user);
 
       return res.status(200).json({
         success: true,
         data: {
-          user: sanitizedUser,
+          user: user,
         },
       });
     } catch (e) {
@@ -282,11 +254,8 @@ export const UserController = {
     next: NextFunction
   ) => {
     try {
-      if (!req.user?.id)
-        throw new CustomError(
-          "Could not parse the info from the auth token.",
-          400
-        );
+      if (!req.user)
+        throw new CustomError("Could not parse the id from the token.", 400);
 
       const locations = await userRepository.getDistinctLocations();
 

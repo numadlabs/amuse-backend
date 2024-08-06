@@ -2,6 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import { CustomError } from "../exceptions/CustomError";
 import { dashboardServices } from "../services/dashboardServices";
+import {
+  dashboardSchema,
+  restaurantIdSchema,
+} from "../validations/sharedSchema";
 
 export const dashboardController = {
   getTapLineGraph: async (
@@ -9,11 +13,10 @@ export const dashboardController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { restaurantId } = req.params;
-    const dayNo = Number(req.query.dayNo);
-    let location = req.query.location?.toString();
-
     try {
+      const { restaurantId } = restaurantIdSchema.parse(req.params);
+      let { dayNo, location } = dashboardSchema.parse(req.query);
+
       if (!req.user?.id)
         throw new CustomError(
           "Could not parse the info from the auth token.",
@@ -39,10 +42,9 @@ export const dashboardController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { restaurantId } = req.params;
-    const dayNo = Number(req.query.dayNo);
-
     try {
+      const { restaurantId } = restaurantIdSchema.parse(req.params);
+      let { dayNo } = dashboardSchema.parse(req.query);
       if (!req.user?.id)
         throw new CustomError(
           "Could not parse the info from the auth token.",
@@ -65,9 +67,8 @@ export const dashboardController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { restaurantId } = req.params;
-
     try {
+      const { restaurantId } = restaurantIdSchema.parse(req.params);
       if (!req.user?.id)
         throw new CustomError(
           "Could not parse the info from the auth token.",
@@ -89,15 +90,11 @@ export const dashboardController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { restaurantId } = req.params;
-    const dayNo = Number(req.query.dayNo);
-
     try {
-      if (!req.user?.id)
-        throw new CustomError(
-          "Could not parse the info from the auth token.",
-          400
-        );
+      const { restaurantId } = restaurantIdSchema.parse(req.params);
+      let { dayNo } = dashboardSchema.parse(req.query);
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 400);
 
       const data = await dashboardServices.getTapByFrequency(
         req.user.id,
@@ -115,9 +112,8 @@ export const dashboardController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { restaurantId } = req.params;
-
     try {
+      const { restaurantId } = restaurantIdSchema.parse(req.params);
       if (!req.user?.id)
         throw new CustomError(
           "Could not parse the info from the auth token.",

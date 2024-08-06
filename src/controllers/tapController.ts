@@ -3,6 +3,7 @@ import { tapRepository } from "../repository/tapRepository";
 import { tapServices } from "../services/tapServices";
 import { AuthenticatedRequest } from "../../custom";
 import { CustomError } from "../exceptions/CustomError";
+import { encryptedDataSchema, idSchema } from "../validations/sharedSchema";
 
 export const tapController = {
   generate: async (
@@ -10,12 +11,10 @@ export const tapController = {
     res: Response,
     next: NextFunction
   ) => {
-    if (!req.user?.id)
-      return res
-        .status(400)
-        .json({ success: false, data: null, error: "No data passed." });
-
     try {
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 401);
+
       const encryptData = await tapServices.generate(req.user.id);
 
       return res.status(200).json({
@@ -33,14 +32,12 @@ export const tapController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { encryptedData } = req.body;
-
-    if (!encryptedData || !req.user?.id)
-      return res
-        .status(400)
-        .json({ success: false, data: null, error: "No data passed." });
-
     try {
+      const { encryptedData } = encryptedDataSchema.parse(req.body);
+
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 401);
+
       const result = await tapServices.redeemTap(encryptedData, req.user.id);
 
       return res.status(200).json({
@@ -58,9 +55,9 @@ export const tapController = {
     }
   },
   getTapById: async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.params;
-
     try {
+      const { id } = idSchema.parse(req.params);
+
       const tap = await tapRepository.getTapById(id);
 
       return tap;

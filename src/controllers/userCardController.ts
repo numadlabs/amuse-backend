@@ -3,6 +3,8 @@ import { AuthenticatedRequest } from "../../custom";
 import { Insertable } from "kysely";
 import { userCardServices } from "../services/userCardServices";
 import { UserCard } from "../types/db/types";
+import { CustomError } from "../exceptions/CustomError";
+import { cardIdSchema, idSchema } from "../validations/sharedSchema";
 
 export const userCardController = {
   buyUserCard: async (
@@ -10,13 +12,12 @@ export const userCardController = {
     res: Response,
     next: NextFunction
   ) => {
-    const data: Insertable<UserCard> = { ...req.body };
-
-    if (req.user?.id !== data.userId)
-      return res.status(400).json("Different authenticatedUser and userId.");
-
     try {
-      const userCard = await userCardServices.buy(data);
+      const { cardId } = cardIdSchema.parse(req.params);
+
+      if (!req.user) throw new CustomError("Could not parse the token.", 400);
+
+      const userCard = await userCardServices.buy(req.user.id, cardId);
 
       return res.status(200).json({
         success: true,
@@ -33,9 +34,9 @@ export const userCardController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { id } = req.params;
-
     try {
+      const { id } = idSchema.parse(req.params);
+
       const deletedUserCard = await userCardServices.delete(id);
 
       return res

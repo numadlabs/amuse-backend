@@ -5,6 +5,8 @@ import { CustomError } from "../exceptions/CustomError";
 import { transactionRepository } from "../repository/transactionRepository";
 import { transactionServices } from "../services/transactionServices";
 import { AuthenticatedRequest } from "../../custom";
+import { createTransactionSchema } from "../validations/transactionSchema";
+import { restaurantIdSchema, userIdSchema } from "../validations/sharedSchema";
 
 export const transactionController = {
   deposit: async (
@@ -12,14 +14,10 @@ export const transactionController = {
     res: Response,
     next: NextFunction
   ) => {
-    const data: Insertable<Transaction> = { ...req.body };
-
     try {
-      if (data.restaurantId && data.userId)
-        throw new CustomError(
-          "Cannot provide both restaurantId and userId.",
-          400
-        );
+      const data: Insertable<Transaction> = createTransactionSchema.parse(
+        req.body
+      );
 
       const transaction = await transactionServices.deposit(data);
 
@@ -38,14 +36,10 @@ export const transactionController = {
     res: Response,
     next: NextFunction
   ) => {
-    const data: Insertable<Transaction> = { ...req.body };
-
     try {
-      if (data.restaurantId && data.userId)
-        throw new CustomError(
-          "Cannot provide both restaurantId and userId",
-          400
-        );
+      const data: Insertable<Transaction> = createTransactionSchema.parse(
+        req.body
+      );
 
       const transaction = await transactionServices.withdraw(data);
 
@@ -64,9 +58,9 @@ export const transactionController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { restaurantId } = req.params;
-
     try {
+      const { restaurantId } = restaurantIdSchema.parse(req.params);
+
       const transaction = await transactionRepository.getByRestaurantId(
         restaurantId
       );
@@ -86,9 +80,9 @@ export const transactionController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { userId } = req.params;
-
     try {
+      const { userId } = userIdSchema.parse(req.params);
+
       const transaction = await transactionRepository.getByUserId(userId);
 
       return res.status(200).json({

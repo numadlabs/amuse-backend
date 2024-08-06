@@ -45,7 +45,7 @@ export type Device = {
 export type EmailOtp = {
     id: Generated<string>;
     email: string;
-    verificationCode: string | null;
+    verificationCode: string;
     isUsed: Generated<boolean>;
     createdAt: Generated<Timestamp>;
 };
@@ -57,7 +57,6 @@ export type Employee = {
     role: ROLES;
     createdAt: Generated<Timestamp>;
     email: string;
-    emailVerificationCode: string | null;
     restaurantId: string | null;
 };
 export type Notification = {

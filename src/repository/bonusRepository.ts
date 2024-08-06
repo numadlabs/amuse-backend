@@ -95,7 +95,7 @@ export const bonusRepository = {
         "Bonus.currentSupply",
         "Bonus.totalSupply",
       ])
-      .executeTakeFirst();
+      .executeTakeFirstOrThrow(() => new CustomError("No bonus found.", 404));
 
     return bonus;
   },
@@ -104,7 +104,7 @@ export const bonusRepository = {
       .selectFrom("Bonus")
       .where("Bonus.id", "=", id)
       .selectAll()
-      .executeTakeFirst();
+      .executeTakeFirstOrThrow(() => new CustomError("No bonus found.", 404));
 
     return bonus;
   },
