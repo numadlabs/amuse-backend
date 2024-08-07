@@ -6,7 +6,7 @@ export const loginSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(1, "Email must be at least 1 character.")
+      .min(5, "Email must be at least 5 characters.")
       .max(30, "Email must be at most 30 characters.")
       .regex(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
@@ -28,8 +28,8 @@ export const emailSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(5, "Email must be at least 1 character.")
-      .max(50, "Email must be at most 50 characters.")
+      .min(5, "Email must be at least 5 characters.")
+      .max(30, "Email must be at most 30 characters.")
       .regex(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
         "Invalid email format."

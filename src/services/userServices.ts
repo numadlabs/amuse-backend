@@ -32,7 +32,7 @@ export const userServices = {
     if (hasUser)
       throw new CustomError("User already exists with this email.", 400);
 
-    const emailOtp = await emailOtpRepository.getByEmail(email);
+    // const emailOtp = await emailOtpRepository.getByEmail(email);
     // if (!emailOtp || !emailOtp.verificationCode)
     //   throw new CustomError(
     //     "Please send OTP first and then provide the verificationCode.",
