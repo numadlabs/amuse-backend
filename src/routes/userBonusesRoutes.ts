@@ -28,7 +28,7 @@ userBonusesRoutes.post(
   userBonusController.generate
 );
 userBonusesRoutes.post(
-  "/buy",
+  "/:bonusId/buy",
   authenticateToken,
   blockSimultaneousRequests,
   userBonusController.buy

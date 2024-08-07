@@ -13,7 +13,7 @@ import {
 export const userBonusController = {
   buy: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const { bonusId, restaurantId } = req.body;
+      const { bonusId } = bonusIdSchema.parse(req.params);
 
       if (!req.user)
         throw new CustomError("Could not retrieve info from the token.", 400);

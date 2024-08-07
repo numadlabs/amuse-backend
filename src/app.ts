@@ -27,6 +27,7 @@ const { createServer } = require("node:http");
 import { createAdapter } from "@socket.io/redis-adapter";
 import { config } from "./config/config";
 import { hostname } from "os";
+import { insertSeed } from "./seeders/main";
 
 const app = express();
 export const server = createServer(app);

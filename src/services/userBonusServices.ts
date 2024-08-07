@@ -4,11 +4,12 @@ import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";
 import { cardRepository } from "../repository/cardRepository";
 import { employeeRepository } from "../repository/employeeRepository";
-import { purchaseRepository } from "../repository/purchaseRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
+import { transactionRepository } from "../repository/transactionRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { userRepository } from "../repository/userRepository";
+const crypto = require("crypto");
 
 export const userBonusServices = {
   buy: async (userId: string, bonusId: string) => {
@@ -54,7 +55,13 @@ export const userBonusServices = {
     restaurant.balance += bonus.price;
     restaurantRepository.update(userCard.restaurantId, restaurant);
 
-    await purchaseRepository.create({ userBonusId: userBonus.id });
+    await transactionRepository.create({
+      userId: user.id,
+      amount: bonus.price,
+      type: "PURCHASE",
+      txid: crypto.randomBytes(16).toString("hex"),
+    });
+
     bonus.currentSupply++;
     await bonusRepository.update(bonus, bonus.id);
 

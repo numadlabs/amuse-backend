@@ -5,7 +5,6 @@ import { tapRepository } from "../repository/tapRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { Tap, UserBonus } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
-import { BOOST_MULTIPLIER, TAP_EXPIRATION_TIME } from "../lib/constants";
 import { bonusRepository } from "../repository/bonusRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userRepository } from "../repository/userRepository";
@@ -13,6 +12,8 @@ import { currencyRepository } from "../repository/currencyRepository";
 import { userTierRepository } from "../repository/userTierRepository";
 import { employeeRepository } from "../repository/employeeRepository";
 import { io, pubClient } from "../app";
+import { transactionRepository } from "../repository/transactionRepository";
+const crypto = require("crypto");
 
 export const tapServices = {
   generate: async (userId: string) => {
@@ -135,13 +136,19 @@ export const tapServices = {
       restaurant.balance -= incrementBtc;
       restaurantRepository.update(restaurant.id, restaurant);
       user.balance = user.balance + incrementBtc;
+
+      await transactionRepository.create({
+        userId: user.id,
+        amount: incrementBtc,
+        type: "PURCHASE",
+        txid: crypto.randomBytes(16).toString("hex"),
+      });
+      userCard.balance += incrementBtc;
+      await userCardReposity.update(userCard, userCard.id);
     } else incrementBtc = 0;
 
     user.visitCount += 1;
     await userRepository.update(user.id, user);
-
-    userCard.balance += incrementBtc;
-    await userCardReposity.update(userCard, userCard.id);
 
     const tapData: Insertable<Tap> = {
       userCardId: userCard.id,

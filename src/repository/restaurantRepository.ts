@@ -120,4 +120,14 @@ export const restaurantRepository = {
 
     return restaurant;
   },
+  count: async () => {
+    const cards = await db
+      .selectFrom("Restaurant")
+      .select(({ fn }) => [fn.count<number>("Restaurant.id").as("count")])
+      .executeTakeFirstOrThrow(
+        () => new Error("Couldn't count the restaurant.")
+      );
+
+    return cards;
+  },
 };

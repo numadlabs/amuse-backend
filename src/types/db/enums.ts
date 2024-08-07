@@ -13,6 +13,8 @@ export const BONUS_TYPE = {
 export type BONUS_TYPE = (typeof BONUS_TYPE)[keyof typeof BONUS_TYPE];
 export const TRANSACTION_TYPE = {
     WITHDRAW: "WITHDRAW",
-    DEPOSIT: "DEPOSIT"
+    DEPOSIT: "DEPOSIT",
+    PURCHASE: "PURCHASE",
+    REWARD: "REWARD"
 } as const;
 export type TRANSACTION_TYPE = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];

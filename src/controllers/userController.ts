@@ -15,7 +15,7 @@ import {
   userCardIdSchema,
 } from "../validations/sharedSchema";
 import { updateUserInfoSchema } from "../validations/userSchema";
-import { otpSchema, tempSchema } from "../validations/authSchema";
+import { otpSchema } from "../validations/authSchema";
 
 export const UserController = {
   updateInfo: async (
@@ -227,7 +227,7 @@ export const UserController = {
     next: NextFunction
   ) => {
     try {
-      const { emailVerificationCode, email } = tempSchema.parse(req.body);
+      const { verificationCode, email } = otpSchema.parse(req.body);
 
       if (!req.user)
         throw new CustomError("Could not parse the id from the token.", 400);
@@ -235,7 +235,7 @@ export const UserController = {
       const user = await userServices.updateEmail(
         req.user.id,
         email,
-        emailVerificationCode
+        verificationCode
       );
 
       return res.status(200).json({

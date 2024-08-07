@@ -89,7 +89,7 @@ export const restaurantController = {
 
       const inputQuery = paginationSchema.parse(req.query);
       const page = inputQuery.page || 1;
-      const pageSize = inputQuery.pageSize || 20;
+      const pageSize = inputQuery.limit || 20;
       const offset = (page - 1) * pageSize;
       // let search = req.query.search;
       //const distance = Number(req.query.distance) || 5000
@@ -195,11 +195,22 @@ export const restaurantController = {
       // }
 
       query = query.offset(offset).limit(pageSize);
-      let restaurants = await query.execute();
 
-      return res
-        .status(200)
-        .json({ success: true, data: { restaurants: restaurants } });
+      const [restaurants, totalRestaurants] = await Promise.all([
+        query.execute(),
+        restaurantRepository.count(),
+      ]);
+
+      const totalPages = Math.ceil(totalRestaurants.count / pageSize);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          restaurants: restaurants,
+          totalPages: totalPages,
+          currentPage: page,
+        },
+      });
     } catch (e) {
       next(e);
     }

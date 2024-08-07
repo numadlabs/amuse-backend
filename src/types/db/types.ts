@@ -66,11 +66,6 @@ export type Notification = {
     createdAt: Generated<Timestamp>;
     userId: string;
 };
-export type Purchase = {
-    id: Generated<string>;
-    createdAt: Generated<Timestamp>;
-    userBonusId: string;
-};
 export type Restaurant = {
     id: Generated<string>;
     createdAt: Generated<Timestamp>;
@@ -157,7 +152,6 @@ export type DB = {
     EmailOtp: EmailOtp;
     Employee: Employee;
     Notification: Notification;
-    Purchase: Purchase;
     Restaurant: Restaurant;
     Tap: Tap;
     Timetable: Timetable;

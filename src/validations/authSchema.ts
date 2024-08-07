@@ -51,21 +51,6 @@ export const otpSchema = z
   })
   .strict("Unexpected field detected.");
 
-export const tempSchema = z
-  .object({
-    email: string()
-      .trim()
-      .toLowerCase()
-      .min(1)
-      .max(30)
-      .regex(
-        /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-        "Invalid email format."
-      ),
-    emailVerificationCode: number().int().lt(10000).gt(999),
-  })
-  .strict("Unexpected field detected.");
-
 export const registerSchema = z
   .object({
     email: string()

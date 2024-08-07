@@ -29,26 +29,24 @@ export const roleSchema = z
   .object({ role: z.nativeEnum(ROLES) })
   .strict("Unexpected field detected.");
 
-export const paginationSchema = z
-  .object({
-    page: z
-      .string()
-      .regex(/^\d+$/)
-      .transform(Number)
-      .refine((val) => val > 0, {
-        message: "page must be a positive number",
-      })
-      .optional(),
-    pageSize: z
-      .string()
-      .regex(/^\d+$/)
-      .transform(Number)
-      .refine((val) => val > 0, {
-        message: "pageSize must be a positive number",
-      })
-      .optional(),
-  })
-  .strict("Unexpected field detected.");
+export const paginationSchema = z.object({
+  page: z
+    .string()
+    .regex(/^\d+$/)
+    .transform(Number)
+    .refine((val) => val > 0, {
+      message: "page must be a positive number",
+    })
+    .optional(),
+  limit: z
+    .string()
+    .regex(/^\d+$/)
+    .transform(Number)
+    .refine((val) => val > 0, {
+      message: "pageSize must be a positive number",
+    })
+    .optional(),
+});
 
 export const dashboardSchema = z
   .object({
@@ -64,18 +62,16 @@ export const dashboardSchema = z
   })
   .strict("Unexpected field detected.");
 
-export const timeSchema = z
-  .object({
-    time: z.string().time(),
-    dayNoOfTheWeek: z
-      .string()
-      .regex(/^\d+$/)
-      .transform(Number)
-      .refine((val) => val > 0 && val <= 7, {
-        message: "pageSize must be a positive number",
-      }),
-  })
-  .strict("Unexpected field detected.");
+export const timeSchema = z.object({
+  time: z.string().time(),
+  dayNoOfTheWeek: z
+    .string()
+    .regex(/^\d+$/)
+    .transform(Number)
+    .refine((val) => val > 0 && val <= 7, {
+      message: "pageSize must be a positive number",
+    }),
+});
 
 export const queryFilterSchema = z
   .object({

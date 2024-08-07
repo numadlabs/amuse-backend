@@ -97,7 +97,7 @@ export const cardController = {
     try {
       const inputQuery = paginationSchema.parse(req.query);
       const page = inputQuery.page || 1;
-      const pageSize = inputQuery.pageSize || 20;
+      const pageSize = inputQuery.limit || 20;
       const offset = (page - 1) * pageSize;
 
       const [cards, totalCards] = await Promise.all([
