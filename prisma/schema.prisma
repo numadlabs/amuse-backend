@@ -46,9 +46,7 @@ model Employee {
   lastname  String
   role      ROLES
   createdAt DateTime @default(now())
-
   email                 String  @unique
-  emailVerificationCode String?
 
   restaurantId String?
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -57,7 +55,7 @@ model Employee {
 model EmailOtp {
   id               String   @id @default(dbgenerated("gen_random_uuid()"))
   email            String
-  verificationCode String?
+  verificationCode String
   isUsed           Boolean @default(false)
   createdAt        DateTime @default(now())
 }

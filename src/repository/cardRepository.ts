@@ -1,6 +1,7 @@
 import { Insertable, Updateable } from "kysely";
 import { Card } from "../types/db/types";
 import { db } from "../utils/db";
+import { CustomError } from "../exceptions/CustomError";
 
 export const cardRepository = {
   create: async (data: Insertable<Card>) => {
@@ -60,10 +61,7 @@ export const cardRepository = {
       .selectFrom("Card")
       .where("Card.id", "=", id)
       .selectAll()
-      .executeTakeFirstOrThrow(
-        () => new Error("Card with given id does not exist.")
-      );
-
+      .executeTakeFirstOrThrow(() => new CustomError("No card found.", 404));
     return card;
   },
   get: async (offset: number, limit: number) => {
@@ -73,6 +71,14 @@ export const cardRepository = {
       .offset(offset)
       .limit(limit)
       .execute();
+
+    return cards;
+  },
+  count: async () => {
+    const cards = await db
+      .selectFrom("Card")
+      .select(({ fn }) => [fn.count<number>("Card.id").as("count")])
+      .executeTakeFirstOrThrow(() => new Error("Couldn't count the cards."));
 
     return cards;
   },

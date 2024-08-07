@@ -1,6 +1,7 @@
 import { Insertable, Updateable } from "kysely";
 import { Tap } from "../types/db/types";
 import { db } from "../utils/db";
+import { CustomError } from "../exceptions/CustomError";
 
 export const tapRepository = {
   create: async (data: Insertable<Tap>) => {
@@ -17,7 +18,7 @@ export const tapRepository = {
       .selectFrom("Tap")
       .where("Tap.id", "=", id)
       .selectAll()
-      .executeTakeFirstOrThrow(() => new Error("No tap was found"));
+      .executeTakeFirstOrThrow(() => new CustomError("No tap found.", 404));
 
     return tap;
   },
@@ -39,7 +40,7 @@ export const tapRepository = {
       .select(({ fn }) => [fn.sum<number>("Tap.amount").as("totalAmount")])
       .where("Restaurant.id", "=", restaurantId)
       .executeTakeFirstOrThrow(
-        () => new Error("Error fetching check-in data.")
+        () => new CustomError("Could not retrieve the data.", 404)
       );
 
     return amount;
@@ -59,7 +60,7 @@ export const tapRepository = {
       .where("Tap.tappedAt", ">=", startDate)
       .where("Tap.tappedAt", "<", endDate)
       .executeTakeFirstOrThrow(
-        () => new Error("Error fetching check-in data.")
+        () => new CustomError("Could not retrieve the data.", 404)
       );
 
     return count;

@@ -2,24 +2,23 @@ import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import { userBonusServices } from "../services/userBonusServices";
 import { CustomError } from "../exceptions/CustomError";
+import {
+  bonusIdSchema,
+  encryptedDataSchema,
+  idSchema,
+  restaurantIdSchema,
+  userCardIdSchema,
+} from "../validations/sharedSchema";
 
 export const userBonusController = {
   buy: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const { bonusId, restaurantId } = req.body;
-
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Error on parsing id from the token.",
-      });
-
     try {
-      const userBonus = await userBonusServices.buy(
-        req.user.id,
-        restaurantId,
-        bonusId
-      );
+      const { bonusId, restaurantId } = req.body;
+
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 400);
+
+      const userBonus = await userBonusServices.buy(req.user.id, bonusId);
 
       return res.status(200).json({ success: true, data: userBonus });
     } catch (e) {
@@ -31,11 +30,11 @@ export const userBonusController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { id } = req.params;
-
     try {
-      if (!req.user?.id)
-        throw new CustomError("Could not parse the id from the token", 400);
+      const { id } = idSchema.parse(req.params);
+
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 400);
 
       const hashedData = await userBonusServices.generate(id, req.user?.id);
 
@@ -51,14 +50,11 @@ export const userBonusController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { encryptedData } = req.body;
-
     try {
-      if (!req.user?.id)
-        throw new CustomError("Could not parse the id from the token", 400);
+      const { encryptedData } = encryptedDataSchema.parse(req.body);
 
-      if (!encryptedData)
-        throw new CustomError("Please provide the QR data.", 400);
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 400);
 
       const userBonus = await userBonusServices.use(
         encryptedData,
@@ -75,16 +71,9 @@ export const userBonusController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { userCardId } = req.params;
-
-    if (!userCardId)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Please provide a userCard.",
-      });
-
     try {
+      const { userCardId } = userCardIdSchema.parse(req.params);
+
       const bonus = await userBonusServices.getByUserCardId(userCardId);
 
       return res.status(200).json({ success: true, data: bonus });
@@ -97,16 +86,12 @@ export const userBonusController = {
     res: Response,
     next: NextFunction
   ) => {
-    const { restaurantId } = req.params;
-
-    if (!req.user?.id)
-      return res.status(400).json({
-        success: false,
-        data: null,
-        error: "Error on parsing id from the token.",
-      });
-
     try {
+      const { restaurantId } = restaurantIdSchema.parse(req.params);
+
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 400);
+
       const userBonuses = await userBonusServices.getByRestaurantId(
         restaurantId,
         req.user.id

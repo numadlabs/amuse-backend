@@ -4,10 +4,16 @@ import { verificationCodeConstants } from "../lib/constants";
 import { sendEmail } from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { employeeRepository } from "../repository/employeeRepository";
-import { extractVerification, generateVerificationToken } from "../utils/jwt";
+import {
+  extractVerification,
+  generateTokens,
+  generateVerificationToken,
+} from "../utils/jwt";
 import { Employee } from "../types/db/types";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { ROLES } from "../types/db/enums";
+import { emailOtpRepository } from "../repository/emailOtpRepository";
+import { hideSensitiveData } from "../lib/hideDataHelper";
 const crypto = require("crypto");
 
 const MAX = verificationCodeConstants.MAX_VALUE,
@@ -15,8 +21,8 @@ const MAX = verificationCodeConstants.MAX_VALUE,
 
 export const employeeServices = {
   create: async (data: Insertable<Employee>, creatorId: string) => {
-    if (data.role === "SUPER_ADMIN" || data.role === "USER" || !data.role)
-      throw new CustomError("Error on the role input.", 400);
+    if (data.role === "SUPER_ADMIN" || data.role === "USER")
+      throw new CustomError("Could not the the role to the given one.", 400);
 
     const emailCheck = await employeeRepository.getByEmail(data.email);
     if (emailCheck)
@@ -36,13 +42,11 @@ export const employeeServices = {
     if (!restaurant) throw new CustomError("Restaurant not found.", 400);
 
     const password = crypto.randomBytes(16).toString("base64").slice(0, 16);
-
     const hashedPassword = await encryptionHelper.encrypt(password);
-    data.password = hashedPassword;
+
     data.firstname = restaurant.name;
     data.lastname = "Employee";
-    data.email = data.email.toLowerCase();
-
+    data.password = hashedPassword;
     const employee = await employeeRepository.create(data);
 
     await sendEmail(
@@ -66,7 +70,7 @@ The Amuse Bouche Team
     return employee;
   },
   createAsSuperAdmin: async (data: Insertable<Employee>) => {
-    if (data.role === "SUPER_ADMIN" || data.role === "USER" || !data.role)
+    if (data.role === "SUPER_ADMIN" || data.role === "USER")
       throw new CustomError("Error on the role input.", 400);
 
     const emailCheck = await employeeRepository.getByEmail(data.email);
@@ -74,11 +78,9 @@ The Amuse Bouche Team
       throw new CustomError("Email has already been registed.", 400);
 
     const password = crypto.randomBytes(16).toString("base64").slice(0, 16);
+    const hashedPassword = await encryptionHelper.encrypt(password);
 
-    const hashedPassword = await encryptionHelper.encrypt(data.password);
     data.password = hashedPassword;
-    data.email = data.email.toLowerCase();
-
     const employee = await employeeRepository.create(data);
 
     if (!employee.restaurantId)
@@ -105,16 +107,6 @@ The Amuse Bouche Team
     id: string,
     issuerId: string
   ) => {
-    if (
-      data.role ||
-      data.password ||
-      data.id ||
-      data.emailVerificationCode ||
-      data.restaurantId ||
-      data.email
-    )
-      throw new CustomError("These fields cannot be updated.", 400);
-
     const checkExists = await employeeRepository.getById(id);
     if (!checkExists) throw new CustomError("Invalid employeeId.", 400);
 
@@ -135,8 +127,11 @@ The Amuse Bouche Team
     );
 
     if (!isEmployee) throw new CustomError("Invalid login info.", 400);
+    const { accessToken, refreshToken } = generateTokens(employee);
 
-    return employee;
+    const sanitizedEmployee = hideSensitiveData(employee, ["password"]);
+
+    return { employee: sanitizedEmployee, accessToken, refreshToken };
   },
   setEmailOTP: async (email: string) => {
     const employeeById = await employeeRepository.getByEmail(email);
@@ -155,7 +150,11 @@ The Amuse Bouche Team
       employeeById.email
     );
 
-    employeeById.emailVerificationCode = emailVerificationToken;
+    await emailOtpRepository.create({
+      email: email.toLowerCase(),
+      verificationCode: emailVerificationToken,
+    });
+
     const employee = await employeeRepository.update(
       employeeById,
       employeeById.id
@@ -166,15 +165,11 @@ The Amuse Bouche Team
   checkEmailOTP: async (email: string, verificationCode: number) => {
     const employee = await employeeRepository.getByEmail(email);
 
-    if (!employee || !employee.emailVerificationCode)
-      throw new CustomError("Employee does not exist or no OTP set.", 400);
+    if (!employee) throw new CustomError("Employee does not exist.", 400);
 
-    const extractedOTP = extractVerification(employee.emailVerificationCode);
-
-    if (
-      extractedOTP !== verificationCode ||
-      employee.emailVerificationCode === null
-    )
+    const emailOtp = await emailOtpRepository.getByEmail(email);
+    const extractedOTP = extractVerification(emailOtp.verificationCode);
+    if (extractedOTP !== verificationCode)
       throw new CustomError("Invalid verification code!", 400);
 
     return employee;
@@ -189,17 +184,27 @@ The Amuse Bouche Team
       verificationCode
     );
 
+    const emailOtp = await emailOtpRepository.getByEmail(email);
+    const extractedOTP = extractVerification(emailOtp.verificationCode);
+    if (extractedOTP !== verificationCode)
+      throw new CustomError("Invalid verification code!", 400);
+
     const encryptedPassword = await encryptionHelper.encrypt(password);
 
     employee.password = encryptedPassword;
-    employee.emailVerificationCode = null;
 
     const updatedEmployee = await employeeRepository.update(
       employee,
       employee.id
     );
 
-    return updatedEmployee;
+    emailOtp.isUsed = true;
+
+    await emailOtpRepository.update(emailOtp.id, emailOtp);
+
+    const sanitizedEmployee = hideSensitiveData(updatedEmployee, ["password"]);
+
+    return sanitizedEmployee;
   },
   checkIfEligible: async (employeeId: string, restaurantId: string) => {
     const employee = await employeeRepository.getById(employeeId);

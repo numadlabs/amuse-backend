@@ -2,18 +2,18 @@ import { sign, verify, Secret } from "jsonwebtoken";
 import { Employee, User } from "../types/db/types";
 import { Insertable } from "kysely";
 import { config } from "../config/config";
+import jwt from "jsonwebtoken";
+import { CustomError } from "../exceptions/CustomError";
 
 const ACCESS_TOKEN_EXPIRATION_TIME = config.JWT_ACCESS_EXPIRATION_TIME;
 const REFRESH_TOKEN_EXPIRATION_TIME = config.JWT_REFRESH_EXPIRATION_TIME;
+const jwtAccessSecret: Secret = config.JWT_ACCESS_SECRET;
+const jwtRefreshSecret: Secret = config.JWT_REFRESH_SECRET;
 
 export function generateAccessToken(
   user: Insertable<User> | Insertable<Employee>
 ) {
-  const jwtAccesSecret: Secret | undefined = config.JWT_ACCESS_SECRET;
-  if (!jwtAccesSecret) {
-    throw new Error("JWT_REFRESH_SECRET is not defined.");
-  }
-  return sign({ id: user.id, role: user.role }, jwtAccesSecret, {
+  return sign({ id: user.id, role: user.role }, jwtAccessSecret, {
     expiresIn: ACCESS_TOKEN_EXPIRATION_TIME,
   });
 }
@@ -30,7 +30,17 @@ export function generateVerificationToken(
     expiresIn: duration,
   });
 }
-//turn it into function that just returns JWT-payload
+
+export function verifyRefreshToken(token: string) {
+  let tokens;
+  jwt.verify(token, jwtRefreshSecret, (err: any, user: any) => {
+    if (err) throw new CustomError("Invalid refresh token.", 401);
+    tokens = generateTokens(user);
+  });
+
+  return tokens;
+}
+
 export function extractVerification(token: string) {
   const jwtVerificationSecret = config.JWT_VERIFICATION_SECRET;
   if (!jwtVerificationSecret) {
@@ -47,10 +57,6 @@ export function extractVerification(token: string) {
 export function generateRefreshToken(
   user: Insertable<User> | Insertable<Employee>
 ) {
-  const jwtRefreshSecret: Secret | undefined = config.JWT_REFRESH_SECRET;
-  if (!jwtRefreshSecret) {
-    throw new Error("JWT_REFRESH_SECRET is not defined.");
-  }
   return sign({ id: user.id, role: user.role }, jwtRefreshSecret, {
     expiresIn: REFRESH_TOKEN_EXPIRATION_TIME,
   });
