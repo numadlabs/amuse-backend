@@ -95,7 +95,7 @@ export const bonusRepository = {
         "Bonus.currentSupply",
         "Bonus.totalSupply",
       ])
-      .executeTakeFirstOrThrow(() => new CustomError("No bonus found.", 404));
+      .executeTakeFirst();
 
     return bonus;
   },
