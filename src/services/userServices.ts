@@ -33,21 +33,21 @@ export const userServices = {
       throw new CustomError("User already exists with this email.", 400);
 
     const emailOtp = await emailOtpRepository.getByEmail(email);
-    if (!emailOtp || !emailOtp.verificationCode)
-      throw new CustomError(
-        "Please send OTP first and then provide the verificationCode.",
-        400
-      );
+    // if (!emailOtp || !emailOtp.verificationCode)
+    //   throw new CustomError(
+    //     "Please send OTP first and then provide the verificationCode.",
+    //     400
+    //   );
 
-    if (emailOtp.isUsed)
-      throw new CustomError("OTP has already been used.", 400);
+    // if (emailOtp.isUsed)
+    //   throw new CustomError("OTP has already been used.", 400);
 
-    const emailVerificationCode = extractVerification(
-      emailOtp.verificationCode
-    );
+    // const emailVerificationCode = extractVerification(
+    //   emailOtp.verificationCode
+    // );
 
-    if (emailVerificationCode !== verificationCode)
-      throw new CustomError("Invalid verification code!", 400);
+    // if (emailVerificationCode !== verificationCode)
+    //   throw new CustomError("Invalid verification code!", 400);
 
     const hashedPassword = await encryptionHelper.encrypt(password);
     const userTier = await userTierRepository.getStartingTier();
@@ -59,8 +59,8 @@ export const userServices = {
       userTierId: userTier.id,
     });
 
-    emailOtp.isUsed = true;
-    await emailOtpRepository.update(emailOtp.id, emailOtp);
+    // emailOtp.isUsed = true;
+    // await emailOtpRepository.update(emailOtp.id, emailOtp);
 
     const { accessToken, refreshToken } = generateTokens(user);
 

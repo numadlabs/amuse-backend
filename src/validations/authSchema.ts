@@ -6,13 +6,14 @@ export const loginSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(1)
-      .max(30)
+      .min(1, "Email must be at least 1 character.")
+      .max(30, "Email must be at most 30 characters.")
       .regex(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
         "Invalid email format."
       ),
     password: string()
+      .trim()
       .min(8)
       .max(30)
       .regex(
@@ -27,11 +28,11 @@ export const emailSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(1)
-      .max(30)
+      .min(5, "Email must be at least 1 character.")
+      .max(50, "Email must be at most 50 characters.")
       .regex(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-        "Invalid email format"
+        "Invalid email format."
       ),
   })
   .strict("Unexpected field detected.");
@@ -41,8 +42,8 @@ export const otpSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(1)
-      .max(30)
+      .min(5, "Email must be at least 5 characters.")
+      .max(50, "Email must be at most 50 characters.")
       .regex(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
         "Invalid email format."
@@ -56,21 +57,28 @@ export const registerSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(1)
-      .max(30)
+      .min(5, "Email must be at least 5 characters.")
+      .max(50, "Email must be at most 50 characters.")
       .regex(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
         "Invalid email format."
       ),
     password: string()
-      .min(8)
-      .max(30)
+      .trim()
+      .min(8, "Password must be at least 8 characters.")
+      .max(30, "Password must be at most 30 characters.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
-    nickname: string().min(1).max(30),
-    verificationCode: number().int().lt(10000).gt(999),
+    nickname: string()
+      .trim()
+      .min(1, "Nickname must be at least 1 characters.")
+      .max(30, "Nickname must be at most 30 characters."),
+    verificationCode: number()
+      .int()
+      .lt(10000, "Verification code must exactly consist of 4 digits.")
+      .gt(999, "Verification code must exactly consist of 4 digits."),
   })
   .strict("Unexpected field detected.");
 
@@ -81,26 +89,31 @@ export const forgotPasswordSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(1)
-      .max(30)
+      .min(5, "Email must be at least 5 characters.")
+      .max(50, "Email must be at most 50 characters.")
       .regex(
         /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
         "Invalid email format."
       ),
     password: string()
-      .min(8)
-      .max(30)
+      .trim()
+      .min(8, "Password must be at least 8 characters.")
+      .max(30, "Password must be at most 30 characters.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
-    verificationCode: number().int().lt(10000).gt(999),
+    verificationCode: number()
+      .int()
+      .lt(10000, "Verification code must exactly consist of 4 digits.")
+      .gt(999, "Verification code must exactly consist of 4 digits."),
   })
   .strict("Unexpected field detected.");
 
 export const changePasswordSchema = z
   .object({
     oldPassword: string()
+      .trim()
       .min(8)
       .max(30)
       .regex(
@@ -108,6 +121,7 @@ export const changePasswordSchema = z
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     newPassword: string()
+      .trim()
       .min(8)
       .max(30)
       .regex(
@@ -119,7 +133,7 @@ export const changePasswordSchema = z
 
 export const authenticationTokenSchema = z
   .object({
-    id: string().uuid(),
+    id: string().trim().uuid(),
     role: z.nativeEnum(ROLES),
   })
   .strict("Unexpected field detected.");
