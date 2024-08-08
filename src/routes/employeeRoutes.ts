@@ -24,9 +24,21 @@ employeeRouter.get(
   "/:restaurantId/restaurant",
   employeeController.getByRestaurantId
 );
-employeeRouter.put("/:id", employeeController.updateInfo);
+employeeRouter.put(
+  "/changePassword",
+  authenticateToken,
+  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER"),
+  employeeController.changePassword
+);
+employeeRouter.put(
+  "/:id",
+  authenticateToken,
+  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER"),
+  employeeController.updateInfo
+);
 employeeRouter.put(
   "/:id/role",
+  authenticateToken,
   authorize("RESTAURANT_OWNER"),
   employeeController.updateRole
 );
