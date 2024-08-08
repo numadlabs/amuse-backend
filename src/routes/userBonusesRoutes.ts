@@ -17,6 +17,16 @@ userBonusesRoutes.get(
   userBonusController.getUnusedByUserCardId
 );
 userBonusesRoutes.get(
+  "/used/:restaurantId/restaurant",
+  authenticateToken,
+  userBonusController.getUsedByRestaurantId
+);
+userBonusesRoutes.get(
+  "/:restaurantId/restaurant",
+  authenticateToken,
+  userBonusController.getUnusedByRestaurantId
+);
+userBonusesRoutes.get(
   "/:restaurantId/restaurant",
   authenticateToken,
   userBonusController.getUnusedByRestaurantId

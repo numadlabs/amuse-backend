@@ -127,6 +127,7 @@ export type UserBonus = {
     userId: string;
     userCardId: string;
     bonusId: string;
+    waiterId: string | null;
 };
 export type UserCard = {
     id: Generated<string>;

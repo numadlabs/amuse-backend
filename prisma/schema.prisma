@@ -45,6 +45,7 @@ model Employee {
   email        String      @unique
   restaurantId String?
   Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  UserBonus    UserBonus[]
 }
 
 model EmailOtp {
@@ -142,8 +143,9 @@ model Tap {
   tappedAt   DateTime @default(now())
   userId     String
   userCardId String
-  UserCard   UserCard @relation(fields: [userCardId], references: [id], onDelete: Cascade)
-  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  UserCard   UserCard  @relation(fields: [userCardId], references: [id], onDelete: Cascade)
+  User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Bonus {
@@ -168,9 +170,12 @@ model UserBonus {
   userId     String
   userCardId String
   bonusId    String
-  Bonus      Bonus     @relation(fields: [bonusId], references: [id], onDelete: Cascade)
-  UserCard   UserCard  @relation(fields: [userCardId], references: [id], onDelete: Cascade)
-  User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  waiterId   String?
+
+  Bonus    Bonus     @relation(fields: [bonusId], references: [id], onDelete: Cascade)
+  UserCard UserCard  @relation(fields: [userCardId], references: [id], onDelete: Cascade)
+  User     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Employee Employee? @relation(fields: [waiterId], references: [id])
 }
 
 model Notification {

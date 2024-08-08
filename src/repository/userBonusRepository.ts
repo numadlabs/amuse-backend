@@ -89,4 +89,30 @@ export const userBonusRepository = {
 
     return count;
   },
+  getUsedByRestaurantId: async (restaurantId: string) => {
+    const userBonuses = await db
+      .selectFrom("UserBonus")
+      .innerJoin("UserCard", "UserCard.id", "UserBonus.userCardId")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .innerJoin("Bonus", "Bonus.id", "UserBonus.bonusId")
+      .innerJoin("Employee", "Employee.id", "UserBonus.waiterId")
+      .innerJoin("User", "User.id", "UserBonus.userId")
+      .where("Restaurant.id", "=", restaurantId)
+      .where("UserBonus.isUsed", "=", true)
+      .select([
+        "UserBonus.id",
+        "Bonus.name",
+        "Bonus.type",
+        "Employee.firstname",
+        "Employee.lastname",
+        "User.nickname",
+        "User.email",
+        "User.location",
+        "UserBonus.usedAt",
+      ])
+      .execute();
+
+    return userBonuses;
+  },
 };

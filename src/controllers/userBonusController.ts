@@ -9,6 +9,7 @@ import {
   restaurantIdSchema,
   userCardIdSchema,
 } from "../validations/sharedSchema";
+import { userBonusRepository } from "../repository/userBonusRepository";
 
 export const userBonusController = {
   buy: async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -102,6 +103,28 @@ export const userBonusController = {
         data: {
           userBonuses: userBonuses.userBonuses,
           followingBonus: userBonuses.followingBonus,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getUsedByRestaurantId: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { restaurantId } = restaurantIdSchema.parse(req.params);
+
+      const userBonuses = await userBonusRepository.getUsedByRestaurantId(
+        restaurantId
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          userBonuses: userBonuses,
         },
       });
     } catch (e) {
