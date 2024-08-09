@@ -115,4 +115,25 @@ export const userBonusRepository = {
 
     return userBonuses;
   },
+  getAllByUserId: async (userId: string) => {
+    const userBonuses = await db
+      .selectFrom("UserBonus")
+      .innerJoin("UserCard", "UserCard.id", "UserBonus.userCardId")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .innerJoin("Bonus", "Bonus.id", "UserBonus.bonusId")
+      .where("UserBonus.userId", "=", userId)
+      .select([
+        "UserBonus.id",
+        "Bonus.name",
+        "Bonus.type",
+        "Restaurant.name as restaurantName",
+        "UserBonus.isUsed",
+        "UserBonus.usedAt",
+      ])
+      .orderBy("UserBonus.usedAt", "desc")
+      .execute();
+
+    return userBonuses;
+  },
 };

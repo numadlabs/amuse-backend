@@ -130,4 +130,19 @@ export const restaurantRepository = {
 
     return cards;
   },
+  increaseBalanceByRestaurantId: async (
+    restaurantId: string,
+    amount: number
+  ) => {
+    const restaurant = await db
+      .updateTable("Restaurant as r")
+      .where("r.id", "=", restaurantId)
+      .set({ balance: sql`r."balance" + ${amount}` })
+      .returningAll()
+      .executeTakeFirstOrThrow(
+        () => new Error("Could not update the restaurant.")
+      );
+
+    return restaurant;
+  },
 };

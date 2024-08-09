@@ -16,6 +16,10 @@ import { userTierRepository } from "../repository/userTierRepository";
 import { emailOtpRepository } from "../repository/emailOtpRepository";
 import { config } from "../config/config";
 import { hideSensitiveData } from "../lib/hideDataHelper";
+import { userCardReposity } from "../repository/userCardRepository";
+import { userBonusRepository } from "../repository/userBonusRepository";
+import { tapRepository } from "../repository/tapRepository";
+import { restaurantRepository } from "../repository/restaurantRepository";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
@@ -197,6 +201,17 @@ export const userServices = {
         .promise();
     }
 
+    const userCards = await userCardReposity.getByUserIdWithRestaurantDetails(
+      findUser.id
+    );
+    const updatePromises = userCards.map((userCard) =>
+      restaurantRepository.increaseBalanceByRestaurantId(
+        userCard.restaurantId,
+        userCard.balance
+      )
+    );
+    await Promise.all(updatePromises);
+
     const user = await userRepository.delete(findUser.id);
     const sanitizedUser = hideSensitiveData(user, ["password"]);
 
@@ -255,5 +270,33 @@ export const userServices = {
     const sanitizedUser = hideSensitiveData(updatedUser, ["password"]);
 
     return sanitizedUser;
+  },
+  fetchCollectedData: async (id: string) => {
+    const user = await userRepository.getUserById(id);
+    if (!user) throw new CustomError("User not found.", 400);
+
+    const cards = await userCardReposity.getByUserIdWithRestaurantDetails(
+      user.id
+    );
+
+    const bonuses = await userBonusRepository.getAllByUserId(user.id);
+
+    const taps = await tapRepository.getAllByUserId(user.id);
+
+    const sanitizedUser = hideSensitiveData(user, [
+      "password",
+      "createdAt",
+      "id",
+      "profilePicture",
+      "userTierId",
+      "role",
+    ]);
+
+    return {
+      ...sanitizedUser,
+      cards,
+      bonuses,
+      taps,
+    };
   },
 };

@@ -154,4 +154,24 @@ export const userCardReposity = {
 
     return count;
   },
+  getByUserIdWithRestaurantDetails: async (userId: string) => {
+    const userCards = await db
+      .selectFrom("UserCard")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .innerJoin("Category", "Category.id", "Restaurant.categoryId")
+      .where("UserCard.userId", "=", userId)
+      .select([
+        "UserCard.id",
+        "UserCard.ownedAt",
+        "UserCard.visitCount",
+        "UserCard.balance",
+        "Restaurant.id as restaurantId",
+        "Restaurant.name as restaurantName",
+      ])
+      .orderBy("UserCard.ownedAt desc")
+      .execute();
+
+    return userCards;
+  },
 };

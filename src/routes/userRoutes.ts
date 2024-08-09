@@ -13,7 +13,12 @@ userRoutes.put(
   UserController.updateInfo
 );
 
-userRoutes.delete("/", authenticateToken, UserController.deleteUser);
+userRoutes.delete(
+  "/",
+  authenticateToken,
+  authorize("USER"),
+  UserController.deleteUser
+);
 
 userRoutes.get("/cards", authenticateToken, UserController.getUserCards);
 userRoutes.get("/taps", authenticateToken, UserController.getUserTaps);
@@ -22,6 +27,12 @@ userRoutes.get(
   authenticateToken,
   authorize("RESTAURANT_OWNER"),
   UserController.getDistinctUserLocations
+);
+userRoutes.get(
+  "/collected-data",
+  authenticateToken,
+  authorize("USER"),
+  UserController.fetchCollectedData
 );
 userRoutes.get("/:id", authenticateToken, UserController.getUserById);
 

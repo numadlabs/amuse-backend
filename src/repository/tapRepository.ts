@@ -65,4 +65,22 @@ export const tapRepository = {
 
     return count;
   },
+  getAllByUserId: async (userId: string) => {
+    const taps = await db
+      .selectFrom("Tap")
+      .innerJoin("UserCard", "UserCard.id", "Tap.userCardId")
+      .innerJoin("Card", "Card.id", "UserCard.cardId")
+      .innerJoin("Restaurant", "Restaurant.id", "Card.restaurantId")
+      .where("UserCard.userId", "=", userId)
+      .select([
+        "Tap.id",
+        "Tap.amount",
+        "Tap.tappedAt",
+        "Restaurant.name as restaurantName",
+      ])
+      .orderBy("Tap.tappedAt", "desc")
+      .execute();
+
+    return taps;
+  },
 };

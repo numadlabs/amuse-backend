@@ -264,4 +264,20 @@ export const UserController = {
       next(e);
     }
   },
+  fetchCollectedData: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      if (!req.user)
+        throw new CustomError("Could not parse the id from the token.", 400);
+
+      const collectedData = await userServices.fetchCollectedData(req.user.id);
+
+      return res.status(200).json({ success: true, data: collectedData });
+    } catch (e) {
+      next(e);
+    }
+  },
 };
