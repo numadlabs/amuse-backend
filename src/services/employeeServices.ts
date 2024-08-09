@@ -35,6 +35,9 @@ export const employeeServices = {
         400
       );
 
+    if (creator.role !== "RESTAURANT_OWNER" && data.role === "RESTAURANT_OWNER")
+      throw new CustomError("You are not allowed to do this action.", 400);
+
     if (!data.restaurantId)
       throw new CustomError("Please provide a restaurantId.", 400);
 
@@ -230,6 +233,9 @@ The Amuse Bouche Team
 
     const issuer = await employeeRepository.getById(issuerId);
     if (!issuer || issuer.restaurantId !== checkExists.restaurantId)
+      throw new CustomError("You are not allowed to do this action.", 400);
+
+    if (issuer.role !== "RESTAURANT_OWNER" && role === "RESTAURANT_OWNER")
       throw new CustomError("You are not allowed to do this action.", 400);
 
     const employee = await employeeRepository.update({ role: role }, id);

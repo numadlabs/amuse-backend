@@ -25,7 +25,7 @@ userRoutes.get("/taps", authenticateToken, UserController.getUserTaps);
 userRoutes.get(
   "/locations",
   authenticateToken,
-  authorize("RESTAURANT_OWNER"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   UserController.getDistinctUserLocations
 );
 userRoutes.get(

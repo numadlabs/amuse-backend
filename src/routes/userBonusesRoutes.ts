@@ -8,7 +8,7 @@ const userBonusesRoutes = express.Router();
 userBonusesRoutes.post(
   "/use",
   authenticateToken,
-  authorize("RESTAURANT_WAITER", "RESTAURANT_OWNER"),
+  authorize("RESTAURANT_WAITER", "RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   userBonusController.useUserBonus
 );
 userBonusesRoutes.get(

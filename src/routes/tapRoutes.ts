@@ -13,7 +13,7 @@ tapRouter.post(
 tapRouter.post(
   "/redeem",
   authenticateToken,
-  authorize("RESTAURANT_WAITER", "RESTAURANT_OWNER"),
+  authorize("RESTAURANT_WAITER", "RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   tapController.redeemTap
 );
 tapRouter.get("/:id", tapController.getTapById);

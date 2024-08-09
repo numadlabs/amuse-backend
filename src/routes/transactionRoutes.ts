@@ -19,7 +19,7 @@ transactionRouter.post(
 transactionRouter.get(
   "/:restaurantId/restaurant",
   authenticateToken,
-  authorize("RESTAURANT_OWNER"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   transactionController.getByRestaurantId
 );
 transactionRouter.get(

@@ -7,7 +7,7 @@ const employeeRouter = express.Router();
 employeeRouter.post(
   "/",
   authenticateToken,
-  authorize("RESTAURANT_OWNER"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   employeeController.create
 );
 employeeRouter.post(
@@ -24,22 +24,23 @@ employeeRouter.get(
   "/:restaurantId/restaurant",
   employeeController.getByRestaurantId
 );
+employeeRouter.get("/:id", employeeController.getById);
 employeeRouter.put(
   "/changePassword",
   authenticateToken,
-  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
   employeeController.changePassword
 );
 employeeRouter.put(
   "/:id",
   authenticateToken,
-  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
   employeeController.updateInfo
 );
 employeeRouter.put(
   "/:id/role",
   authenticateToken,
-  authorize("RESTAURANT_OWNER"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   employeeController.updateRole
 );
 

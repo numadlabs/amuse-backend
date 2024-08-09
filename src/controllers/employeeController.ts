@@ -23,6 +23,7 @@ import {
   restaurantIdSchema,
   roleSchema,
 } from "../validations/sharedSchema";
+import { hideSensitiveData } from "../lib/hideDataHelper";
 
 export const employeeController = {
   create: async (
@@ -226,6 +227,26 @@ export const employeeController = {
       return res.status(200).json({
         success: true,
         data: employee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getById: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { id } = idSchema.parse(req.params);
+
+      const employee = await employeeRepository.getById(id);
+      if (!employee) throw new CustomError("Employee does not exist.", 400);
+      const sanitizedEmployee = hideSensitiveData(employee, ["password"]);
+
+      return res.status(200).json({
+        success: true,
+        data: sanitizedEmployee,
       });
     } catch (e) {
       next(e);
