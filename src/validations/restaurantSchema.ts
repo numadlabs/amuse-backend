@@ -52,7 +52,8 @@ export const updateRestaurantSchema = z
       .string()
       .trim()
       .min(1, "Location must be at least 1 character.")
-      .max(50, "Locatoin must be at most 50 characters."),
+      .max(50, "Locatoin must be at most 50 characters.")
+      .optional(),
     categoryId: z.string().trim().uuid().optional(),
   })
   .strict("Unexpected field detected.");
