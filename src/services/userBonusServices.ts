@@ -109,6 +109,7 @@ export const userBonusServices = {
 
     userBonus.isUsed = true;
     userBonus.usedAt = new Date();
+    userBonus.waiterId = waiter.id;
 
     const updatedUserBonus = await userBonusRepository.update(
       userBonus.id,
