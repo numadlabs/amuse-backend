@@ -26,8 +26,7 @@ export const restaurantController = {
   ) => {
     try {
       req.body = createRestaurantSchema.parse(req.body);
-      const { googleMapsUrl, ...input } = req.body;
-      const data: Insertable<Restaurant> = { ...input };
+      const data: Insertable<Restaurant> = { ...req.body };
       const file = req.file as Express.Multer.File;
 
       if (!req.user)
@@ -36,8 +35,7 @@ export const restaurantController = {
       const restaurant = await restaurantServices.create(
         data,
         file,
-        req.user.id,
-        googleMapsUrl
+        req.user.id
       );
 
       return res
@@ -50,16 +48,11 @@ export const restaurantController = {
   updateRestaurant: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = idSchema.parse(req.params);
-      const { googleMapsUrl, ...rest } = updateRestaurantSchema.parse(req.body);
-      const data: Updateable<Restaurant> = { ...rest };
+      req.body = createRestaurantSchema.parse(req.body);
+      const data: Insertable<Restaurant> = { ...req.body };
       const file = req.file as Express.Multer.File;
 
-      const restaurant = await restaurantServices.update(
-        id,
-        data,
-        file,
-        googleMapsUrl
-      );
+      const restaurant = await restaurantServices.update(id, data, file);
 
       return res.status(200).json({ success: true, restaurant: restaurant });
     } catch (e) {

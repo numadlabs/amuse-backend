@@ -15,13 +15,14 @@ export const restaurantServices = {
   create: async (
     data: Insertable<Restaurant>,
     file: Express.Multer.File,
-    ownerId: string,
-    googleMapsUrl: string
+    ownerId: string
   ) => {
     const owner = await employeeRepository.getById(ownerId);
     if (!owner) throw new CustomError("Owner not found.", 400);
 
-    const { latitude, longitude } = parseLatLong(googleMapsUrl);
+    if (!data.googleMapsUrl)
+      throw new CustomError("Please provide an google maps url.", 400);
+    const { latitude, longitude } = parseLatLong(data.googleMapsUrl);
     if (!latitude || !longitude)
       throw new CustomError("Error parsing the latitude and longitude.", 400);
 
@@ -101,8 +102,7 @@ export const restaurantServices = {
   update: async (
     id: string,
     data: Updateable<Restaurant>,
-    file: Express.Multer.File,
-    googleMapsUrl: string | undefined
+    file: Express.Multer.File
   ) => {
     const restaurant = await restaurantRepository.getById(id);
     if (!restaurant)
@@ -110,8 +110,8 @@ export const restaurantServices = {
     if (data.balance || data.logo)
       throw new CustomError("Invalid data given.", 400);
 
-    if (googleMapsUrl) {
-      const { latitude, longitude } = parseLatLong(googleMapsUrl);
+    if (data.googleMapsUrl) {
+      const { latitude, longitude } = parseLatLong(data.googleMapsUrl);
       if (!latitude || !longitude)
         throw new CustomError("Error parsing the latitude and longitude.", 400);
       data.latitude = latitude;

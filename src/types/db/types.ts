@@ -72,6 +72,7 @@ export type Restaurant = {
     name: string;
     description: string;
     location: string;
+    googleMapsUrl: string | null;
     latitude: number;
     longitude: number;
     logo: string | null;

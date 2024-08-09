@@ -79,6 +79,7 @@ model Restaurant {
   name          String
   description   String
   location      String
+  googleMapsUrl String?     
   latitude      Float
   longitude     Float
   logo          String?
