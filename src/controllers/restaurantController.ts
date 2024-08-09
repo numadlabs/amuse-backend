@@ -48,7 +48,7 @@ export const restaurantController = {
   updateRestaurant: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = idSchema.parse(req.params);
-      req.body = createRestaurantSchema.parse(req.body);
+      req.body = updateRestaurantSchema.parse(req.body);
       const data: Insertable<Restaurant> = { ...req.body };
       const file = req.file as Express.Multer.File;
 

@@ -114,6 +114,8 @@ const restaurant: Insertable<Restaurant>[] = [
     description:
       "A renowned Pan-Asian restaurant offering a fusion of flavors in a vibrant atmosphere.",
     location: "Bubenské nábř. 306, 170 04 Praha 7-Holešovice, Czechia",
+    googleMapsUrl:
+      "https://www.google.com/maps/place/SaSaZu/@50.0974933,14.4409379,17.13z/data=!4m10!1m2!2m1!1ssasazu!3m6!1s0x470b94ba73bad235:0x4114ccd7f9c21e5a!8m2!3d50.0992776!4d14.4447256!15sCgZzYXNhenVaCCIGc2FzYXp1kgEKcmVzdGF1cmFudOABAA!16s%2Fg%2F11b77gm602?entry=ttu",
     latitude: 50.100578,
     longitude: 14.438367,
     balance: 1,
@@ -128,6 +130,8 @@ const restaurant: Insertable<Restaurant>[] = [
     description:
       "Modern Asian cuisine using fresh, seasonal ingredients, blending traditional and contemporary flavors.",
     location: "Petrská 25, 110 00 Praha 1-Nové Město, Czechia",
+    googleMapsUrl:
+      "https://www.google.com/maps/place/Sansho/@50.091767,14.4322722,17z/data=!3m1!4b1!4m6!3m5!1s0x470b94bfa49ae56b:0xe3da7dc930221279!8m2!3d50.0917636!4d14.4348471!16s%2Fg%2F1td2y5gm?entry=ttu",
     latitude: 50.092205,
     longitude: 14.431995,
     balance: 1,
@@ -142,6 +146,8 @@ const restaurant: Insertable<Restaurant>[] = [
     description:
       "A contemporary restaurant offering a variety of dishes with a focus on quality ingredients and innovative cooking techniques.",
     location: "Štítného 202/35, 130 00 Praha 3-Žižkov, Czechia",
+    googleMapsUrl:
+      "https://www.google.com/maps/place/KRO+Vr%C5%A1ovice+Bistro+%26+Bakery/@50.0699869,14.4224966,14z/data=!4m10!1m2!2m1!1skro+kitchen!3m6!1s0x470b93217fbe18d7:0xed919ca590f8b331!8m2!3d50.0699855!4d14.451253!15sCgtrcm8ga2l0Y2hlbloNIgtrcm8ga2l0Y2hlbpIBBmJpc3Ryb-ABAA!16s%2Fg%2F11l2kn9g8r?entry=ttu",
     latitude: 50.08635,
     longitude: 14.448378,
     balance: 1,
@@ -156,6 +162,8 @@ const restaurant: Insertable<Restaurant>[] = [
     description:
       "An iconic cafe in Prague, offering a cozy atmosphere with a wide selection of coffee, pastries, and light meals.",
     location: "Národní 22, 110 00 Praha 1-Nové Město, Czechia",
+    googleMapsUrl:
+      "https://www.google.com/maps/place/Caf%C3%A9+Louvre/@50.0819744,14.4183505,19.82z/data=!4m10!1m2!2m1!1scafe+louvre!3m6!1s0x470b94ee10cc958f:0x79778a83cefad049!8m2!3d50.0820693!4d14.4186192!15sCgtjYWZlIGxvdXZyZVoNIgtjYWZlIGxvdXZyZZIBCnJlc3RhdXJhbnTgAQA!16s%2Fg%2F11b7csfstx?entry=ttu",
     latitude: 50.082739,
     longitude: 14.419586,
     balance: 1,
