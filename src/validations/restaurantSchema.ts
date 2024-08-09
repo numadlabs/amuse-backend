@@ -12,6 +12,11 @@ export const createRestaurantSchema = z
       .trim()
       .min(1, "Description must be at least 1 character.")
       .max(30, "Description must be at most 30 characters."),
+    location: z
+      .string()
+      .trim()
+      .min(1, "Location must be at least 1 character.")
+      .max(50, "Locatoin must be at most 50 characters."),
     googleMapsUrl: z
       .string()
       .trim()
@@ -43,6 +48,11 @@ export const updateRestaurantSchema = z
       .max(100, "Google maps url must be at least 100 characters.")
       .url()
       .optional(),
+    location: z
+      .string()
+      .trim()
+      .min(1, "Location must be at least 1 character.")
+      .max(50, "Locatoin must be at most 50 characters."),
     categoryId: z.string().trim().uuid().optional(),
   })
   .strict("Unexpected field detected.");
