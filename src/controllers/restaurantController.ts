@@ -137,6 +137,7 @@ export const restaurantController = {
           "r.latitude",
           "r.longitude",
           "r.logo",
+          "r.googleMapsUrl",
           "Card.id as cardId",
           "Card.benefits",
           "Card.instruction",

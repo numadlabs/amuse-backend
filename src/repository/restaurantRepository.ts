@@ -44,6 +44,7 @@ export const restaurantRepository = {
         "r.categoryId",
         "Category.name as categoryName",
         "r.location",
+        "r.googleMapsUrl",
         "r.latitude",
         "r.longitude",
         "r.logo",
