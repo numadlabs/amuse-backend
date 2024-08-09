@@ -32,7 +32,7 @@ LEFT JOIN (
     endDate: Date
   ) => {
     const data = await sql`SELECT
-    COALESCE(location, 'undefined') AS location,
+    COALESCE(location, 'Not defined') AS location,
     SUM(CASE WHEN tapCount = 1 THEN 1 ELSE 0 END) AS "1",
     SUM(CASE WHEN tapCount = 2 THEN 1 ELSE 0 END) AS "2",
     SUM(CASE WHEN tapCount = 3 THEN 1 ELSE 0 END) AS "3",
@@ -71,7 +71,7 @@ GROUP BY location;`.execute(db);
     with myconstants (res_id) as (
       values (${restaurantId}))
     select
-      coalesce((select * from myconstants), 'undefined') as restaurantId,
+      coalesce((select * from myconstants), 'Not provided') as restaurantId,
         COALESCE(SUM(CASE WHEN tapCount = 1 THEN 1 ELSE 0 END), 0) AS "1",
         COALESCE(SUM(CASE WHEN tapCount = 2 THEN 1 ELSE 0 END), 0) AS "2",
         COALESCE(SUM(CASE WHEN tapCount = 3 THEN 1 ELSE 0 END), 0) AS "3",

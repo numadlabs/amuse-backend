@@ -93,7 +93,9 @@ export const userRepository = {
     const locations = await db
       .selectFrom("User")
       .select(({ eb, fn }) => [
-        fn.coalesce("User.location", sql<string>`'undefined'`).as("location"),
+        fn
+          .coalesce("User.location", sql<string>`'Not provided'`)
+          .as("location"),
       ])
       .distinct()
       .orderBy("location desc")
