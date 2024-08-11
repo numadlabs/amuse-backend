@@ -37,7 +37,7 @@ export const userBonusServices = {
     if (userCard.userId !== userId)
       throw new CustomError("You are not allowed to buy from this card.", 400);
 
-    const reducePercentage = Math.ceil(1 - bonus.price / user.balance);
+    const reducePercentage = 1 - bonus.price / user.balance;
     await userCardReposity.reduceBalanceByUserId(user.id, reducePercentage);
 
     const userBonus = await userBonusRepository.create({

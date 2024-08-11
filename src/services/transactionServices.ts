@@ -66,7 +66,7 @@ export const transactionServices = {
       if (user.balance < amount)
         throw new CustomError("Insufficient balance.", 400);
 
-      const reducePercentage = Math.ceil((amount / user.balance) * 100);
+      const reducePercentage = 1 - amount / user.balance;
       user.balance -= amount;
       await userRepository.update(data.userId, user);
 
