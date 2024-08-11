@@ -113,7 +113,7 @@ export const userCardReposity = {
       .updateTable("UserCard as uc")
       .returningAll()
       .set({
-        balance: sql`FLOOR(uc."balance" * ${percentage} * 1e8) / 1e8`,
+        balance: sql`uc."balance" * ${percentage}`,
       })
       .where("uc.userId", "=", userId)
       .execute();
