@@ -164,7 +164,7 @@ export const dashboardServices = {
 
     return {
       members: {
-        count: currentMonthUserCards.count,
+        count: currentMonthUserCards.count + previousMonthUserCards.count,
         percentageDifferential:
           previousMonthUserCards.count === 0
             ? 0
@@ -177,7 +177,7 @@ export const dashboardServices = {
               ),
       },
       taps: {
-        count: currentMonthTap.count,
+        count: currentMonthTap.count + previousMonthTap.count,
         percentageDifferential:
           previousMonthTap.count === 0
             ? 0
@@ -193,7 +193,9 @@ export const dashboardServices = {
         percentageDifferential: 0,
       },
       usedBonus: {
-        count: Number(currentMonthUsedBonus.count),
+        count:
+          Number(currentMonthUsedBonus.count) +
+          Number(previousMonthUsedBonus.count),
         percentageDifferential:
           previousMonthUsedBonus.count === 0
             ? 0
