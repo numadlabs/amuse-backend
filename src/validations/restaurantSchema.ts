@@ -60,7 +60,7 @@ export const updateRestaurantSchema = z
 
 export const rewardSystemSchema = z
   .object({
-    perkOccurent: z
+    perkOccurence: z
       .number()
       .int()
       .positive("Perk occurence must be positive.")
