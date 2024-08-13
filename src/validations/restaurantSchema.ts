@@ -6,22 +6,22 @@ export const createRestaurantSchema = z
       .string()
       .trim()
       .min(1, "Name must be at least 1 character.")
-      .max(30, "Name must be at most 30 characters."),
+      .max(50, "Name must be at most 50 characters."),
     description: z
       .string()
       .trim()
       .min(1, "Description must be at least 1 character.")
-      .max(100, "Description must be at most 100 characters."),
+      .max(255, "Description must be at most 255 characters."),
     location: z
       .string()
       .trim()
       .min(1, "Location must be at least 1 character.")
-      .max(50, "Locatoin must be at most 50 characters."),
+      .max(100, "Locatoin must be at most 100 characters."),
     googleMapsUrl: z
       .string()
       .trim()
       .min(1, "Google maps url must be at least 1 character.")
-      .max(255, "Google maps url must be at least 100 characters.")
+      .max(512, "Google maps url must be at least 512 characters.")
       .url(),
     categoryId: z.string().trim().uuid(),
   })
@@ -33,26 +33,26 @@ export const updateRestaurantSchema = z
       .string()
       .trim()
       .min(1, "Name must be at least 1 character.")
-      .max(30, "Name must be at least 30 characters.")
+      .max(50, "Name must be at most 50 characters.")
       .optional(),
     description: z
       .string()
       .trim()
       .min(1, "Description must be at least 1 character.")
-      .max(100, "Description must be at most 100 characters.")
+      .max(255, "Description must be at most 255 characters.")
       .optional(),
     googleMapsUrl: z
       .string()
       .trim()
       .min(1, "Google maps url must be at least 1 character.")
-      .max(100, "Google maps url must be at least 100 characters.")
+      .max(512, "Google maps url must be at least 512 characters.")
       .url()
       .optional(),
     location: z
       .string()
       .trim()
       .min(1, "Location must be at least 1 character.")
-      .max(50, "Locatoin must be at most 50 characters.")
+      .max(100, "Locatoin must be at most 100 characters.")
       .optional(),
     categoryId: z.string().trim().uuid().optional(),
   })
