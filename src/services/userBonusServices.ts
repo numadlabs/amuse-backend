@@ -68,7 +68,7 @@ export const userBonusServices = {
 
     await notificationRepository.create({
       userId: user.id,
-      message: `You have bought ${bonus.name} from ${restaurant.name}`,
+      message: `You have bought "${bonus.name}" from ${restaurant.name}`,
     });
 
     return userBonus;
@@ -129,7 +129,7 @@ export const userBonusServices = {
 
     await notificationRepository.create({
       userId: userBonus.userId,
-      message: `You have successful a bonus.`,
+      message: `You have used a bonus.`,
     });
 
     return updatedUserBonus;

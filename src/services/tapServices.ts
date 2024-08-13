@@ -186,9 +186,7 @@ export const tapServices = {
 
     await notificationRepository.create({
       userId: user.id,
-      message: `You have earned ${
-        incrementBtc * btc.price * currency.price
-      } EUR from ${restaurant.name}`,
+      message: `You have earned ${restaurant.rewardAmount} EUR from ${restaurant.name}`,
     });
 
     return {
