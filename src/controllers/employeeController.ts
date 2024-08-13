@@ -273,10 +273,11 @@ export const employeeController = {
         req.user.id,
         currentPassword
       );
+      const sanitizedEmployee = hideSensitiveData(employee, ["password"]);
 
       return res.status(200).json({
         success: true,
-        data: employee,
+        data: sanitizedEmployee,
       });
     } catch (e) {
       next(e);
