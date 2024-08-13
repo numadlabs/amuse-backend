@@ -22,6 +22,9 @@ export const cardIdSchema = z
 export const userTierIdSchema = z
   .object({ userTierId: z.string().trim().uuid() })
   .strict("Unexpected field detected.");
+export const employeeIdSchema = z
+  .object({ employeeId: z.string().trim().uuid() })
+  .strict("Unexpected field detected.");
 export const bonusTypeSchema = z
   .object({ type: z.nativeEnum(BONUS_TYPE) })
   .strict("Unexpected field detected.");

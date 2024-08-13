@@ -4,6 +4,7 @@ import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";
 import { cardRepository } from "../repository/cardRepository";
 import { employeeRepository } from "../repository/employeeRepository";
+import { notificationRepository } from "../repository/notificationRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { transactionRepository } from "../repository/transactionRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
@@ -65,6 +66,11 @@ export const userBonusServices = {
     bonus.currentSupply++;
     await bonusRepository.update(bonus, bonus.id);
 
+    await notificationRepository.create({
+      userId: user.id,
+      message: `You have bought ${bonus.name} from ${restaurant.name}`,
+    });
+
     return userBonus;
   },
   generate: async (id: string, userId: string) => {
@@ -120,6 +126,11 @@ export const userBonusServices = {
     if (userSocketId) {
       io.to(userSocketId).emit("bonus-scan", { bonus: updatedUserBonus });
     }
+
+    await notificationRepository.create({
+      userId: userBonus.userId,
+      message: `You have successful a bonus.`,
+    });
 
     return updatedUserBonus;
   },

@@ -5,10 +5,34 @@ import { authenticateToken } from "../middlewares/authenticateToken";
 const notificationRouter = express.Router();
 
 notificationRouter.post(
-  "/send",
+  "/send-push-notification",
   // authenticateToken,
   // // authorize("SUPER_ADMIN"),
-  notificationController.send
+  notificationController.sendPushNotification
+);
+
+notificationRouter.get(
+  "/user",
+  authenticateToken,
+  notificationController.getByUserId
+);
+
+notificationRouter.get(
+  "/employee",
+  authenticateToken,
+  notificationController.getByEmployeeId
+);
+
+notificationRouter.put(
+  "/employee/mark-as-read",
+  authenticateToken,
+  notificationController.markAsReadByEmployeeId
+);
+
+notificationRouter.put(
+  "/user/mark-as-read",
+  authenticateToken,
+  notificationController.markAsReadByUserId
 );
 
 export = notificationRouter;

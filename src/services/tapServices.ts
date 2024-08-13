@@ -13,6 +13,7 @@ import { userTierRepository } from "../repository/userTierRepository";
 import { employeeRepository } from "../repository/employeeRepository";
 import { io, pubClient } from "../app";
 import { transactionRepository } from "../repository/transactionRepository";
+import { notificationRepository } from "../repository/notificationRepository";
 const crypto = require("crypto");
 
 export const tapServices = {
@@ -182,6 +183,13 @@ export const tapServices = {
         },
       });
     }
+
+    await notificationRepository.create({
+      userId: user.id,
+      message: `You have earned ${
+        incrementBtc * btc.price * currency.price
+      } EUR from ${restaurant.name}`,
+    });
 
     return {
       increment: incrementBtc * btc.price * currency.price,

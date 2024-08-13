@@ -33,19 +33,21 @@ model User {
   Tier           UserTier       @relation(fields: [userTierId], references: [id])
   UserBonus      UserBonus[]
   UserCard       UserCard[]
+  Device         Device[]
 }
 
 model Employee {
-  id           String      @id @default(dbgenerated("gen_random_uuid()"))
+  id           String         @id @default(dbgenerated("gen_random_uuid()"))
   password     String
   firstname    String
   lastname     String
   role         ROLES
-  createdAt    DateTime    @default(now())
-  email        String      @unique
+  createdAt    DateTime       @default(now())
+  email        String         @unique
   restaurantId String?
-  Restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  Restaurant   Restaurant?    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   UserBonus    UserBonus[]
+  Notification Notification[]
 }
 
 model EmailOtp {
@@ -71,6 +73,9 @@ model Device {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
   pushToken String   @unique
   createdAt DateTime @default(now())
+  userId    String
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Restaurant {
@@ -79,7 +84,7 @@ model Restaurant {
   name          String
   description   String
   location      String
-  googleMapsUrl String?     
+  googleMapsUrl String?
   latitude      Float
   longitude     Float
   logo          String?
@@ -145,8 +150,8 @@ model Tap {
   userId     String
   userCardId String
 
-  UserCard   UserCard  @relation(fields: [userCardId], references: [id], onDelete: Cascade)
-  User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  UserCard UserCard @relation(fields: [userCardId], references: [id], onDelete: Cascade)
+  User     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Bonus {
@@ -182,10 +187,14 @@ model UserBonus {
 model Notification {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
   message   String
-  isRead    Boolean
+  isRead    Boolean @default(false)
   createdAt DateTime @default(now())
-  userId    String
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  userId     String?
+  employeeId String?
+
+  User     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Employee Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }
 
 model Currency {

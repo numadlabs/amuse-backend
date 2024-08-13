@@ -41,6 +41,7 @@ export type Device = {
     id: Generated<string>;
     pushToken: string;
     createdAt: Generated<Timestamp>;
+    userId: string;
 };
 export type EmailOtp = {
     id: Generated<string>;
@@ -62,9 +63,10 @@ export type Employee = {
 export type Notification = {
     id: Generated<string>;
     message: string;
-    isRead: boolean;
+    isRead: Generated<boolean>;
     createdAt: Generated<Timestamp>;
-    userId: string;
+    userId: string | null;
+    employeeId: string | null;
 };
 export type Restaurant = {
     id: Generated<string>;
