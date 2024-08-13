@@ -11,7 +11,7 @@ export const createRestaurantSchema = z
       .string()
       .trim()
       .min(1, "Description must be at least 1 character.")
-      .max(30, "Description must be at most 30 characters."),
+      .max(100, "Description must be at most 100 characters."),
     location: z
       .string()
       .trim()
@@ -39,7 +39,7 @@ export const updateRestaurantSchema = z
       .string()
       .trim()
       .min(1, "Description must be at least 1 character.")
-      .max(30, "Description must be at most 30 characters.")
+      .max(100, "Description must be at most 100 characters.")
       .optional(),
     googleMapsUrl: z
       .string()
