@@ -1,10 +1,10 @@
-import { Insertable, Updateable } from "kysely";
-import { Tap } from "../types/db/types";
+import { Insertable, Kysely, Transaction, Updateable } from "kysely";
+import { DB, Tap } from "../types/db/types";
 import { db } from "../utils/db";
 import { CustomError } from "../exceptions/CustomError";
 
 export const tapRepository = {
-  create: async (data: Insertable<Tap>) => {
+  create: async (db: Kysely<DB> | Transaction<DB>, data: Insertable<Tap>) => {
     const tap = await db
       .insertInto("Tap")
       .values(data)

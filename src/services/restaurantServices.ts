@@ -8,6 +8,7 @@ import { timetableRepository } from "../repository/timetableRepository";
 import { employeeRepository } from "../repository/employeeRepository";
 import { parseLatLong } from "../lib/locationParser";
 import { config } from "../config/config";
+import { db } from "../utils/db";
 
 const s3BucketName = config.AWS_S3_BUCKET_NAME;
 
@@ -45,6 +46,7 @@ export const restaurantServices = {
 
       restaurant.logo = randomKey;
       updatedRestaurant = await restaurantRepository.update(
+        db,
         restaurant.id,
         restaurant
       );
@@ -142,6 +144,7 @@ export const restaurantServices = {
     }
 
     const updatedRestaurant = await restaurantRepository.update(
+      db,
       restaurant.id,
       data
     );
@@ -177,6 +180,7 @@ export const restaurantServices = {
       throw new CustomError("Invalid perkOccurence.", 400);
 
     const updatedRestaurant = await restaurantRepository.update(
+      db,
       restaurant.id,
       data
     );

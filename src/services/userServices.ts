@@ -20,6 +20,7 @@ import { userCardReposity } from "../repository/userCardRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { tapRepository } from "../repository/tapRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
+import { db } from "../utils/db";
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
@@ -143,7 +144,7 @@ export const userServices = {
 
     const encryptedPassword = await encryptionHelper.encrypt(password);
     user.password = encryptedPassword;
-    const updatedUser = await userRepository.update(user.id, user);
+    const updatedUser = await userRepository.update(db, user.id, user);
 
     otpCheck.isUsed = true;
     await emailOtpRepository.update(otpCheck.id, otpCheck);
@@ -183,7 +184,7 @@ export const userServices = {
       data.profilePicture = randomKey;
     }
 
-    const user = await userRepository.update(findUser.id, data);
+    const user = await userRepository.update(db, findUser.id, data);
     const sanitizedUser = hideSensitiveData(user, ["password"]);
 
     return sanitizedUser;
@@ -240,7 +241,7 @@ export const userServices = {
 
     foundUser.email = email.toLowerCase();
 
-    const user = await userRepository.update(foundUser.id, foundUser);
+    const user = await userRepository.update(db, foundUser.id, foundUser);
     emailOtp.isUsed = true;
     await emailOtpRepository.update(emailOtp.id, emailOtp);
 
@@ -265,7 +266,7 @@ export const userServices = {
     const encryptedPassword = await encryptionHelper.encrypt(newPassword);
 
     user.password = encryptedPassword;
-    const updatedUser = await userRepository.update(user.id, user);
+    const updatedUser = await userRepository.update(db, user.id, user);
 
     const sanitizedUser = hideSensitiveData(updatedUser, ["password"]);
 

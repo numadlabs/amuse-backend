@@ -1,6 +1,6 @@
 import { db } from "../utils/db";
-import { Insertable, sql, Updateable } from "kysely";
-import { User } from "../types/db/types";
+import { Insertable, Kysely, sql, Transaction, Updateable } from "kysely";
+import { DB, User } from "../types/db/types";
 
 export const userRepository = {
   getUserById: async (id: string) => {
@@ -61,7 +61,11 @@ export const userRepository = {
 
     return user;
   },
-  update: async (id: string, data: Updateable<User>) => {
+  update: async (
+    db: Kysely<DB> | Transaction<DB>,
+    id: string,
+    data: Updateable<User>
+  ) => {
     const user = await db
       .updateTable("User")
       .set(data)

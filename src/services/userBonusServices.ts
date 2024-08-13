@@ -10,6 +10,7 @@ import { transactionRepository } from "../repository/transactionRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { userRepository } from "../repository/userRepository";
+import { db } from "../utils/db";
 const crypto = require("crypto");
 
 export const userBonusServices = {
@@ -38,40 +39,50 @@ export const userBonusServices = {
     if (userCard.userId !== userId)
       throw new CustomError("You are not allowed to buy from this card.", 400);
 
-    const reducePercentage = 1 - bonus.price / user.balance;
-    await userCardReposity.reduceBalanceByUserId(user.id, reducePercentage);
+    const bonusPrice = bonus.price;
 
-    const userBonus = await userBonusRepository.create({
-      userId: user.id,
-      userCardId: userCard.id,
-      bonusId: bonus.id,
+    const result = await db.transaction().execute(async (trx) => {
+      const reducePercentage = 1 - bonusPrice / user.balance;
+      await userCardReposity.reduceBalanceByUserId(
+        trx,
+        user.id,
+        reducePercentage
+      );
+
+      const userBonus = await userBonusRepository.create(trx, {
+        userId: user.id,
+        userCardId: userCard.id,
+        bonusId: bonus.id,
+      });
+
+      user.balance -= bonusPrice;
+      await userRepository.update(trx, user.id, user);
+
+      const restaurant = await restaurantRepository.getById(
+        userCard.restaurantId
+      );
+      restaurant.balance += bonusPrice;
+      restaurantRepository.update(trx, userCard.restaurantId, restaurant);
+
+      await transactionRepository.create(trx, {
+        userId: user.id,
+        amount: bonusPrice,
+        type: "PURCHASE",
+        txid: crypto.randomBytes(16).toString("hex"),
+      });
+
+      bonus.currentSupply++;
+      await bonusRepository.update(trx, bonus, bonus.id);
+
+      await notificationRepository.create(trx, {
+        userId: user.id,
+        message: `You have bought "${bonus.name}" from ${restaurant.name}`,
+      });
+
+      return userBonus;
     });
 
-    user.balance -= bonus.price;
-    await userRepository.update(user.id, user);
-
-    const restaurant = await restaurantRepository.getById(
-      userCard.restaurantId
-    );
-    restaurant.balance += bonus.price;
-    restaurantRepository.update(userCard.restaurantId, restaurant);
-
-    await transactionRepository.create({
-      userId: user.id,
-      amount: bonus.price,
-      type: "PURCHASE",
-      txid: crypto.randomBytes(16).toString("hex"),
-    });
-
-    bonus.currentSupply++;
-    await bonusRepository.update(bonus, bonus.id);
-
-    await notificationRepository.create({
-      userId: user.id,
-      message: `You have bought "${bonus.name}" from ${restaurant.name}`,
-    });
-
-    return userBonus;
+    return result;
   },
   generate: async (id: string, userId: string) => {
     const userBonus = await userBonusRepository.getById(id);
@@ -127,7 +138,7 @@ export const userBonusServices = {
       io.to(userSocketId).emit("bonus-scan", { bonus: updatedUserBonus });
     }
 
-    await notificationRepository.create({
+    await notificationRepository.create(db, {
       userId: userBonus.userId,
       message: `You have used a bonus.`,
     });

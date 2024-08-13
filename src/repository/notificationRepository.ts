@@ -1,9 +1,12 @@
-import { Insertable } from "kysely";
-import { Notification } from "../types/db/types";
+import { Insertable, Kysely, Transaction } from "kysely";
+import { DB, Notification } from "../types/db/types";
 import { db } from "../utils/db";
 
 export const notificationRepository = {
-  create: async (data: Insertable<Notification>) => {
+  create: async (
+    db: Kysely<DB> | Transaction<DB>,
+    data: Insertable<Notification>
+  ) => {
     const notification = await db
       .insertInto("Notification")
       .values(data)

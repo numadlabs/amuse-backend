@@ -3,6 +3,7 @@ import { Bonus } from "../types/db/types";
 import { cardRepository } from "../repository/cardRepository";
 import { CustomError } from "../exceptions/CustomError";
 import { bonusRepository } from "../repository/bonusRepository";
+import { db } from "../utils/db";
 
 export const bonusServices = {
   create: async (data: Insertable<Bonus>) => {
@@ -30,7 +31,7 @@ export const bonusServices = {
       );
     }
 
-    const updatedBonus = await bonusRepository.update(data, id);
+    const updatedBonus = await bonusRepository.update(db, data, id);
 
     return updatedBonus;
   },

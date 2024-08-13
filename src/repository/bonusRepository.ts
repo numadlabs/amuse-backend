@@ -1,5 +1,5 @@
-import { Insertable, Updateable } from "kysely";
-import { Bonus } from "../types/db/types";
+import { Insertable, Kysely, Transaction, Updateable } from "kysely";
+import { Bonus, DB } from "../types/db/types";
 import { db } from "../utils/db";
 import { CustomError } from "../exceptions/CustomError";
 import { BONUS_TYPE } from "../types/db/enums";
@@ -14,7 +14,11 @@ export const bonusRepository = {
 
     return bonus;
   },
-  update: async (data: Updateable<Bonus>, id: string) => {
+  update: async (
+    db: Kysely<DB> | Transaction<DB>,
+    data: Updateable<Bonus>,
+    id: string
+  ) => {
     const bonus = await db
       .updateTable("Bonus")
       .where("Bonus.id", "=", id)

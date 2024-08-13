@@ -6,6 +6,7 @@ import { CustomError } from "../exceptions/CustomError";
 import { userRepository } from "../repository/userRepository";
 import { currencyRepository } from "../repository/currencyRepository";
 import { userCardReposity } from "../repository/userCardRepository";
+import { db } from "../utils/db";
 
 export const transactionServices = {
   deposit: async (data: Insertable<Transaction>) => {
@@ -25,7 +26,7 @@ export const transactionServices = {
       if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
       restaurant.balance += amount;
-      await restaurantRepository.update(restaurant.id, restaurant);
+      await restaurantRepository.update(db, restaurant.id, restaurant);
     }
 
     if (data.userId) {
@@ -33,12 +34,12 @@ export const transactionServices = {
       if (!user) throw new CustomError("Invalid userId.", 400);
 
       user.balance += amount;
-      await userRepository.update(data.userId, user);
+      await userRepository.update(db, data.userId, user);
     }
 
     data.type = "DEPOSIT";
     data.amount = amount;
-    const transaction = await transactionRepository.create(data);
+    const transaction = await transactionRepository.create(db, data);
 
     return transaction;
   },
@@ -57,7 +58,7 @@ export const transactionServices = {
         throw new CustomError("Insufficient balance.", 400);
 
       restaurant.balance -= amount;
-      await restaurantRepository.update(restaurant.id, restaurant);
+      await restaurantRepository.update(db, restaurant.id, restaurant);
     }
 
     if (data.userId) {
@@ -68,14 +69,14 @@ export const transactionServices = {
 
       const reducePercentage = 1 - amount / user.balance;
       user.balance -= amount;
-      await userRepository.update(data.userId, user);
+      await userRepository.update(db, data.userId, user);
 
       await userCardReposity.reduceBalanceByUserId(user.id, reducePercentage);
     }
 
     data.type = "WITHDRAW";
     data.amount = amount;
-    const transaction = await transactionRepository.create(data);
+    const transaction = await transactionRepository.create(db, data);
 
     return transaction;
   },

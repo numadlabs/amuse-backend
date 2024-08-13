@@ -1,6 +1,6 @@
-import { Insertable, Updateable, sql } from "kysely";
+import { Insertable, Kysely, Transaction, Updateable, sql } from "kysely";
 import { db } from "../utils/db";
-import { UserCard } from "../types/db/types";
+import { DB, UserCard } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
 
 export const userCardReposity = {
@@ -18,7 +18,11 @@ export const userCardReposity = {
 
     return userCard;
   },
-  update: async (data: Updateable<UserCard>, id: string) => {
+  update: async (
+    db: Kysely<DB> | Transaction<DB>,
+    data: Updateable<UserCard>,
+    id: string
+  ) => {
     const userCard = await db
       .updateTable("UserCard")
       .set(data)
@@ -108,7 +112,11 @@ export const userCardReposity = {
 
     return userCards;
   },
-  reduceBalanceByUserId: async (userId: string, percentage: number) => {
+  reduceBalanceByUserId: async (
+    db: Kysely<DB> | Transaction<DB>,
+    userId: string,
+    percentage: number
+  ) => {
     const userCards = await db
       .updateTable("UserCard as uc")
       .returningAll()
