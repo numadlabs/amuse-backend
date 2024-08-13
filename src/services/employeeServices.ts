@@ -244,17 +244,10 @@ The Amuse Bouche Team
   },
   changePassword: async (
     id: string,
-    oldPassword: string,
+    currentPassword: string,
     newPassword: string
   ) => {
-    const employee = await employeeRepository.getById(id);
-    if (!employee) throw new CustomError("Invalid employeeId.", 400);
-
-    const isMatchingPassword = await encryptionHelper.compare(
-      oldPassword,
-      employee.password
-    );
-    if (!isMatchingPassword) throw new CustomError("Invalid password.", 400);
+    const employee = await employeeServices.checkPassword(id, currentPassword);
 
     const encryptedPassword = await encryptionHelper.encrypt(newPassword);
 
@@ -263,7 +256,20 @@ The Amuse Bouche Team
       employee,
       employee.id
     );
+    const sanitizedEmployee = hideSensitiveData(updatedEmployee, ["password"]);
 
-    return updatedEmployee;
+    return sanitizedEmployee;
+  },
+  checkPassword: async (id: string, currentPassword: string) => {
+    const employee = await employeeRepository.getById(id);
+    if (!employee) throw new CustomError("Invalid employeeId.", 400);
+
+    const isMatchingPassword = await encryptionHelper.compare(
+      currentPassword,
+      employee.password
+    );
+    if (!isMatchingPassword) throw new CustomError("Invalid password.", 400);
+
+    return employee;
   },
 };

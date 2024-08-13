@@ -13,6 +13,7 @@ import {
 } from "../validations/employeeSchema";
 import {
   changePasswordSchema,
+  checkPasswordSchema,
   emailSchema,
   forgotPasswordSchema,
   loginSchema,
@@ -210,7 +211,9 @@ export const employeeController = {
     next: NextFunction
   ) => {
     try {
-      const { oldPassword, newPassword } = changePasswordSchema.parse(req.body);
+      const { currentPassword, newPassword } = changePasswordSchema.parse(
+        req.body
+      );
 
       if (!req.user)
         throw new CustomError(
@@ -220,7 +223,7 @@ export const employeeController = {
 
       const employee = await employeeServices.changePassword(
         req.user.id,
-        oldPassword,
+        currentPassword,
         newPassword
       );
 
@@ -247,6 +250,33 @@ export const employeeController = {
       return res.status(200).json({
         success: true,
         data: sanitizedEmployee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  checkPassword: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { currentPassword } = checkPasswordSchema.parse(req.body);
+
+      if (!req.user)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const employee = await employeeServices.checkPassword(
+        req.user.id,
+        currentPassword
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: employee,
       });
     } catch (e) {
       next(e);

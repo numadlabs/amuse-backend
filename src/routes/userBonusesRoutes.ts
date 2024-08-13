@@ -22,9 +22,9 @@ userBonusesRoutes.get(
   userBonusController.getUsedByRestaurantId
 );
 userBonusesRoutes.get(
-  "/:restaurantId/restaurant",
+  "/:restaurantId/restaurant/redemption-history",
   authenticateToken,
-  userBonusController.getUnusedByRestaurantId
+  userBonusController.getUsedByRestaurantId
 );
 userBonusesRoutes.get(
   "/:restaurantId/restaurant",

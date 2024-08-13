@@ -112,7 +112,7 @@ export const forgotPasswordSchema = z
 
 export const changePasswordSchema = z
   .object({
-    oldPassword: string()
+    currentPassword: string()
       .trim()
       .min(8)
       .max(30)
@@ -121,6 +121,19 @@ export const changePasswordSchema = z
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     newPassword: string()
+      .trim()
+      .min(8)
+      .max(30)
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+      ),
+  })
+  .strict("Unexpected field detected.");
+
+export const checkPasswordSchema = z
+  .object({
+    currentPassword: string()
       .trim()
       .min(8)
       .max(30)

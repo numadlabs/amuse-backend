@@ -25,6 +25,12 @@ employeeRouter.get(
   employeeController.getByRestaurantId
 );
 employeeRouter.get("/:id", employeeController.getById);
+employeeRouter.post(
+  "/check-password",
+  authenticateToken,
+  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
+  employeeController.checkPassword
+);
 employeeRouter.put(
   "/changePassword",
   authenticateToken,

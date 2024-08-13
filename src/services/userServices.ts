@@ -250,14 +250,14 @@ export const userServices = {
   },
   changePassword: async (
     id: string,
-    oldPassword: string,
+    currentPassword: string,
     newPassword: string
   ) => {
     const user = await userRepository.getUserById(id);
     if (!user) throw new CustomError("User not found.", 400);
 
     const isMatchingPassword = await encryptionHelper.compare(
-      oldPassword,
+      currentPassword,
       user.password
     );
     if (!isMatchingPassword) throw new CustomError("Invalid password.", 400);

@@ -155,13 +155,15 @@ export const authController = {
     next: NextFunction
   ) => {
     try {
-      const { oldPassword, newPassword } = changePasswordSchema.parse(req.body);
+      const { currentPassword, newPassword } = changePasswordSchema.parse(
+        req.body
+      );
 
       if (!req.user) throw new CustomError("Could not parse the token.", 400);
 
       const user = await userServices.changePassword(
         req.user.id,
-        oldPassword,
+        currentPassword,
         newPassword
       );
 
