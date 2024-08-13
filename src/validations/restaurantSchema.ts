@@ -21,7 +21,7 @@ export const createRestaurantSchema = z
       .string()
       .trim()
       .min(1, "Google maps url must be at least 1 character.")
-      .max(100, "Google maps url must be at least 100 characters.")
+      .max(255, "Google maps url must be at least 100 characters.")
       .url(),
     categoryId: z.string().trim().uuid(),
   })
