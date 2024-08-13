@@ -71,7 +71,11 @@ export const transactionServices = {
       user.balance -= amount;
       await userRepository.update(db, data.userId, user);
 
-      await userCardReposity.reduceBalanceByUserId(user.id, reducePercentage);
+      await userCardReposity.reduceBalanceByUserId(
+        db,
+        user.id,
+        reducePercentage
+      );
     }
 
     data.type = "WITHDRAW";
