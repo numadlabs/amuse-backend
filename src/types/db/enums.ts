@@ -19,3 +19,10 @@ export const TRANSACTION_TYPE = {
     REWARD: "REWARD"
 } as const;
 export type TRANSACTION_TYPE = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];
+export const NOTIFICATION_TYPE = {
+    TAP: "TAP",
+    BONUS: "BONUS",
+    REWARD: "REWARD",
+    CARD: "CARD"
+} as const;
+export type NOTIFICATION_TYPE = (typeof NOTIFICATION_TYPE)[keyof typeof NOTIFICATION_TYPE];

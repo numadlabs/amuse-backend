@@ -67,6 +67,12 @@ export const tapServices = {
     }
 
     const result = await db.transaction().execute(async (trx) => {
+      await notificationRepository.create(trx, {
+        userId: user.id,
+        message: `You checked-in at ${restaurant.name}.`,
+        type: "TAP",
+      });
+
       userCard.visitCount += 1;
 
       //start of bonus logic
@@ -108,6 +114,12 @@ export const tapServices = {
 
           bonus.currentSupply++;
           await bonusRepository.update(trx, bonus, bonus.id);
+
+          await notificationRepository.create(trx, {
+            userId: user.id,
+            message: `You earned perk of ${restaurant.name}.`,
+            type: "BONUS",
+          });
         }
       } else {
         bonus = singleBonus;
@@ -120,6 +132,12 @@ export const tapServices = {
         await userBonusRepository.create(trx, userBonus);
         bonus.currentSupply++;
         await bonusRepository.update(trx, bonus, bonus.id);
+
+        await notificationRepository.create(trx, {
+          userId: user.id,
+          message: `You earned perk of ${restaurant.name}.`,
+          type: "BONUS",
+        });
       }
 
       const tier = await userTierRepository.getByIdWithNextTier(
@@ -149,6 +167,12 @@ export const tapServices = {
         });
         userCard.balance += incrementBtc;
         await userCardReposity.update(trx, userCard, userCard.id);
+
+        await notificationRepository.create(trx, {
+          userId: user.id,
+          message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
+          type: "BONUS",
+        });
       } else incrementBtc = 0;
 
       user.visitCount += 1;
@@ -173,11 +197,6 @@ export const tapServices = {
         });
         updatedUserTier = await userTierRepository.getById(tier.nextTierId);
       }
-
-      await notificationRepository.create(trx, {
-        userId: user.id,
-        message: `You have earned ${restaurant.rewardAmount} EUR from ${restaurant.name}`,
-      });
 
       return {
         increment: incrementBtc * btc.price * currency.price,

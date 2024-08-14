@@ -76,7 +76,8 @@ export const userBonusServices = {
 
       await notificationRepository.create(trx, {
         userId: user.id,
-        message: `You have bought "${bonus.name}" from ${restaurant.name}`,
+        message: `You bought perk of ${restaurant.name}`,
+        type: "BONUS",
       });
 
       return userBonus;
@@ -124,6 +125,8 @@ export const userBonusServices = {
         400
       );
 
+    const restaurant = await restaurantRepository.getById(waiter.restaurantId);
+
     userBonus.isUsed = true;
     userBonus.usedAt = new Date();
     userBonus.waiterId = waiter.id;
@@ -140,7 +143,8 @@ export const userBonusServices = {
 
     await notificationRepository.create(db, {
       userId: userBonus.userId,
-      message: `You have used a bonus.`,
+      message: `You consumed perk of ${restaurant.name}.`,
+      type: "BONUS",
     });
 
     return updatedUserBonus;

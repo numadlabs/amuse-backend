@@ -185,10 +185,11 @@ model UserBonus {
 }
 
 model Notification {
-  id        String   @id @default(dbgenerated("gen_random_uuid()"))
+  id        String            @id @default(dbgenerated("gen_random_uuid()"))
   message   String
-  isRead    Boolean @default(false)
-  createdAt DateTime @default(now())
+  isRead    Boolean           @default(false)
+  type      NOTIFICATION_TYPE @default(REWARD)
+  createdAt DateTime          @default(now())
 
   userId     String?
   employeeId String?
@@ -235,4 +236,11 @@ enum TRANSACTION_TYPE {
   DEPOSIT
   PURCHASE
   REWARD
+}
+
+enum NOTIFICATION_TYPE {
+  TAP
+  BONUS
+  REWARD
+  CARD
 }

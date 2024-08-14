@@ -4,7 +4,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-import type { ROLES, BONUS_TYPE, TRANSACTION_TYPE } from "./enums";
+import type { ROLES, BONUS_TYPE, TRANSACTION_TYPE, NOTIFICATION_TYPE } from "./enums";
 
 export type Bonus = {
     id: Generated<string>;
@@ -64,6 +64,7 @@ export type Notification = {
     id: Generated<string>;
     message: string;
     isRead: Generated<boolean>;
+    type: Generated<NOTIFICATION_TYPE>;
     createdAt: Generated<Timestamp>;
     userId: string | null;
     employeeId: string | null;
