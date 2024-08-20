@@ -161,7 +161,10 @@ export const userServices = {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
 
-    if (file && findUser.profilePicture) {
+    if (
+      (file && findUser.profilePicture) ||
+      data.profilePicture?.length === 0
+    ) {
       await s3
         .deleteObject({
           Bucket: s3BucketName,
