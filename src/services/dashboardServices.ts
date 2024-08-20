@@ -75,7 +75,9 @@ export const dashboardServices = {
       budgetPercentage: 100,
       awardedAmount: awarded * btc.price * currency.price,
       awardedPercentage: parseFloat(((awarded / budget) * 100).toFixed(3)),
-      redeemedAmount: redeemed * btc.price * currency.price,
+      redeemedAmount: parseFloat(
+        (redeemed * btc.price * currency.price).toFixed(3)
+      ),
       redeemedPercentage: parseFloat(((redeemed / budget) * 100).toFixed(3)),
     };
   },
