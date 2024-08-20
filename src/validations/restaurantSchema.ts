@@ -11,12 +11,12 @@ export const createRestaurantSchema = z
       .string()
       .trim()
       .min(1, "Description must be at least 1 character.")
-      .max(255, "Description must be at most 255 characters."),
+      .max(512, "Description must be at most 512 characters."),
     location: z
       .string()
       .trim()
       .min(1, "Location must be at least 1 character.")
-      .max(100, "Locatoin must be at most 100 characters."),
+      .max(255, "Locatoin must be at most 255 characters."),
     googleMapsUrl: z
       .string()
       .trim()
@@ -39,7 +39,7 @@ export const updateRestaurantSchema = z
       .string()
       .trim()
       .min(1, "Description must be at least 1 character.")
-      .max(255, "Description must be at most 255 characters.")
+      .max(512, "Description must be at most 512 characters.")
       .optional(),
     googleMapsUrl: z
       .string()
@@ -52,7 +52,7 @@ export const updateRestaurantSchema = z
       .string()
       .trim()
       .min(1, "Location must be at least 1 character.")
-      .max(100, "Locatoin must be at most 100 characters.")
+      .max(255, "Locatoin must be at most 255 characters.")
       .optional(),
     categoryId: z.string().trim().uuid().optional(),
   })
