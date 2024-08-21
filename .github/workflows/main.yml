@@ -31,3 +31,18 @@ jobs:
         run: |
           docker build -t 024848446495.dkr.ecr.eu-central-1.amazonaws.com/amuse-backend:latest .
           docker push 024848446495.dkr.ecr.eu-central-1.amazonaws.com/amuse-backend:latest
+
+  deploy-to-staging:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to ECS Staging
+        run: |
+          aws ecs update-service --cluster ${{ env.ECS_STAGING_CLUSTER }} --service ${{ env.ECS_STAGING_SERVICE }} --force-new-deployment
