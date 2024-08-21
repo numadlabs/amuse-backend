@@ -60,6 +60,7 @@ export const employeeRepository = {
         "Employee.firstname",
         "Employee.lastname",
         "Employee.role",
+        "Employee.createdAt",
       ])
       .where("Employee.restaurantId", "=", restaurantId)
       .execute();
