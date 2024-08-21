@@ -1,0 +1,34 @@
+name: CI/CD Pipeline for ECS Fargate
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  AWS_REGION: eu-central-1
+  ECS_STAGING_CLUSTER: your-staging-cluster  # Change this to your staging cluster name
+  ECS_STAGING_SERVICE: your-staging-service  # Change this to your staging service name
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      run: |
+        docker build -t 024848446495.dkr.ecr.eu-central-1.amazonaws.com/amuse-backend:latest .
+        docker push 024848446495.dkr.ecr.eu-central-1.amazonaws.com/amuse-backend:latest
+        echo "::set-output name=image::024848446495.dkr.ecr.eu-central-1.amazonaws.com/amuse-backend:latest”
