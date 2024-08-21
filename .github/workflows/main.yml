@@ -31,4 +31,3 @@ jobs:
       run: |
         docker build -t 024848446495.dkr.ecr.eu-central-1.amazonaws.com/amuse-backend:latest .
         docker push 024848446495.dkr.ecr.eu-central-1.amazonaws.com/amuse-backend:latest
-        echo "::set-output name=image::024848446495.dkr.ecr.eu-central-1.amazonaws.com/amuse-backend:latest”
