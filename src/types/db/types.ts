@@ -52,6 +52,7 @@ export type EmailOtp = {
 };
 export type Employee = {
     id: Generated<string>;
+    passwordUpdateAt: Generated<Timestamp>;
     password: string;
     firstname: string;
     lastname: string;

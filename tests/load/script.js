@@ -3,8 +3,8 @@ import { check, sleep } from "k6";
 import ws from "k6/ws";
 import { SharedArray } from "k6/data";
 
-const URL = "https://amuse-backend-feb14ba0a8da.herokuapp.com";
-const SOCKETURL = `ws://amuse-backend-feb14ba0a8da.herokuapp.com/socket.io/?EIO=4&transport=websocket`;
+const URL = "http://ecs-alb-1827301591.eu-central-1.elb.amazonaws.com";
+const SOCKETURL = `ws://ecs-alb-1827301591.eu-central-1.elb.amazonaws.com/socket.io/?EIO=4&transport=websocket`;
 
 const users = new SharedArray("users data", function () {
   const fileContent = open("./auth-data.json");
@@ -19,8 +19,8 @@ const employees = new SharedArray("employees data", function () {
 });
 
 export const options = {
-  vus: 40,
-  duration: "1m",
+  vus: 5,
+  duration: "20s",
 };
 
 function pause() {
@@ -76,32 +76,41 @@ function generateEmail() {
 
 export default function () {
   //REGISTER
-  const email = generateEmail();
-  const user = requestHelper(
-    "/auth/register",
-    {
-      email: email,
-      password: "Password12",
-      verificationCode: 1234,
-      nickname: "Load Tester",
-    },
-    "POST",
-    null
-  );
-  // const userToken = user.data.auth.accessToken;
-
-  //LOGIN
-  // const userIndex = Math.floor(Math.random() * users.length);
+  //const email = generateEmail();
   // const user = requestHelper(
-  //   "/auth/login",
+  //   "/auth/register",
   //   {
-  //     email: users[userIndex].email,
-  //     password: users[userIndex].password,
+  //     email: "gombochir.dev@gmail.com",
+  //     password: "Password12",
+  //     verificationCode: 1234,
+  //     nickname: "Load Tester",
   //   },
   //   "POST",
   //   null
   // );
+  // check(user, () => {
+  //   user.data.auth.accessToken !== null;
+  // });
+  // const userToken = user.data.auth.accessToken;
+
+  const host = http.get(`${URL}`, {
+    "Content-Type": "application/json",
+  });
+  console.log(`1 user: ${__VU} iter: ${__ITER} host: ${host.body}`);
+
+  //LOGIN
+  const userIndex = Math.floor(Math.random() * users.length);
+  const user = requestHelper(
+    "/auth/login",
+    {
+      email: users[userIndex].email,
+      password: users[userIndex].password,
+    },
+    "POST",
+    null
+  );
   const userToken = user.data.auth.accessToken;
+
   //GET RESTAURANTS
   let restaurants = requestHelper(
     "/restaurants?page=1&limit=20&time=10:00:00&dayNoOfTheWeek=7",
@@ -113,7 +122,6 @@ export default function () {
     Math.random() * restaurants.data.restaurants.length
   );
   const restaurant = restaurants.data.restaurants[restaurantIndex];
-
   //IF ISNT OWNED, GET ONE
   if (!restaurant.isOwned) {
     const userCard = requestHelper(
@@ -123,7 +131,6 @@ export default function () {
       userToken
     );
   }
-
   // if (restaurantIndex < Math.floor(restaurants.data.restaurants.length / 2)) {
   //   const userBonuses = requestHelper(
   //     `/bonus/${restaurant.id}/restaurant?type=REDEEMABLE`,
@@ -131,9 +138,7 @@ export default function () {
   //     "GET",
   //     userToken
   //   );
-
   //   const bonusIndex = Math.floor(Math.random() * userBonuses.data.length);
-
   //   const bought = requestHelper(
   //     `/userBonus/${userBonuses.data[bonusIndex].id}/buy`,
   //     {},
@@ -142,11 +147,9 @@ export default function () {
   //   );
   //   console.log(`Bought bonus: ${bought.data}`);
   // }
-
   const scanner = employees.find(
     (employee) => employee.restaurantId === restaurant.id
   );
-
   const employee = requestHelper(
     "/employees/login",
     {
@@ -157,26 +160,26 @@ export default function () {
     null
   );
 
+  const host1 = http.get(`${URL}`, {
+    "Content-Type": "application/json",
+  });
+  console.log(`2 user: ${__VU} iter: ${__ITER} host: ${host1.body}`);
+
   // START OF WEBSOCKET
   let RECEIVED_TAP_RESPONSE = false;
   let ISDONE = false;
-
   var res = ws.connect(SOCKETURL, null, function (socket) {
     socket.on("open", function open() {});
-
     socket.on("message", function (message) {
       // console.log(`Message received: ${message}`);
       if (message === "40") {
         socket.send("40");
       }
-
       if (message[0] === "0") {
         socket.send("40");
       }
-
       if (message.startsWith("40") && message.length > 2) {
         socket.send(`42["register", "${user.data.user.id}"]`);
-
         const employeeToken = employee.data.auth.accessToken;
         let generateRes = requestHelper(
           "/taps/generate",
@@ -184,43 +187,35 @@ export default function () {
           "POST",
           userToken
         );
-
         let redeemRes = requestHelper(
           "/taps/redeem",
           { encryptedData: generateRes.data.encryptedData },
           "POST",
           employeeToken
         );
-
         setTimeout(() => {
           ISDONE = true;
         }, 2500);
       }
-
       if (message.startsWith("42")) {
         const data = JSON.parse(message.slice(2));
-
         const event = data[0];
         const payload = data[1];
-
         if (event === "tap-scan") {
           RECEIVED_TAP_RESPONSE = true;
           // console.log(event, payload);
         }
       }
     });
-
     socket.on("error", function (e) {
       console.error("Socket error:", e);
     });
-
     socket.setInterval(function () {
       if (ISDONE || RECEIVED_TAP_RESPONSE) {
         // console.log(RECEIVED_TAP_RESPONSE);
         check(RECEIVED_TAP_RESPONSE, {
           "CHECK-IN FLOW (INCLUDING THE SOCKET)": (result) => result == true,
         });
-
         socket.close();
       }
     }, 100);

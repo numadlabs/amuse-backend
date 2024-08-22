@@ -1,0 +1,93 @@
+{
+"Employee": [
+	{
+		"id" : "ca2d15b7-e2b9-4ff4-b42a-3b5c013e14a8",
+		"password" : "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU\/BoKP.7JV1wuhx9aQfMSu",
+		"firstname" : "super",
+		"lastname" : "admin",
+		"role" : "SUPER_ADMIN",
+		"createdAt" : "2024-08-06T21:57:05.266Z",
+		"email" : "admin@mara.com",
+		"restaurantId" : null
+	},
+	{
+		"id" : "75d4d60a-a324-431f-a9cb-01d6523a85a0",
+		"password" : "$2a$10$PPHHrwYv0w81d\/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
+		"firstname" : "sasazu",
+		"lastname" : "owner",
+		"role" : "RESTAURANT_OWNER",
+		"createdAt" : "2024-08-06T21:57:05.266Z",
+		"email" : "owner@sasazu.com",
+		"restaurantId" : "8cbfece9-bc33-4089-af7d-7a327a5e7faf"
+	},
+	{
+		"id" : "30d4f22a-e0f4-4cd0-938c-90b24619ae61",
+		"password" : "$2a$10$PPHHrwYv0w81d\/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
+		"firstname" : "sasazu",
+		"lastname" : "waiter",
+		"role" : "RESTAURANT_WAITER",
+		"createdAt" : "2024-08-06T21:57:05.266Z",
+		"email" : "waiter@sasazu.com",
+		"restaurantId" : "8cbfece9-bc33-4089-af7d-7a327a5e7faf"
+	},
+	{
+		"id" : "1d733261-4963-4b27-bd5c-52e555d76023",
+		"password" : "$2a$10$PPHHrwYv0w81d\/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
+		"firstname" : "sansho",
+		"lastname" : "owner",
+		"role" : "RESTAURANT_OWNER",
+		"createdAt" : "2024-08-06T21:57:05.266Z",
+		"email" : "owner@sansho.com",
+		"restaurantId" : "34dbdac2-05f8-426e-926a-1983f3b9f144"
+	},
+	{
+		"id" : "3affb781-e117-4614-be50-fc80fcf065d7",
+		"password" : "$2a$10$PPHHrwYv0w81d\/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
+		"firstname" : "sansho",
+		"lastname" : "waiter",
+		"role" : "RESTAURANT_WAITER",
+		"createdAt" : "2024-08-06T21:57:05.266Z",
+		"email" : "waiter@sansho.com",
+		"restaurantId" : "34dbdac2-05f8-426e-926a-1983f3b9f144"
+	},
+	{
+		"id" : "2534f8db-8c5d-4a97-9196-2fa7ec35341c",
+		"password" : "$2a$10$PPHHrwYv0w81d\/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
+		"firstname" : "kro",
+		"lastname" : "owner",
+		"role" : "RESTAURANT_OWNER",
+		"createdAt" : "2024-08-06T21:57:05.266Z",
+		"email" : "owner@kro.com",
+		"restaurantId" : "ac9d78f5-4c18-418e-928e-162457adf328"
+	},
+	{
+		"id" : "4fca0ba0-f7be-48b3-aecb-55e5479b9e21",
+		"password" : "$2a$10$PPHHrwYv0w81d\/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
+		"firstname" : "kro",
+		"lastname" : "waiter",
+		"role" : "RESTAURANT_WAITER",
+		"createdAt" : "2024-08-06T21:57:05.266Z",
+		"email" : "waiter@kro.com",
+		"restaurantId" : "ac9d78f5-4c18-418e-928e-162457adf328"
+	},
+	{
+		"id" : "984bbc55-8aec-4c4f-9e5a-d734670af612",
+		"password" : "$2a$10$PPHHrwYv0w81d\/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
+		"firstname" : "louvre",
+		"lastname" : "owner",
+		"role" : "RESTAURANT_OWNER",
+		"createdAt" : "2024-08-06T21:57:05.266Z",
+		"email" : "owner@louvre.com",
+		"restaurantId" : "1d7d5b1f-f591-4dcd-af15-c5bebf40dac3"
+	},
+	{
+		"id" : "8e8803b1-e8e5-4bb1-aff6-d9329e52870f",
+		"password" : "$2a$10$PPHHrwYv0w81d\/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
+		"firstname" : "louvre",
+		"lastname" : "waiter",
+		"role" : "RESTAURANT_WAITER",
+		"createdAt" : "2024-08-06T21:57:05.266Z",
+		"email" : "waiter@louvre.com",
+		"restaurantId" : "1d7d5b1f-f591-4dcd-af15-c5bebf40dac3"
+	}
+]}

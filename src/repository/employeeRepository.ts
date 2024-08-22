@@ -23,6 +23,7 @@ export const employeeRepository = {
         "Employee.email",
         "Employee.role",
         "Employee.restaurantId",
+        "Employee.passwordUpdateAt",
       ])
       .executeTakeFirstOrThrow(
         () => new Error("Could not create the employee.")
@@ -30,7 +31,7 @@ export const employeeRepository = {
 
     return employee;
   },
-  update: async (data: Updateable<Employee>, id: string) => {
+  update: async (id: string, data: Updateable<Employee>) => {
     const employee = await db
       .updateTable("Employee")
       .set(data)

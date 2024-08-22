@@ -20,6 +20,7 @@ import {
   otpSchema,
 } from "../validations/authSchema";
 import {
+  employeeIdSchema,
   idSchema,
   restaurantIdSchema,
   roleSchema,
@@ -273,6 +274,31 @@ export const employeeController = {
         req.user.id,
         currentPassword
       );
+      const sanitizedEmployee = hideSensitiveData(employee, ["password"]);
+
+      return res.status(200).json({
+        success: true,
+        data: sanitizedEmployee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  removeFromRestaurant: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { id } = idSchema.parse(req.params);
+
+      if (!req.user)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const employee = await employeeServices.removeFromTeam(id, req.user.id);
       const sanitizedEmployee = hideSensitiveData(employee, ["password"]);
 
       return res.status(200).json({

@@ -107,4 +107,7 @@ export const userRepository = {
 
     return locations;
   },
+  cleanUp: async () => {
+    await db.deleteFrom("User").execute();
+  },
 };

@@ -4,7 +4,7 @@
   "description": "Amuse Bouche Backend",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "dotenv -e .env.development -- jest",
     "build": "npx tsc",
     "dev": "dotenv -e .env.development -- nodemon src/index.ts",
     "start:staging": "node dist/index.js",
@@ -36,13 +36,14 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.8",
     "pg": "^8.11.3",
-    "prisma-kysely": "^1.7.1",
+    "prisma-kysely": "^1.1.0",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "twilio": "^4.21.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@types/axios": "^0.14.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
@@ -61,7 +62,7 @@
     "nodemon": "^3.0.3",
     "prisma": "^5.8.1",
     "supertest": "^6.3.4",
-    "ts-jest": "^29.1.2",
+    "ts-jest": "^29.2.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }

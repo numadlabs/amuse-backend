@@ -15,7 +15,9 @@ export const authenticateToken = async (
     throw new Error("jwtAuthSecret is not defined.");
   }
   if (!token)
-    return res.status(401).json({ message: "Authentication required" });
+    return res
+      .status(401)
+      .json({ success: false, data: null, error: "Authentication required" });
 
   jwt.verify(token, jwtAuthSecret, (err, user: any) => {
     if (err) return res.status(401).json({ message: `Invalid token ${err}` });

@@ -37,13 +37,15 @@ model User {
 }
 
 model Employee {
-  id           String         @id @default(dbgenerated("gen_random_uuid()"))
-  password     String
-  firstname    String
-  lastname     String
-  role         ROLES
-  createdAt    DateTime       @default(now())
-  email        String         @unique
+  id               String   @id @default(dbgenerated("gen_random_uuid()"))
+  passwordUpdateAt DateTime @default(now())
+  password         String
+  firstname        String
+  lastname         String
+  role             ROLES
+  createdAt        DateTime @default(now())
+  email            String   @unique
+
   restaurantId String?
   Restaurant   Restaurant?    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   UserBonus    UserBonus[]

@@ -97,7 +97,7 @@ export const restaurantServices = {
     ];
 
     await timetableRepository.create(timetable);
-    await employeeRepository.update({ restaurantId: restaurant.id }, ownerId);
+    await employeeRepository.update(ownerId, { restaurantId: restaurant.id });
 
     return updatedRestaurant;
   },

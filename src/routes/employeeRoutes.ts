@@ -20,11 +20,6 @@ employeeRouter.post("/login", employeeController.login);
 employeeRouter.post("/sendOTP", employeeController.sendEmailOTP);
 employeeRouter.post("/checkOTP", employeeController.checkEmailOTP);
 employeeRouter.post("/forgotPassword", employeeController.forgotPassword);
-employeeRouter.get(
-  "/:restaurantId/restaurant",
-  employeeController.getByRestaurantId
-);
-employeeRouter.get("/:id", employeeController.getById);
 employeeRouter.post(
   "/check-password",
   authenticateToken,
@@ -37,17 +32,29 @@ employeeRouter.put(
   authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
   employeeController.changePassword
 );
-employeeRouter.put(
-  "/:id",
-  authenticateToken,
-  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
-  employeeController.updateInfo
+employeeRouter.get(
+  "/:restaurantId/restaurant",
+  employeeController.getByRestaurantId
 );
+employeeRouter
+  .get("/:id", employeeController.getById)
+  .put(
+    "/:id",
+    authenticateToken,
+    authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
+    employeeController.updateInfo
+  );
 employeeRouter.put(
   "/:id/role",
   authenticateToken,
   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   employeeController.updateRole
+);
+employeeRouter.put(
+  "/:id/remove-from-restaurant",
+  authenticateToken,
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
+  employeeController.removeFromRestaurant
 );
 
 export = employeeRouter;

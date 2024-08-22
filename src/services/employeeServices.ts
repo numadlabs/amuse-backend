@@ -116,7 +116,7 @@ The Amuse Bouche Team
     if (issuerId !== checkExists.id)
       throw new CustomError("You are not allowed to do this action.", 400);
 
-    const employee = await employeeRepository.update(data, id);
+    const employee = await employeeRepository.update(id, data);
 
     return employee;
   },
@@ -159,8 +159,8 @@ The Amuse Bouche Team
     });
 
     const employee = await employeeRepository.update(
-      employeeById,
-      employeeById.id
+      employeeById.id,
+      employeeById
     );
 
     return employee;
@@ -195,14 +195,14 @@ The Amuse Bouche Team
     const encryptedPassword = await encryptionHelper.encrypt(password);
 
     employee.password = encryptedPassword;
+    employee.passwordUpdateAt = new Date();
 
     const updatedEmployee = await employeeRepository.update(
-      employee,
-      employee.id
+      employee.id,
+      employee
     );
 
     emailOtp.isUsed = true;
-
     await emailOtpRepository.update(emailOtp.id, emailOtp);
 
     const sanitizedEmployee = hideSensitiveData(updatedEmployee, ["password"]);
@@ -238,7 +238,7 @@ The Amuse Bouche Team
     if (issuer.role !== "RESTAURANT_OWNER" && role === "RESTAURANT_OWNER")
       throw new CustomError("You are not allowed to do this action.", 400);
 
-    const employee = await employeeRepository.update({ role: role }, id);
+    const employee = await employeeRepository.update(id, { role: role });
 
     return employee;
   },
@@ -250,12 +250,14 @@ The Amuse Bouche Team
     const employee = await employeeServices.checkPassword(id, currentPassword);
 
     const encryptedPassword = await encryptionHelper.encrypt(newPassword);
-
     employee.password = encryptedPassword;
+    employee.passwordUpdateAt = new Date();
+
     const updatedEmployee = await employeeRepository.update(
-      employee,
-      employee.id
+      employee.id,
+      employee
     );
+
     const sanitizedEmployee = hideSensitiveData(updatedEmployee, ["password"]);
 
     return sanitizedEmployee;
@@ -269,6 +271,40 @@ The Amuse Bouche Team
       employee.password
     );
     if (!isMatchingPassword) throw new CustomError("Invalid password.", 400);
+
+    return employee;
+  },
+  removeFromTeam: async (id: string, issuerId: string) => {
+    const checkExists = await employeeRepository.getById(id);
+    if (!checkExists) throw new CustomError("Invalid employeeId.", 400);
+    if (!checkExists.restaurantId)
+      throw new CustomError("Employee does not belong to any restaurant.", 400);
+
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      checkExists.restaurantId
+    );
+    if (
+      issuer.role === "RESTAURANT_MANAGER" &&
+      checkExists.role === "RESTAURANT_OWNER"
+    )
+      throw new CustomError(
+        "You are not allowed to remove employee with RESTAURANT_OWNER role.",
+        400
+      );
+
+    if (
+      issuer.role === "RESTAURANT_MANAGER" &&
+      checkExists.role === "RESTAURANT_MANAGER"
+    )
+      throw new CustomError(
+        "You are not allowed to remove employee with RESTAURANT_OWNER role.",
+        400
+      );
+
+    const employee = await employeeRepository.update(id, {
+      restaurantId: null,
+    });
 
     return employee;
   },
