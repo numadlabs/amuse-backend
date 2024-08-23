@@ -187,11 +187,11 @@ export const dashboardServices = {
                 (
                   (currentMonthTap.count / previousMonthTap.count - 1) *
                   100
-                ).toFixed(2)
+                ).toFixed(4)
               ),
       },
       redeems: {
-        count: redeemed,
+        count: parseFloat(redeemed.toFixed(2)),
         percentageDifferential: 0,
       },
       usedBonus: {
