@@ -4,4 +4,5 @@ module.exports = {
   testEnvironment: "node",
   forceExit: true,
   verbose: true,
+  // detectOpenHandles: true,
 };

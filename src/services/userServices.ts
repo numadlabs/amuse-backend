@@ -7,11 +7,10 @@ import {
   generateVerificationToken,
 } from "../utils/jwt";
 import { CustomError } from "../exceptions/CustomError";
-import { verificationCodeConstants } from "../lib/constants";
-import { s3 } from "../utils/aws";
+import { deleteFromS3, s3, uploadToS3 } from "../utils/aws";
 import { randomUUID } from "crypto";
-import { Insertable, Updateable } from "kysely";
-import { EmailOtp, User } from "../types/db/types";
+import { Updateable } from "kysely";
+import { User } from "../types/db/types";
 import { userTierRepository } from "../repository/userTierRepository";
 import { emailOtpRepository } from "../repository/emailOtpRepository";
 import { config } from "../config/config";
@@ -21,10 +20,7 @@ import { userBonusRepository } from "../repository/userBonusRepository";
 import { tapRepository } from "../repository/tapRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { db } from "../utils/db";
-
-const MAX = verificationCodeConstants.MAX_VALUE,
-  MIN = verificationCodeConstants.MIN_VALUE;
-const s3BucketName = config.AWS_S3_BUCKET_NAME;
+import { verificationCodeConstants } from "../lib/constants";
 
 export const userServices = {
   create: async (
@@ -69,7 +65,10 @@ export const userServices = {
 
     const { accessToken, refreshToken } = generateTokens(user);
 
-    const sanitizedUser = hideSensitiveData(user, ["password"]);
+    const sanitizedUser = hideSensitiveData(user, ["password"]) as Omit<
+      User,
+      "password"
+    >;
 
     return { user: sanitizedUser, accessToken, refreshToken };
   },
@@ -87,7 +86,13 @@ export const userServices = {
     return { user: sanitizedUser, accessToken, refreshToken };
   },
   sendOTP: async (email: string) => {
-    const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
+    const randomNumber =
+      Math.floor(
+        Math.random() *
+          (verificationCodeConstants.MAX_VALUE -
+            verificationCodeConstants.MIN_VALUE +
+            1)
+      ) + verificationCodeConstants.MIN_VALUE;
     const emailVerificationCode = generateVerificationToken(
       randomNumber,
       verificationCodeConstants.EMAIL_EXPIRATION_TIME
@@ -125,7 +130,7 @@ export const userServices = {
       emailVerificationCode !== verificationCode ||
       emailOtp.verificationCode === null
     )
-      throw new CustomError("Invalid verification code!", 400);
+      throw new CustomError("Invalid verification code.", 400);
 
     return emailOtp;
   },
@@ -136,7 +141,7 @@ export const userServices = {
   ) => {
     const user = await userRepository.getByEmail(email);
     if (!user)
-      throw new CustomError("No user with the given email exists!", 400);
+      throw new CustomError("No user with the given email exists.", 400);
 
     const otpCheck = await userServices.checkOTP(email, verificationCode);
     if (!otpCheck || otpCheck.isUsed)
@@ -161,29 +166,14 @@ export const userServices = {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
 
-    if (
-      (file && findUser.profilePicture) ||
-      data.profilePicture?.length === 0
-    ) {
-      await s3
-        .deleteObject({
-          Bucket: s3BucketName,
-          Key: `user/${findUser.profilePicture}`,
-        })
-        .promise();
+    if ((file && findUser.profilePicture) || data.profilePicture === "") {
+      await deleteFromS3(`user/${findUser.profilePicture}`);
+      data.profilePicture = null;
     }
 
     if (file) {
       const randomKey = randomUUID();
-      const s3Response = await s3
-        .upload({
-          Bucket: s3BucketName,
-          Key: `user/${randomKey}`,
-          Body: file.buffer,
-          ContentType: file.mimetype,
-        })
-        .promise();
-
+      await uploadToS3(`user/${randomKey}`, file);
       data.profilePicture = randomKey;
     }
 
@@ -196,14 +186,8 @@ export const userServices = {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
 
-    if (findUser.profilePicture) {
-      await s3
-        .deleteObject({
-          Bucket: s3BucketName,
-          Key: `user/${findUser.profilePicture}`,
-        })
-        .promise();
-    }
+    if (findUser.profilePicture)
+      await deleteFromS3(`user/${findUser.profilePicture}`);
 
     const userCards = await userCardReposity.getByUserIdWithRestaurantDetails(
       findUser.id
