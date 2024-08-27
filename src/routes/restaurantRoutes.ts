@@ -15,12 +15,13 @@ restaurantRoutes.post(
 restaurantRoutes.get(
   "/",
   authenticateToken,
+  authorize("USER"),
   restaurantController.getRestaurants
 );
 restaurantRoutes.put(
   "/:id/rewardDetail",
   authenticateToken,
-  authorize("RESTAURANT_OWNER"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   parseFile("logo"),
   restaurantController.updateRewardDetail
 );
@@ -32,14 +33,15 @@ restaurantRoutes.get(
 restaurantRoutes.put(
   "/:id",
   authenticateToken,
-  authorize("RESTAURANT_OWNER"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   parseFile("logo"),
   restaurantController.updateRestaurant
 );
-restaurantRoutes.delete(
-  "/:id",
-  authenticateToken,
-  authorize("SUPER_ADMIN"),
-  restaurantController.deleteRestaurant
-);
+// restaurantRoutes.delete(
+//   "/:id",
+//   authenticateToken,
+//   authorize("SUPER_ADMIN"),
+//   restaurantController.deleteRestaurant
+// );
+
 export = restaurantRoutes;

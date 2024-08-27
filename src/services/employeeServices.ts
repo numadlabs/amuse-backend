@@ -132,7 +132,10 @@ The Amuse Bouche Team
     if (!isEmployee) throw new CustomError("Invalid login info.", 400);
     const { accessToken, refreshToken } = generateTokens(employee);
 
-    const sanitizedEmployee = hideSensitiveData(employee, ["password"]);
+    const sanitizedEmployee = hideSensitiveData(employee, ["password"]) as Omit<
+      Employee,
+      "password"
+    >;
 
     return { employee: sanitizedEmployee, accessToken, refreshToken };
   },

@@ -7,7 +7,7 @@ import app from "../../../src/app";
 import { employeeServices } from "../../../src/services/employeeServices";
 import { deleteFromS3, uploadToS3 } from "../../../src/utils/aws";
 import path from "path";
-import { testHelpers } from "../helpers.ts/testHelpers";
+import { testHelpers } from "../helpers/testHelpers";
 
 jest.mock("../../../src/repository/emailOtpRepository");
 jest.mock("../../../src/utils/aws");

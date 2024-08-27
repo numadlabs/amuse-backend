@@ -32,7 +32,7 @@ export const cardRepository = {
 
     return card;
   },
-  getByRestaurantId: async (restaurantId: string, userId: string) => {
+  getByRestaurantIdAndUserId: async (restaurantId: string, userId: string) => {
     const cards = await db
       .selectFrom("Card")
       .where("Card.restaurantId", "=", restaurantId)
@@ -79,6 +79,15 @@ export const cardRepository = {
       .selectFrom("Card")
       .select(({ fn }) => [fn.count<number>("Card.id").as("count")])
       .executeTakeFirstOrThrow(() => new Error("Couldn't count the cards."));
+
+    return cards;
+  },
+  getByRestaurantId: async (restaurantId: string) => {
+    const cards = await db
+      .selectFrom("Card")
+      .where("Card.restaurantId", "=", restaurantId)
+      .selectAll()
+      .execute();
 
     return cards;
   },

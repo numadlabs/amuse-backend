@@ -45,16 +45,30 @@ export const restaurantController = {
       next(e);
     }
   },
-  updateRestaurant: async (req: Request, res: Response, next: NextFunction) => {
+  updateRestaurant: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { id } = idSchema.parse(req.params);
       req.body = updateRestaurantSchema.parse(req.body);
       const data: Insertable<Restaurant> = { ...req.body };
       const file = req.file as Express.Multer.File;
 
-      const restaurant = await restaurantServices.update(id, data, file);
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 400);
 
-      return res.status(200).json({ success: true, restaurant: restaurant });
+      const restaurant = await restaurantServices.update(
+        id,
+        data,
+        file,
+        req.user.id
+      );
+
+      return res
+        .status(200)
+        .json({ success: true, data: { restaurant: restaurant } });
     } catch (e) {
       next(e);
     }
@@ -264,9 +278,18 @@ export const restaurantController = {
       const { id } = idSchema.parse(req.params);
       const data: Updateable<Restaurant> = rewardSystemSchema.parse(req.body);
 
-      const restaurant = await restaurantServices.updateRewardDetail(id, data);
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 400);
 
-      return res.status(200).json({ success: true, restaurant: restaurant });
+      const restaurant = await restaurantServices.updateRewardDetail(
+        id,
+        data,
+        req.user.id
+      );
+
+      return res
+        .status(200)
+        .json({ success: true, data: { restaurant: restaurant } });
     } catch (e) {
       next(e);
     }

@@ -5,13 +5,13 @@ import { authorize } from "../middlewares/authorization";
 import { parseFile } from "../middlewares/fileParser";
 const cardRoutes = express.Router();
 
-cardRoutes.get("/:id", cardController.getCardById);
+cardRoutes.get("/:id", authenticateToken, cardController.getCardById);
 cardRoutes.get(
   "/:restaurantId/restaurants",
   authenticateToken,
   cardController.getCardsByRestaurantId
 );
-cardRoutes.get("/", cardController.getCards);
+// cardRoutes.get("/", cardController.getCards);
 
 cardRoutes.post(
   "/",
@@ -23,15 +23,15 @@ cardRoutes.post(
 cardRoutes.put(
   "/:id",
   authenticateToken,
-  authorize("RESTAURANT_OWNER"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   parseFile("nftImage"),
   cardController.updateCard
 );
-cardRoutes.delete(
-  "/:id",
-  authenticateToken,
-  authorize("SUPER_ADMIN"),
-  cardController.deleteCard
-);
+// cardRoutes.delete(
+//   "/:id",
+//   authenticateToken,
+//   authorize("SUPER_ADMIN"),
+//   cardController.deleteCard
+// );
 
 export = cardRoutes;

@@ -1,18 +1,36 @@
 import { Insertable, Updateable } from "kysely";
 import { cardRepository } from "../repository/cardRepository";
 import { Card } from "../types/db/types";
-import { s3 } from "../utils/aws";
+import { deleteFromS3, s3, uploadToS3 } from "../utils/aws";
 import { randomUUID } from "crypto";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { CustomError } from "../exceptions/CustomError";
 import { config } from "../config/config";
+import { employeeRepository } from "../repository/employeeRepository";
+import { fi } from "@faker-js/faker";
 
 const s3BucketName = config.AWS_S3_BUCKET_NAME;
 
 export const cardServices = {
-  create: async (data: Insertable<Card>, file: Express.Multer.File) => {
+  create: async (
+    data: Insertable<Card>,
+    file: Express.Multer.File,
+    issuerId: string
+  ) => {
     const restaurant = await restaurantRepository.getById(data.restaurantId);
     if (!restaurant) throw new CustomError("Invalid restaurantId", 400);
+
+    const issuer = await employeeRepository.getById(issuerId);
+    if (!issuer) throw new CustomError("Invalid issuerId", 400);
+    if (issuer.restaurantId !== data.restaurantId)
+      throw new CustomError(
+        "You are not authorized to create card for this restaurant",
+        400
+      );
+
+    const cardCheck = await cardRepository.getByRestaurantId(data.restaurantId);
+    if (cardCheck.length > 0)
+      throw new CustomError("Card already exists for this restaurant", 400);
 
     data.benefits =
       "Earn Bitcoin for every visits, Complimentary bites along the way.";
@@ -23,14 +41,7 @@ export const cardServices = {
     if (!file) return card;
 
     const randomKey = randomUUID();
-    const s3Response = await s3
-      .upload({
-        Bucket: s3BucketName,
-        Key: `restaurant/${randomKey}`,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      })
-      .promise();
+    await uploadToS3(`restaurant/${randomKey}`, file);
 
     card.nftImageUrl = randomKey;
 
@@ -41,29 +52,27 @@ export const cardServices = {
   update: async (
     id: string,
     data: Updateable<Card>,
-    file: Express.Multer.File
+    file: Express.Multer.File,
+    issuerId: string
   ) => {
     const card = await cardRepository.getById(id);
+    if (!card) throw new CustomError("Invalid cardId", 400);
+
+    const issuer = await employeeRepository.getById(issuerId);
+    if (!issuer) throw new CustomError("Invalid issuerId", 400);
+    if (issuer.restaurantId !== card.restaurantId)
+      throw new CustomError(
+        "You are not authorized to create card for this restaurant",
+        400
+      );
 
     if (file && card.nftImageUrl) {
-      await s3
-        .deleteObject({
-          Bucket: s3BucketName,
-          Key: `restaurant/${card.nftImageUrl}`,
-        })
-        .promise();
+      await deleteFromS3(`restaurant/${card.nftImageUrl}`);
     }
 
     if (file) {
       const randomKey = randomUUID();
-      const s3Response = await s3
-        .upload({
-          Bucket: s3BucketName,
-          Key: `restaurant/${randomKey}`,
-          Body: file.buffer,
-          ContentType: file.mimetype,
-        })
-        .promise();
+      await uploadToS3(`restaurant/${randomKey}`, file);
 
       data.nftImageUrl = randomKey;
     }

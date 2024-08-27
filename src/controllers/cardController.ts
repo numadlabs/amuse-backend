@@ -13,26 +13,37 @@ import {
 } from "../validations/sharedSchema";
 
 export const cardController = {
-  createCard: async (req: Request, res: Response, next: NextFunction) => {
+  createCard: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const data: Insertable<Card> = createCardSchema.parse(req.body);
       const file = req.file as Express.Multer.File;
       if (!file) throw new CustomError("Please provide the image.", 400);
+      if (!req.user) throw new CustomError("Please provide the image.", 400);
 
-      const card = await cardServices.create(data, file);
+      const card = await cardServices.create(data, file, req.user.id);
 
       return res.status(200).json({ success: true, data: { card: card } });
     } catch (e) {
       next(e);
     }
   },
-  updateCard: async (req: Request, res: Response, next: NextFunction) => {
+  updateCard: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const data: Updateable<Card> = updateCardSchema.parse(req.body);
       const file = req.file as Express.Multer.File;
       const { id } = idSchema.parse(req.params);
 
-      const card = await cardServices.update(id, data, file);
+      if (!req.user) throw new CustomError("Please provide the image.", 400);
+
+      const card = await cardServices.update(id, data, file, req.user.id);
 
       return res.status(200).json({ success: true, data: { card: card } });
     } catch (e) {
@@ -62,7 +73,7 @@ export const cardController = {
       if (!req.user)
         throw new CustomError("Could not retrieve id from the token.", 400);
 
-      const cards = await cardRepository.getByRestaurantId(
+      const cards = await cardRepository.getByRestaurantIdAndUserId(
         restaurantId,
         req.user.id
       );
