@@ -32,7 +32,12 @@ userRoutes.get(
   authorize("USER"),
   UserController.getUserCards
 );
-// userRoutes.get("/taps", authenticateToken, UserController.getUserTaps);
+userRoutes.get(
+  "/taps",
+  authenticateToken,
+  authorize("USER"),
+  UserController.getUserTaps
+);
 userRoutes.get(
   "/locations",
   authenticateToken,
