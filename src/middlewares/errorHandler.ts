@@ -9,7 +9,7 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ) {
-  let statusCode = 500,
+  let statusCode,
     message = err.message;
   if (err instanceof CustomError) {
     statusCode =
@@ -24,7 +24,7 @@ export function errorHandler(
   } else if (err instanceof MulterError) {
     message = err.message;
     statusCode = 400;
-  }
+  } else statusCode = res.statusCode;
 
   res.status(statusCode).json({
     success: false,

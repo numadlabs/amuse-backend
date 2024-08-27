@@ -16,6 +16,6 @@ tapRouter.post(
   authorize("RESTAURANT_WAITER", "RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   tapController.redeemTap
 );
-tapRouter.get("/:id", tapController.getTapById);
+tapRouter.get("/:id", authenticateToken, tapController.getTapById);
 
 export = tapRouter;

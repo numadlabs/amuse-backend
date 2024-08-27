@@ -76,6 +76,12 @@ The Amuse Bouche Team
     if (data.role === "SUPER_ADMIN" || data.role === "USER")
       throw new CustomError("Error on the role input.", 400);
 
+    if (data.role !== "RESTAURANT_OWNER" && !data.restaurantId)
+      throw new CustomError(
+        "Please provide a restaurantId for this type of role.",
+        400
+      );
+
     const emailCheck = await employeeRepository.getByEmail(data.email);
     if (emailCheck)
       throw new CustomError("Email has already been registed.", 400);
@@ -170,7 +176,6 @@ The Amuse Bouche Team
   },
   checkEmailOTP: async (email: string, verificationCode: number) => {
     const employee = await employeeRepository.getByEmail(email);
-
     if (!employee) throw new CustomError("Employee does not exist.", 400);
 
     const emailOtp = await emailOtpRepository.getByEmail(email);

@@ -8,10 +8,10 @@ userCardRoutes.post(
   authenticateToken,
   userCardController.buyUserCard
 );
-userCardRoutes.delete(
-  "/:id",
-  authenticateToken,
-  userCardController.deleteUserCard
-);
+// userCardRoutes.delete(
+//   "/:id",
+//   authenticateToken,
+//   userCardController.deleteUserCard
+// );
 
 export = userCardRoutes;

@@ -34,10 +34,17 @@ employeeRouter.put(
 );
 employeeRouter.get(
   "/:restaurantId/restaurant",
+  authenticateToken,
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   employeeController.getByRestaurantId
 );
 employeeRouter
-  .get("/:id", employeeController.getById)
+  .get(
+    "/:id",
+    authenticateToken,
+    authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
+    employeeController.getById
+  )
   .put(
     "/:id",
     authenticateToken,

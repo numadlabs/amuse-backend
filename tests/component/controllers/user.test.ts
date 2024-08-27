@@ -13,12 +13,12 @@ jest.mock("../../../src/repository/emailOtpRepository");
 jest.mock("../../../src/utils/aws");
 
 const ownerPayload = {
-  email: "owner@sasazu.com",
+  email: "owner@sansho.com",
   password: "Password12",
 };
 
 const waiterPayload = {
-  email: "waiter@sasazu.com",
+  email: "waiter@sansho.com",
   password: "Password12",
 };
 
@@ -389,8 +389,6 @@ describe("User APIs", () => {
     //     .delete(`/api/users`)
     //     .set("Authorization", `Bearer ${userAccessToken}`);
 
-    //   console.error(response.body);
-
     //   expect(response.status).toBe(200);
     //   expect(response.body.success).toBe(true);
     //   expect(deleteFromS3).toHaveBeenCalledTimes(1);
@@ -401,8 +399,9 @@ describe("User APIs", () => {
     let userId: string, userAccessToken: string, employeeAccessToken: string;
     beforeAll(async () => {
       const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.user.id === "string") userId = result.user.id;
-      userAccessToken = result.accessToken;
+      if (typeof result.result.user.id === "string")
+        userId = typeof result.result.user.id;
+      userAccessToken = result.result.accessToken;
 
       employeeAccessToken = (
         await employeeServices.login(ownerPayload.email, ownerPayload.password)
@@ -435,8 +434,9 @@ describe("User APIs", () => {
     let userId: string, userAccessToken: string, employeeAccessToken: string;
     beforeAll(async () => {
       const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.user.id === "string") userId = result.user.id;
-      userAccessToken = result.accessToken;
+      if (typeof result.result.user.id === "string")
+        userId = result.result.user.id;
+      userAccessToken = result.result.accessToken;
 
       employeeAccessToken = (
         await employeeServices.login(ownerPayload.email, ownerPayload.password)
@@ -475,8 +475,9 @@ describe("User APIs", () => {
       waiterAccessToken: string;
     beforeAll(async () => {
       const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.user.id === "string") userId = result.user.id;
-      userAccessToken = result.accessToken;
+      if (typeof result.result.user.id === "string")
+        userId = result.result.user.id;
+      userAccessToken = result.result.accessToken;
 
       ownerAccessToken = (
         await employeeServices.login(ownerPayload.email, ownerPayload.password)
@@ -518,8 +519,9 @@ describe("User APIs", () => {
     let userId: string, userAccessToken: string, employeeAccessToken: string;
     beforeAll(async () => {
       const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.user.id === "string") userId = result.user.id;
-      userAccessToken = result.accessToken;
+      if (typeof result.result.user.id === "string")
+        userId = result.result.user.id;
+      userAccessToken = result.result.accessToken;
 
       employeeAccessToken = (
         await employeeServices.login(ownerPayload.email, ownerPayload.password)

@@ -150,4 +150,13 @@ export const restaurantRepository = {
 
     return restaurant;
   },
+  get: async () => {
+    const restaurants = await db
+      .selectFrom("Restaurant")
+      .innerJoin("Card", "Card.restaurantId", "Restaurant.id")
+      .select(["Restaurant.id", "Card.id as cardId"])
+      .execute();
+
+    return restaurants;
+  },
 };

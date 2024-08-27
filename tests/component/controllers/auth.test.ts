@@ -189,10 +189,43 @@ describe("Auth APIs", () => {
       expect(response.body.success).toBe(false);
     });
 
-    it("should successfully register a user", async () => {
+    it("should fail if email has already been registed", async () => {
+      const payload = {
+        nickname: faker.internet.userName(),
+        email: faker.internet.email().toLowerCase(),
+        password: faker.internet.password(),
+        verificationCode: userPayload.verificationCode,
+      };
+      const user = await userServices.create(
+        payload.email,
+        payload.password,
+        payload.nickname,
+        payload.verificationCode
+      );
+
       const response = await request(app).post("/api/auth/register").send({
         nickname: faker.internet.userName(),
-        email: userPayload.email,
+        email: user.user.email,
+        password: faker.internet.password(),
+        verificationCode: userPayload.verificationCode,
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it("should successfully register a user", async () => {
+      (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
+        verificationCode: generateVerificationToken(
+          userPayload.verificationCode,
+          "1h"
+        ),
+        isUsed: false,
+      });
+
+      const response = await request(app).post("/api/auth/register").send({
+        nickname: faker.internet.userName(),
+        email: faker.internet.email().toLowerCase(),
         password: faker.internet.password(),
         verificationCode: userPayload.verificationCode,
       });

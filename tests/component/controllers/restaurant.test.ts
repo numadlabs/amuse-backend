@@ -31,8 +31,9 @@ describe("Restaurant APIs", () => {
       ownerAccessToken: string;
     beforeAll(async () => {
       const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.user.id === "string") userId = result.user.id;
-      userAccessToken = result.accessToken;
+      if (typeof result.result.user.id === "string")
+        userId = result.result.user.id;
+      userAccessToken = result.result.accessToken;
 
       ownerAccessToken = (
         await employeeServices.login(ownerPayload.email, ownerPayload.password)
@@ -73,8 +74,9 @@ describe("Restaurant APIs", () => {
       ownerAccessToken: string;
     beforeAll(async () => {
       const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.user.id === "string") userId = result.user.id;
-      userAccessToken = result.accessToken;
+      if (typeof result.result.user.id === "string")
+        userId = result.result.user.id;
+      userAccessToken = result.result.accessToken;
 
       anotherRestaurantOwnerAccessToken = (
         await employeeServices.login(ownerPayload.email, ownerPayload.password)
@@ -149,8 +151,9 @@ describe("Restaurant APIs", () => {
       restaurantId: string;
     beforeAll(async () => {
       const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.user.id === "string") userId = result.user.id;
-      userAccessToken = result.accessToken;
+      if (typeof result.result.user.id === "string")
+        userId = result.result.user.id;
+      userAccessToken = result.result.accessToken;
 
       anotherRestaurantOwnerAccessToken = (
         await employeeServices.login(ownerPayload.email, ownerPayload.password)
@@ -266,8 +269,9 @@ describe("Restaurant APIs", () => {
       restaurantId: string;
     beforeAll(async () => {
       const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.user.id === "string") userId = result.user.id;
-      userAccessToken = result.accessToken;
+      if (typeof result.result.user.id === "string")
+        userId = result.result.user.id;
+      userAccessToken = result.result.accessToken;
 
       const owner = await employeeServices.login(
         ownerPayload.email,
@@ -308,8 +312,9 @@ describe("Restaurant APIs", () => {
       restaurantId: string;
     beforeAll(async () => {
       const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.user.id === "string") userId = result.user.id;
-      userAccessToken = result.accessToken;
+      if (typeof result.result.user.id === "string")
+        userId = result.result.user.id;
+      userAccessToken = result.result.accessToken;
 
       anotherRestaurantOwnerAccessToken = (
         await employeeServices.login(ownerPayload.email, ownerPayload.password)
@@ -394,8 +399,6 @@ describe("Restaurant APIs", () => {
         .set("Authorization", `Bearer ${ownerAccessToken}`)
         .field("name", "Test Restaurant")
         .attach("logo", filePath);
-
-      console.error(response.body);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
