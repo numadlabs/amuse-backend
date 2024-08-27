@@ -7,13 +7,13 @@ import { authorize } from "../middlewares/authorization";
 
 userRoutes.put(
   "/updateEmail",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   UserController.updateEmail
 );
 userRoutes.put(
   "/:id",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   parseFile("profilePicture"),
   UserController.updateInfo
@@ -21,38 +21,38 @@ userRoutes.put(
 
 userRoutes.delete(
   "/",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   UserController.deleteUser
 );
 
 userRoutes.get(
   "/cards",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   UserController.getUserCards
 );
 userRoutes.get(
   "/taps",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   UserController.getUserTaps
 );
 userRoutes.get(
   "/locations",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   UserController.getDistinctUserLocations
 );
 userRoutes.get(
   "/collected-data",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   UserController.fetchCollectedData
 );
 userRoutes.get(
   "/:id",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   UserController.getUserById
 );

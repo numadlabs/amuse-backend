@@ -6,25 +6,25 @@ const transactionRouter = express.Router();
 
 transactionRouter.post(
   "/deposit",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER"),
   transactionController.deposit
 );
 transactionRouter.post(
   "/withdraw",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "USER"),
   transactionController.withdraw
 );
 transactionRouter.get(
   "/:restaurantId/restaurant",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   transactionController.getByRestaurantId
 );
 transactionRouter.get(
   "/:userId/user",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   transactionController.getByUserId
 );

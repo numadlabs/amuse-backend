@@ -7,39 +7,39 @@ const userBonusesRoutes = express.Router();
 
 userBonusesRoutes.post(
   "/use",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_WAITER", "RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   userBonusController.useUserBonus
 );
 userBonusesRoutes.get(
   "/:userCardId/userCard",
-  authenticateToken,
+  authenticateToken(),
   userBonusController.getUnusedByUserCardId
 );
 userBonusesRoutes.get(
   "/used/:restaurantId/restaurant",
-  authenticateToken,
+  authenticateToken(),
   userBonusController.getUsedByRestaurantId
 );
 userBonusesRoutes.get(
   "/:restaurantId/restaurant/redemption-history",
-  authenticateToken,
+  authenticateToken(),
   userBonusController.getUsedByRestaurantId
 );
 userBonusesRoutes.get(
   "/:restaurantId/restaurant",
-  authenticateToken,
+  authenticateToken(),
   userBonusController.getUnusedByRestaurantId
 );
 userBonusesRoutes.post(
   "/:id/generate",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   userBonusController.generate
 );
 userBonusesRoutes.post(
   "/:bonusId/buy",
-  authenticateToken,
+  authenticateToken(),
   blockSimultaneousRequests,
   userBonusController.buy
 );

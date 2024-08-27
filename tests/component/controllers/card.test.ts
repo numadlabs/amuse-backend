@@ -10,12 +10,12 @@ import { cardRepository } from "../../../src/repository/cardRepository";
 jest.mock("../../../src/utils/aws");
 
 const existingRestaurantOwner = {
-  email: "owner@sansho.com",
+  email: "owner@fatcat.com",
   password: "Password12",
 };
 
 const existingRestaurantWaiter = {
-  email: "waiter@sansho.com",
+  email: "waiter@fatcat.com",
   password: "Password12",
 };
 

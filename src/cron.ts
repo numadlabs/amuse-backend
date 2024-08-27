@@ -5,7 +5,7 @@ import cron from "node-cron";
 export async function updateCurrencyPrice() {
   cron.schedule("0 * * * *", async () => {
     await getAndUpdateBitcoinPrice();
-    await getAndUpdateCZK();
+    await getAndUpdateEUR();
   });
 }
 
@@ -21,12 +21,11 @@ export async function getAndUpdateBitcoinPrice() {
 
     console.log(`Updated Btc price to ${bitcoin.price}`);
   } catch (e) {
-    console.log("Cron error catched.");
-    console.log(e);
+    console.error(`Error updating bitcoin price: ${e}`);
   }
 }
 
-export async function getAndUpdateCZK() {
+export async function getAndUpdateEUR() {
   try {
     const price = await getCurrency("EUR");
     const currency = await currencyRepository.getByTicker("EUR");
@@ -38,7 +37,6 @@ export async function getAndUpdateCZK() {
 
     console.log(`Updated EUR price to ${currency.price}`);
   } catch (e) {
-    console.log("Cron error catched.");
-    console.log(e);
+    console.error(`Error updating EUR price: ${e}`);
   }
 }

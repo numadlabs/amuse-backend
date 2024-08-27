@@ -6,32 +6,32 @@ const notificationRouter = express.Router();
 
 notificationRouter.post(
   "/send-push-notification",
-  // authenticateToken,
+  // authenticateToken(),
   // // authorize("SUPER_ADMIN"),
   notificationController.sendPushNotification
 );
 
 notificationRouter.get(
   "/user",
-  authenticateToken,
+  authenticateToken(),
   notificationController.getByUserId
 );
 
 notificationRouter.get(
   "/employee",
-  authenticateToken,
+  authenticateToken(),
   notificationController.getByEmployeeId
 );
 
 notificationRouter.put(
   "/employee/mark-as-read",
-  authenticateToken,
+  authenticateToken(),
   notificationController.markAsReadByEmployeeId
 );
 
 notificationRouter.put(
   "/user/mark-as-read",
-  authenticateToken,
+  authenticateToken(),
   notificationController.markAsReadByUserId
 );
 

@@ -13,7 +13,7 @@ authRoutes.post("/refreshToken", authController.refreshToken);
 authRoutes.put("/forgotPassword", authController.forgotPassword);
 authRoutes.put(
   "/changePassword",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   authController.changePassword
 );

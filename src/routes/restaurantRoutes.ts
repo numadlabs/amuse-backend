@@ -7,39 +7,39 @@ const restaurantRoutes = express.Router();
 
 restaurantRoutes.post(
   "/",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER"),
   parseFile("logo"),
   restaurantController.createRestaurant
 );
 restaurantRoutes.get(
   "/",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   restaurantController.getRestaurants
 );
 restaurantRoutes.put(
   "/:id/rewardDetail",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   parseFile("logo"),
   restaurantController.updateRewardDetail
 );
 restaurantRoutes.get(
   "/:id",
-  authenticateToken,
+  authenticateToken(),
   restaurantController.getRestaurantById
 );
 restaurantRoutes.put(
   "/:id",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   parseFile("logo"),
   restaurantController.updateRestaurant
 );
 // restaurantRoutes.delete(
 //   "/:id",
-//   authenticateToken,
+//   authenticateToken(),
 //   authorize("SUPER_ADMIN"),
 //   restaurantController.deleteRestaurant
 // );

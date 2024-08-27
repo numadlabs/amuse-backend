@@ -7,7 +7,7 @@ const categoryRouter = express.Router();
 categoryRouter.get("/", categoryController.get);
 categoryRouter.post(
   "/",
-  authenticateToken,
+  authenticateToken(),
   authorize("SUPER_ADMIN", "RESTAURANT_OWNER"),
   categoryController.create
 );

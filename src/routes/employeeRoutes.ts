@@ -6,13 +6,13 @@ const employeeRouter = express.Router();
 
 employeeRouter.post(
   "/",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   employeeController.create
 );
 employeeRouter.post(
   "/superAdmin",
-  authenticateToken,
+  authenticateToken(),
   authorize("SUPER_ADMIN"),
   employeeController.createAsSuperAdmin
 );
@@ -22,44 +22,44 @@ employeeRouter.post("/checkOTP", employeeController.checkEmailOTP);
 employeeRouter.post("/forgotPassword", employeeController.forgotPassword);
 employeeRouter.post(
   "/check-password",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
   employeeController.checkPassword
 );
 employeeRouter.put(
   "/changePassword",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
   employeeController.changePassword
 );
 employeeRouter.get(
   "/:restaurantId/restaurant",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   employeeController.getByRestaurantId
 );
 employeeRouter
   .get(
     "/:id",
-    authenticateToken,
+    authenticateToken(),
     authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
     employeeController.getById
   )
   .put(
     "/:id",
-    authenticateToken,
+    authenticateToken(),
     authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
     employeeController.updateInfo
   );
 employeeRouter.put(
   "/:id/role",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   employeeController.updateRole
 );
 employeeRouter.put(
   "/:id/remove-from-restaurant",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   employeeController.removeFromRestaurant
 );

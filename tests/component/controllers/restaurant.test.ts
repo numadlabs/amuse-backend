@@ -14,12 +14,12 @@ jest.mock("../../../src/lib/emailHelper");
 jest.mock("../../../src/utils/aws");
 
 const ownerPayload = {
-  email: "owner@sansho.com",
+  email: "owner@fatcat.com",
   password: "Password12",
 };
 
 const waiterPayload = {
-  email: "waiter@sansho.com",
+  email: "waiter@fatcat.com",
   password: "Password12",
 };
 

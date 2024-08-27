@@ -24,7 +24,7 @@ export const testHelpers = {
     } = {}
   ) => {
     const defaultPayload = {
-      email: faker.internet.email(),
+      email: faker.internet.email().toLowerCase(),
       password: faker.internet.password(),
       nickname: faker.internet.userName(),
       verificationCode: faker.number.int({ min: 1000, max: 9999 }),

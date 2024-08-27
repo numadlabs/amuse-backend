@@ -10,10 +10,10 @@ const blockSimultaneousRequests = async (
   res: Response,
   next: NextFunction
 ) => {
-  const userId = req.user?.id;
-  if (!userId) throw new CustomError("Error parsing the auth token.", 400);
-
   try {
+    const userId = req.user?.id;
+    if (!userId) throw new CustomError("Error parsing the auth token.", 400);
+
     const active = await pubClient.get(`req:${userId}`);
 
     if (active) {

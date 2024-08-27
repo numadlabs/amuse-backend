@@ -5,12 +5,12 @@ const userCardRoutes = express.Router();
 
 userCardRoutes.post(
   "/:cardId/buy",
-  authenticateToken,
+  authenticateToken(),
   userCardController.buyUserCard
 );
 // userCardRoutes.delete(
 //   "/:id",
-//   authenticateToken,
+//   authenticateToken(),
 //   userCardController.deleteUserCard
 // );
 

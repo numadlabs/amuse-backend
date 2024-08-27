@@ -6,16 +6,16 @@ const tapRouter = express.Router();
 
 tapRouter.post(
   "/generate",
-  authenticateToken,
+  authenticateToken(),
   authorize("USER"),
   tapController.generate
 );
 tapRouter.post(
   "/redeem",
-  authenticateToken,
+  authenticateToken(),
   authorize("RESTAURANT_WAITER", "RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   tapController.redeemTap
 );
-tapRouter.get("/:id", authenticateToken, tapController.getTapById);
+tapRouter.get("/:id", authenticateToken(), tapController.getTapById);
 
 export = tapRouter;

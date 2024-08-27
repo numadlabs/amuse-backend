@@ -5,9 +5,9 @@ const timetableRouter = express.Router();
 
 timetableRouter.get(
   "/:restaurantId/restaurant",
-  authenticateToken,
+  authenticateToken(),
   timetableController.getByRestaurantId
 );
-timetableRouter.put("/:id", authenticateToken, timetableController.update);
+timetableRouter.put("/:id", authenticateToken(), timetableController.update);
 
 export = timetableRouter;

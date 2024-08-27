@@ -8,10 +8,7 @@ export const loginSchema = z
       .toLowerCase()
       .min(5, "Email must be at least 5 characters.")
       .max(30, "Email must be at most 30 characters.")
-      .regex(
-        /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-        "Invalid email format."
-      ),
+      .email(),
     password: string()
       .trim()
       .min(8)
@@ -30,10 +27,7 @@ export const emailSchema = z
       .toLowerCase()
       .min(5, "Email must be at least 5 characters.")
       .max(30, "Email must be at most 30 characters.")
-      .regex(
-        /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-        "Invalid email format."
-      ),
+      .email(),
   })
   .strict("Unexpected field detected.");
 
@@ -44,10 +38,7 @@ export const otpSchema = z
       .toLowerCase()
       .min(5, "Email must be at least 5 characters.")
       .max(50, "Email must be at most 50 characters.")
-      .regex(
-        /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-        "Invalid email format."
-      ),
+      .email(),
     verificationCode: number().int().lt(10000).gt(999),
   })
   .strict("Unexpected field detected.");
@@ -59,10 +50,7 @@ export const registerSchema = z
       .toLowerCase()
       .min(5, "Email must be at least 5 characters.")
       .max(50, "Email must be at most 50 characters.")
-      .regex(
-        /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-        "Invalid email format."
-      ),
+      .email(),
     password: string()
       .trim()
       .min(8, "Password must be at least 8 characters.")
@@ -91,10 +79,7 @@ export const forgotPasswordSchema = z
       .toLowerCase()
       .min(5, "Email must be at least 5 characters.")
       .max(50, "Email must be at most 50 characters.")
-      .regex(
-        /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-        "Invalid email format."
-      ),
+      .email(),
     password: string()
       .trim()
       .min(8, "Password must be at least 8 characters.")

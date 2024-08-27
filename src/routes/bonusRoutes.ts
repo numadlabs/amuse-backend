@@ -6,25 +6,25 @@ const bonusRoutes = express.Router();
 
 bonusRoutes.post(
   "/",
-  authenticateToken,
+  authenticateToken(),
   // authorize("SUPER_ADMIN"),
   bonusController.createBonus
 );
 bonusRoutes.put(
   "/:id",
-  authenticateToken,
+  authenticateToken(),
   // authorize("SUPER_ADMIN"),
   bonusController.updateBonus
 );
 bonusRoutes.delete(
   "/:id",
-  authenticateToken,
+  authenticateToken(),
   // authorize("SUPER_ADMIN"),
   bonusController.deleteBonus
 );
 bonusRoutes.get(
   "/:restaurantId/restaurant",
-  authenticateToken,
+  authenticateToken(),
   bonusController.getByRestaurantId
 );
 

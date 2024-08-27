@@ -8,10 +8,7 @@ export const createEmployeeSchema = z
       .toLowerCase()
       .min(5, "Email must be at least 5 characters.")
       .max(50, "Email must be at most 30 characters.")
-      .regex(
-        /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-        "Invalid email format."
-      ),
+      .email(),
     firstname: string().trim().min(1).max(30).optional(),
     lastname: string().trim().min(1).max(30).optional(),
     role: z.nativeEnum(ROLES),
