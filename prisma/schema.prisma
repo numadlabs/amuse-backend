@@ -75,9 +75,9 @@ model Device {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
   pushToken String   @unique
   createdAt DateTime @default(now())
-  userId    String
+  userId    String?
 
-  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Restaurant {

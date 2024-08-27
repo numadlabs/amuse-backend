@@ -7,19 +7,12 @@ import { deviceSchema } from "../validations/deviceSchema";
 import { AuthenticatedRequest } from "../../custom";
 
 export const deviceController = {
-  create: async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
+  create: async (req: Request, res: Response, next: NextFunction) => {
     try {
       req.body = deviceSchema.parse(req.body);
       const data: Insertable<Device> = { ...req.body };
 
-      if (!req.user)
-        throw new CustomError("Could not retrieve id from the token.", 400);
-
-      const device = await deviceServices.create(data, req.user.id);
+      const device = await deviceServices.create(data);
 
       return res.status(200).json({
         success: true,

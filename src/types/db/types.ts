@@ -41,7 +41,7 @@ export type Device = {
     id: Generated<string>;
     pushToken: string;
     createdAt: Generated<Timestamp>;
-    userId: string;
+    userId: string | null;
 };
 export type EmailOtp = {
     id: Generated<string>;
