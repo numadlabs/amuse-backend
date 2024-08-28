@@ -4,6 +4,9 @@ on:
     branches:
       - main
 
+permissions:
+  issues: write
+
 jobs:
   approve-production:
     runs-on: ubuntu-latest
