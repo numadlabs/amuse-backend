@@ -2,15 +2,13 @@ import nodemailer from "nodemailer";
 import { config } from "../config/config";
 
 const template = {
-  service: "Gmail",
-  host: "smtp.gmail.com",
+  host: "mail.privateemail.com",
   port: 465,
   secure: true,
   auth: {
     user: config.EMAIL_ADDRESS,
     pass: config.EMAIL_PASS,
   },
-  tls: { rejectUnauthorized: false },
 };
 
 export async function sendEmail(

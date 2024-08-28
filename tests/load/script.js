@@ -3,8 +3,8 @@ import { check, sleep } from "k6";
 import ws from "k6/ws";
 import { SharedArray } from "k6/data";
 
-const URL = "http://ecs-alb-1827301591.eu-central-1.elb.amazonaws.com";
-const SOCKETURL = `ws://ecs-alb-1827301591.eu-central-1.elb.amazonaws.com/socket.io/?EIO=4&transport=websocket`;
+const URL = "https://amuse-backend-staging-478fc2297634.herokuapp.com";
+const SOCKETURL = `ws://amuse-backend-staging-478fc2297634.herokuapp.com/socket.io/?EIO=4&transport=websocket`;
 
 const users = new SharedArray("users data", function () {
   const fileContent = open("./auth-data.json");
@@ -19,8 +19,8 @@ const employees = new SharedArray("employees data", function () {
 });
 
 export const options = {
-  vus: 5,
-  duration: "20s",
+  vus: 15,
+  duration: "1m",
 };
 
 function pause() {
