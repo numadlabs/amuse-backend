@@ -15,6 +15,7 @@ import { io, pubClient } from "../app";
 import { transactionRepository } from "../repository/transactionRepository";
 import { notificationRepository } from "../repository/notificationRepository";
 import { db } from "../utils/db";
+import { BOOST_MULTIPLIER } from "../lib/constants";
 const crypto = require("crypto");
 
 export const tapServices = {
@@ -98,8 +99,8 @@ export const tapServices = {
         (restaurant.rewardAmount / (btc.price * currency.price)) *
         tier.rewardMultiplier;
 
-      // if (user.email && user.location && user.dateOfBirth)
-      //   incrementBtc *= BOOST_MULTIPLIER;
+      if (user.email && user.location && user.dateOfBirth)
+        incrementBtc *= BOOST_MULTIPLIER;
 
       if (restaurant.balance >= incrementBtc) {
         restaurant.balance -= incrementBtc;

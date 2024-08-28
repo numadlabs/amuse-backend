@@ -22,9 +22,11 @@ export function errorHandler(
     statusCode = 400;
     message = `Invalid ${err.errors[0].path} input.`;
   } else if (err instanceof MulterError) {
-    message = err.message;
     statusCode = 400;
   } else statusCode = res.statusCode;
+
+  if (statusCode.toString().startsWith("5")) console.error(message);
+  if (statusCode.toString().startsWith("4")) console.warn(message);
 
   res.status(statusCode).json({
     success: false,

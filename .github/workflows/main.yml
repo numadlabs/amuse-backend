@@ -1,16 +1,40 @@
-name: CI/CD pipeline # The name of the workflow
-on: 
+name: CI/CD pipeline
+on:
   push:
     branches:
-      - main #Launch the action on every push on the branch main
+      - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest # Setup an environment to run the action
+  deploy-to-staging:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2 # This actions copy the repository on the environment
-      - uses: akhileshns/heroku-deploy@v3.12.12 # This action deploys the content on Heroku
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12
         with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}} #The Heroku api key we stored on our repo secret
-          heroku_app_name: ${{secrets.HEROKU_STAGING_APP_NAME}} #The name of your heroku app - Must be unique in Heroku
-          heroku_email: ${{secrets.HEROKU_USERNAME}} #Your heroku yuser name
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_STAGING_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_USERNAME}}
+
+  approve-production:
+    needs: deploy-to-staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: gombochirr
+          minimum-approvals: 1
+          issue-title: "Approve deployment to production"
+          issue-body: "Please approve or deny the deployment to production"
+          exclude-workflow-initiator-as-approver: true
+
+  deploy-to-production:
+    needs: approve-production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_PRODUCTION_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_USERNAME}}
