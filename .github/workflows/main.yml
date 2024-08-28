@@ -5,18 +5,7 @@ on:
       - main
 
 jobs:
-  deploy-to-staging:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{secrets.HEROKU_STAGING_APP_NAME}}
-          heroku_email: ${{secrets.HEROKU_USERNAME}}
-
   approve-production:
-    needs: deploy-to-staging
     runs-on: ubuntu-latest
     steps:
       - uses: trstringer/manual-approval@v1
@@ -26,7 +15,7 @@ jobs:
           minimum-approvals: 1
           issue-title: "Approve deployment to production"
           issue-body: "Please approve or deny the deployment to production"
-          exclude-workflow-initiator-as-approver: true
+          exclude-workflow-initiator-as-approver: false
 
   deploy-to-production:
     needs: approve-production
