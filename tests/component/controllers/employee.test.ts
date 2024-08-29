@@ -20,8 +20,7 @@ describe("Employee APIs", () => {
         await testHelpers.createRestaurant();
       const employeePayload = {
         email: faker.internet.email().toLowerCase(),
-        firstname: faker.company.name(),
-        lastname: "employee",
+        fullname: faker.company.name(),
         role: "RESTAURANT_WAITER",
         restaurantId: restaurantId,
       };
@@ -203,8 +202,7 @@ describe("Employee APIs", () => {
         .put(`/api/employees/${employee.employee.id}`)
         .set("Authorization", `Bearer ${employee.accessToken}`)
         .send({
-          firstname: faker.company.name(),
-          lastname: "updated employee",
+          fullname: faker.company.name(),
         });
 
       expect(response.status).toBe(200);

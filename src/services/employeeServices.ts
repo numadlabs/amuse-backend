@@ -47,8 +47,6 @@ export const employeeServices = {
     const password = crypto.randomBytes(16).toString("base64").slice(0, 16);
     const hashedPassword = await encryptionHelper.encrypt(password);
 
-    data.firstname = restaurant.name;
-    data.lastname = "Employee";
     data.password = hashedPassword;
     const employee = await employeeRepository.create(data);
 
@@ -315,5 +313,29 @@ The Amuse Bouche Team
     });
 
     return employee;
+  },
+  createPasswordOnboarding: async (password: string, userId: string) => {
+    const employee = await employeeRepository.getById(userId);
+    if (!employee) throw new CustomError("Invalid employeeId.", 400);
+    if (employee.isOnboarded)
+      throw new CustomError(
+        "You can only use this during the onboarding process.",
+        400
+      );
+
+    const encryptedPassword = await encryptionHelper.encrypt(password);
+
+    employee.password = encryptedPassword;
+    employee.passwordUpdateAt = new Date();
+    employee.isOnboarded = true;
+
+    const updatedEmployee = await employeeRepository.update(
+      employee.id,
+      employee
+    );
+
+    const sanitizedEmployee = hideSensitiveData(updatedEmployee, ["password"]);
+
+    return sanitizedEmployee;
   },
 };

@@ -73,8 +73,7 @@ export const testHelpers = {
     const owner = await employeeRepository.create({
       email: faker.internet.email().toLowerCase(),
       password: await encryptionHelper.encrypt(ownerPassword),
-      firstname: faker.company.name(),
-      lastname: "owner",
+      fullname: faker.company.name(),
       role: "RESTAURANT_OWNER",
       restaurantId: restaurant.id,
     });
@@ -113,8 +112,7 @@ export const testHelpers = {
     const owner = await employeeRepository.create({
       email: faker.internet.email().toLowerCase(),
       password: await encryptionHelper.encrypt(ownerPassword),
-      firstname: faker.company.name(),
-      lastname: "owner",
+      fullname: faker.company.name(),
       role: "RESTAURANT_OWNER",
       restaurantId: restaurant.id,
     });
@@ -138,8 +136,7 @@ export const testHelpers = {
     const employee = await employeeRepository.create({
       email: faker.internet.email().toLowerCase(),
       password: await encryptionHelper.encrypt(password),
-      firstname: faker.company.name(),
-      lastname: faker.company.name(),
+      fullname: faker.company.name(),
       role: role,
       restaurantId: restaurantId,
     });

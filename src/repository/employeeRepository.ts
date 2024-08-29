@@ -18,8 +18,7 @@ export const employeeRepository = {
       .values(data)
       .returning([
         "Employee.id",
-        "Employee.firstname",
-        "Employee.lastname",
+        "Employee.fullname",
         "Employee.email",
         "Employee.role",
         "Employee.restaurantId",
@@ -58,8 +57,7 @@ export const employeeRepository = {
       .select([
         "Employee.id",
         "Employee.email",
-        "Employee.firstname",
-        "Employee.lastname",
+        "Employee.fullname",
         "Employee.role",
         "Employee.createdAt",
       ])

@@ -20,6 +20,12 @@ employeeRouter.post("/login", employeeController.login);
 employeeRouter.post("/sendOTP", employeeController.sendEmailOTP);
 employeeRouter.post("/checkOTP", employeeController.checkEmailOTP);
 employeeRouter.post("/forgotPassword", employeeController.forgotPassword);
+employeeRouter.put(
+  "/onboarding-create-password",
+  authenticateToken(),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_WAITER", "RESTAURANT_MANAGER"),
+  employeeController.createPasswordOnboarding
+);
 employeeRouter.post(
   "/check-password",
   authenticateToken(),

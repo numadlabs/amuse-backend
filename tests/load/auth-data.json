@@ -283,32 +283,24 @@
   ],
   "employee": [
     {
-      "firstname": "FAT CAT",
-      "lastname": "Owner",
       "role": "RESTAURANT_OWNER",
       "email": "owner@fatcat.com",
       "password": "Password12",
       "restaurantId": "fecc7b97-bdbb-4d37-9790-963a56e26490"
     },
     {
-      "firstname": "FAT CAT",
-      "lastname": "Manager",
       "role": "RESTAURANT_MANAGER",
       "email": "manager@fatcat.com",
       "password": "Password12",
       "restaurantId": "fecc7b97-bdbb-4d37-9790-963a56e26490"
     },
     {
-      "firstname": "FAT CAT",
-      "lastname": "Waiter",
       "role": "RESTAURANT_WAITER",
       "email": "waiter@fatcat.com",
       "password": "Password12",
       "restaurantId": "fecc7b97-bdbb-4d37-9790-963a56e26490"
     },
     {
-      "firstname": "FAT CAT",
-      "lastname": "Staff",
       "role": "RESTAURANT_WAITER",
       "email": "staff@fatcat.com",
       "password": "Password12",

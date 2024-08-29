@@ -15,9 +15,10 @@
   "author": "gombochir.dev@gmail.com",
   "license": "Proprietary",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.637.0",
+    "@aws-sdk/lib-storage": "^3.637.0",
     "@prisma/client": "^5.8.1",
     "@socket.io/redis-adapter": "^8.3.0",
-    "aws-sdk": "^2.1569.0",
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",

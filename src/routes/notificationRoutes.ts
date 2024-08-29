@@ -6,8 +6,8 @@ const notificationRouter = express.Router();
 
 notificationRouter.post(
   "/send-push-notification",
-  // authenticateToken(),
-  // // authorize("SUPER_ADMIN"),
+  authenticateToken(),
+  authorize("SUPER_ADMIN"),
   notificationController.sendPushNotification
 );
 

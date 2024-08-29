@@ -9,6 +9,7 @@ import { AuthenticatedRequest } from "../../custom";
 import { ROLES } from "../types/db/enums";
 import {
   createEmployeeSchema,
+  passwordSchema,
   updateEmployeeSchema,
 } from "../validations/employeeSchema";
 import {
@@ -304,6 +305,33 @@ export const employeeController = {
       return res.status(200).json({
         success: true,
         data: sanitizedEmployee,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  createPasswordOnboarding: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { password } = passwordSchema.parse(req.body);
+
+      if (!req.user)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const employee = await employeeServices.createPasswordOnboarding(
+        password,
+        req.user.id
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: employee,
       });
     } catch (e) {
       next(e);

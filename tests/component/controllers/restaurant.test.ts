@@ -85,8 +85,7 @@ describe("Restaurant APIs", () => {
       const owner = await employeeRepository.create({
         email: faker.internet.email().toLowerCase(),
         password: await encryptionHelper.encrypt("Password12"),
-        firstname: "restaurant",
-        lastname: "owner",
+        fullname: "restaurant",
         role: "RESTAURANT_OWNER",
       });
 
@@ -176,8 +175,7 @@ describe("Restaurant APIs", () => {
       const owner = await employeeRepository.create({
         email: faker.internet.email().toLowerCase(),
         password: await encryptionHelper.encrypt("Password12"),
-        firstname: "restaurant",
-        lastname: "owner",
+        fullname: "restaurant",
         role: "RESTAURANT_OWNER",
         restaurantId: restaurantId,
       });
@@ -338,8 +336,7 @@ describe("Restaurant APIs", () => {
       const owner = await employeeRepository.create({
         email: faker.internet.email().toLowerCase(),
         password: await encryptionHelper.encrypt("Password12"),
-        firstname: "restaurant",
-        lastname: "owner",
+        fullname: "restaurant",
         role: "RESTAURANT_OWNER",
         restaurantId: restaurantId,
       });

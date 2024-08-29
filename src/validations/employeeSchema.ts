@@ -9,8 +9,7 @@ export const createEmployeeSchema = z
       .min(5, "Email must be at least 5 characters.")
       .max(50, "Email must be at most 30 characters.")
       .email(),
-    firstname: string().trim().min(1).max(30).optional(),
-    lastname: string().trim().min(1).max(30).optional(),
+    fullname: string().trim().min(1).max(30).optional(),
     role: z.nativeEnum(ROLES),
     restaurantId: string().trim().uuid().optional(),
   })
@@ -18,15 +17,23 @@ export const createEmployeeSchema = z
 
 export const updateEmployeeSchema = z
   .object({
-    firstname: string()
+    fullname: string()
       .trim()
       .min(1, "First name must be at least 1 character.")
-      .max(30, "First name must be at most 30 characters.")
+      .max(50, "First name must be at most 50 characters.")
       .optional(),
-    lastname: string()
+  })
+  .strict("Unexpected field detected.");
+
+export const passwordSchema = z
+  .object({
+    password: string()
       .trim()
-      .min(1, "Last name must be at least 1 character.")
-      .max(30, "Last name must be at most 30 characters.")
-      .optional(),
+      .min(8)
+      .max(30)
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+      ),
   })
   .strict("Unexpected field detected.");

@@ -54,11 +54,11 @@ export type Employee = {
     id: Generated<string>;
     passwordUpdateAt: Generated<Timestamp>;
     password: string;
-    firstname: string;
-    lastname: string;
+    fullname: Generated<string>;
     role: ROLES;
     createdAt: Generated<Timestamp>;
     email: string;
+    isOnboarded: Generated<boolean>;
     restaurantId: string | null;
 };
 export type Notification = {
