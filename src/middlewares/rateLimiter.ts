@@ -8,18 +8,18 @@ export const rateLimiter = createRateLimiter({
 
 export const authRateLimiter = createRateLimiter({
   keyPrefix: "ratelimiter-auth",
-  limit: 1000,
+  limit: 5,
   window: 5 * 60,
 });
 
 export const sendOtpRateLimiter = createRateLimiter({
   keyPrefix: "ratelimiter-otp-send",
-  limit: 1000,
+  limit: 3,
   window: 5 * 60,
 });
 
 export const checkOtpRateLimiter = createRateLimiter({
   keyPrefix: "ratelimiter-otp-check",
-  limit: 1000,
+  limit: 10,
   window: 5 * 60,
 });

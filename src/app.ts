@@ -60,12 +60,10 @@ app.use(
 );
 
 app.get("/", (req: Request, res: Response) => {
-  setTimeout(() => {
-    res.status(200).json({
-      message: "API - 👋🌎🌍",
-      version: "0.0.1",
-    });
-  }, 5000);
+  res.status(200).json({
+    message: "API - 👋🌎🌍",
+    version: "0.0.1",
+  });
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

@@ -19,7 +19,7 @@ const employees = new SharedArray("employees data", function () {
 });
 
 export const options = {
-  vus: 15,
+  vus: 30,
   duration: "1m",
 };
 
