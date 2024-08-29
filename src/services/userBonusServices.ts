@@ -1,4 +1,4 @@
-import { pubClient, io } from "../app";
+import { redis, io } from "../index";
 import { CustomError } from "../exceptions/CustomError";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";
@@ -136,7 +136,7 @@ export const userBonusServices = {
       userBonus
     );
 
-    const userSocketId = await pubClient.get(`socket:${userCard.userId}`);
+    const userSocketId = await redis.get(`socket:${userCard.userId}`);
     if (userSocketId) {
       io.to(userSocketId).emit("bonus-scan", { bonus: updatedUserBonus });
     }

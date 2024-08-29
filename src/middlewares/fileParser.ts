@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import multer from "multer";
-import { fileSizeLimit } from "../lib/constants";
+import { sizeLimitConstants } from "../lib/constants";
 
 const storage = multer.memoryStorage();
 
 const uploader = multer({
   storage: storage,
-  limits: { fileSize: fileSizeLimit },
+  limits: { fileSize: sizeLimitConstants.fileSizeLimit },
 });
 
 export function parseFile(fieldName: string) {

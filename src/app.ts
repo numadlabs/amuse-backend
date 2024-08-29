@@ -21,32 +21,28 @@ import employeeRouter from "./routes/employeeRoutes";
 import userTierRouter from "./routes/userTierRoutes";
 import categoryRouter from "./routes/categoryRoutes";
 import transactionRouter from "./routes/transactionRoutes";
-import Redis from "ioredis";
-import { Server } from "socket.io";
-const { createServer } = require("node:http");
-import { createAdapter } from "@socket.io/redis-adapter";
-import { config } from "./config/config";
-import { hostname } from "os";
 import { insertSeed } from "./seeders/main";
 import morgan from "morgan";
 import logger from "./config/winston";
+import { rateLimiter } from "./middlewares/rateLimiter";
+import { sizeLimitConstants } from "./lib/constants";
+import { authenticateToken } from "./middlewares/authenticateToken";
+import blockSimultaneousRequests from "./middlewares/blockSimultaneousRequests";
 
 const app = express();
-export const server = createServer(app);
-export const io = new Server(server);
-
-export const pubClient = new Redis(config.REDIS_CONNECTION_STRING);
-const subClient = pubClient.duplicate();
-io.adapter(createAdapter(pubClient, subClient));
-
-pubClient.on("error", (err) => {
-  console.error("Redis error:", err);
-});
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: sizeLimitConstants.jsonSizeLimit }));
+app.use(
+  express.urlencoded({
+    limit: sizeLimitConstants.formDataSizeLimit,
+    extended: true,
+  })
+);
 app.use(helmet());
 app.use(bodyParser.json());
+
+app.use(rateLimiter);
 
 const morganFormat = ":method :url :status :response-time ms";
 app.use(
@@ -65,13 +61,19 @@ app.use(
   })
 );
 
-app.get("/", (req: Request, res: Response) => {
-  res.status(200).json({
-    message: "API - 👋🌎🌍",
-    version: "3.0.1",
-  });
-});
-
+app.get(
+  "/",
+  authenticateToken(),
+  blockSimultaneousRequests,
+  (req: Request, res: Response) => {
+    setTimeout(() => {
+      res.status(200).json({
+        message: "API - 👋🌎🌍",
+        version: "0.0.1",
+      });
+    }, 5000);
+  }
+);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/restaurants", restaurantRoutes);
@@ -94,19 +96,7 @@ app.use(errorHandler);
 
 updateCurrencyPrice();
 // insertSeed().then(() =>
-//   console.log(`Inserted seed data to DB: ${process.env.PGDATABASE}`)
+//   logger.info(`Inserted seed data to DB: ${process.env.PGDATABASE}`)
 // );
-
-io.on("connection", (socket) => {
-  console.log(`socket ID of ${socket.id} connected`);
-  socket.on("register", (userId) => {
-    pubClient.set(`socket:${userId}`, socket.id, "EX", 300);
-    console.log(`User ${userId} registered with socket ID ${socket.id}`);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.id);
-  });
-});
 
 export default app;

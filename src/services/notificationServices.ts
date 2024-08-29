@@ -1,6 +1,7 @@
 import { Insertable } from "kysely";
 import { Device } from "../types/db/types";
 import { Expo, ExpoPushMessage } from "expo-server-sdk";
+import logger from "../config/winston";
 
 export const notificationServices = {
   send: async (devices: Insertable<Device>[], message: string) => {
@@ -10,7 +11,7 @@ export const notificationServices = {
     for (let device of devices) {
       const pushToken = device.pushToken;
       if (!Expo.isExpoPushToken(pushToken)) {
-        console.error(`Push token ${pushToken} is not a valid Expo push token`);
+        logger.error(`Push token ${pushToken} is not a valid Expo push token`);
         continue;
       }
 
@@ -27,10 +28,10 @@ export const notificationServices = {
     for (let chunk of chunks) {
       try {
         let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-        console.log(ticketChunk);
+        logger.info(`Push notification ticket chunk: ${ticketChunk}`);
         tickets.push(...ticketChunk);
       } catch (error) {
-        console.error(error);
+        logger.error(`Error sending push notification: ${error}`);
       }
     }
 

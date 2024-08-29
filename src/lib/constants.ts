@@ -7,12 +7,15 @@ export const verificationCodeConstants = {
 //IN NUMBER OF SECONDS
 export const TAP_EXPIRATION_TIME = 600;
 export const BONUS_REDEEM_EXPIRATION_TIME = 600;
-export const fileSizeLimit = 3145728; //3MB in binary
+
+//IN BINARY
+export const sizeLimitConstants = {
+  fileSizeLimit: 5 * 1024 * 1024, //5MB
+  formDataSizeLimit: "3mb", //10MB
+  jsonSizeLimit: "1mb",
+};
+
+//IN NUMBER OF SECONDS
+export const TAP_LOCK_TIME = 10;
 
 export const BOOST_MULTIPLIER = 1.2;
-
-//will be needed for parsing multiple images per requests
-/* export const restaurantFileFields = [
-  { name: "logo", maxCount: 2 },
-  { name: "text", maxCount: 1 },
-]; */

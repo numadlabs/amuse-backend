@@ -1,44 +1,41 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
-import { pubClient } from "../app";
+import { redis } from "../index";
 import { CustomError } from "../exceptions/CustomError";
 
-const BLOCKED_REQUEST_TIMEOUT = 60;
+const BLOCKED_REQUEST_TIMEOUT = 30;
 
 const blockSimultaneousRequests = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
+  if (process.env.NODE_ENV !== "production") {
+    return next();
+  }
+
   try {
     const userId = req.user?.id;
     if (!userId) throw new CustomError("Error parsing the auth token.", 400);
 
-    const active = await pubClient.get(`req:${userId}`);
+    const active = await redis.get(`req:${userId}`);
 
     if (active) {
-      res
-        .status(429)
-        .send(
-          "Too many requests. Please wait until the previous request is complete."
-        );
-    } else {
-      await pubClient.set(
-        `req:${userId}`,
-        "active",
-        "EX",
-        BLOCKED_REQUEST_TIMEOUT
+      throw new CustomError(
+        "Please wait until the previous request is complete.",
+        429
       );
+    } else {
+      await redis.set(`req:${userId}`, "active", "EX", BLOCKED_REQUEST_TIMEOUT);
 
       res.on("finish", async () => {
-        await pubClient.del(`req:${userId}`);
+        await redis.del(`req:${userId}`);
       });
 
       next();
     }
   } catch (error) {
-    console.error("Redis error:", error);
-    throw new Error("Redis error.");
+    next(error);
   }
 };
 

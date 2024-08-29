@@ -83,4 +83,15 @@ export const tapRepository = {
 
     return taps;
   },
+  getLatestTapByUserId: async (userId: string) => {
+    const tap = await db
+      .selectFrom("Tap")
+      .innerJoin("UserCard", "UserCard.id", "Tap.userCardId")
+      .where("UserCard.userId", "=", userId)
+      .select(["Tap.id", "Tap.amount", "Tap.tappedAt"])
+      .orderBy("Tap.tappedAt", "desc")
+      .executeTakeFirst();
+
+    return tap;
+  },
 };

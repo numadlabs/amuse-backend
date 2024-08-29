@@ -13,15 +13,18 @@ export function errorHandler(
 ) {
   let statusCode = 500,
     message = err.message;
-  if (err instanceof ZodError) {
+
+  if (err instanceof CustomError) {
+    statusCode = err.errorCode;
+  } else if (err instanceof ZodError) {
     statusCode = 400;
     message = `Invalid ${err.errors[0].path} input.`;
   } else if (err instanceof MulterError) {
     statusCode = 400;
   }
+
   let userId = "-";
   if (req.user?.id) userId = req.user.id;
-
   if (statusCode.toString().startsWith("4"))
     logger.warn({ message: message, userId: userId });
   if (statusCode.toString().startsWith("5"))

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import logger from "./winston";
 require("dotenv").config();
 
 const envSchema = z.object({
@@ -32,9 +33,8 @@ const envSchema = z.object({
 
 let env = envSchema.safeParse(process.env);
 if (!env.success) {
-  console.error(
-    "Invalid environment variables:",
-    env.error.flatten().fieldErrors
+  logger.error(
+    `Invalid environment variables: ${env.error.flatten().fieldErrors}`
   );
   process.exit(1);
 }

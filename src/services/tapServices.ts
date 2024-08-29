@@ -11,11 +11,12 @@ import { userRepository } from "../repository/userRepository";
 import { currencyRepository } from "../repository/currencyRepository";
 import { userTierRepository } from "../repository/userTierRepository";
 import { employeeRepository } from "../repository/employeeRepository";
-import { io, pubClient } from "../app";
+import { io, redis } from "../index";
 import { transactionRepository } from "../repository/transactionRepository";
 import { notificationRepository } from "../repository/notificationRepository";
 import { db } from "../utils/db";
-import { BOOST_MULTIPLIER } from "../lib/constants";
+import { BOOST_MULTIPLIER, TAP_LOCK_TIME } from "../lib/constants";
+import logger from "../config/winston";
 const crypto = require("crypto");
 
 export const tapServices = {
@@ -43,6 +44,30 @@ export const tapServices = {
     if (!waiter || !waiter.restaurantId)
       throw new CustomError("Invalid employeeId.", 400);
 
+    const userSocketId = await redis.get(`socket:${user.id}`);
+    const tapCheck = await tapRepository.getLatestTapByUserId(user.id);
+    if (tapCheck) {
+      const currentTime = new Date();
+      const timeDifference =
+        currentTime.getTime() - tapCheck.tappedAt.getTime();
+
+      if (timeDifference < TAP_LOCK_TIME * 1000) {
+        if (userSocketId) {
+          io.to(userSocketId).emit("tap-scan", {
+            isOwned: false,
+            restaurantId: waiter.restaurantId,
+          });
+
+          logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
+        }
+
+        throw new CustomError(
+          "Please wait 10 seconds before scanning again.",
+          400
+        );
+      }
+    }
+
     const restaurant = await restaurantRepository.getById(waiter.restaurantId);
     if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
@@ -51,14 +76,14 @@ export const tapServices = {
       restaurant.id
     );
 
-    const userSocketId = await pubClient.get(`socket:${user.id}`);
     if (!userCard) {
       if (userSocketId) {
-        console.log(`Emitting tap-scan to ${userSocketId}`);
         io.to(userSocketId).emit("tap-scan", {
           isOwned: false,
           restaurantId: restaurant.id,
         });
+
+        logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
       }
 
       throw new CustomError(
@@ -156,7 +181,6 @@ export const tapServices = {
     });
 
     if (userSocketId) {
-      console.log(`Emitting tap-scan to ${userSocketId}`);
       io.to(userSocketId).emit("tap-scan", {
         isOwned: true,
         data: {
@@ -168,6 +192,8 @@ export const tapServices = {
           bonusCheck: result.bonusCheck,
         },
       });
+
+      logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
     }
 
     return result;
@@ -194,14 +220,15 @@ export const tapServices = {
       restaurant.id
     );
 
-    const userSocketId = await pubClient.get(`socket:${user.id}`);
+    const userSocketId = await redis.get(`socket:${user.id}`);
     if (!userCard) {
       if (userSocketId) {
-        console.log(`Emitting tap-scan to ${userSocketId}`);
         io.to(userSocketId).emit("tap-scan", {
           isOwned: false,
           restaurantId: restaurant.id,
         });
+
+        logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
       }
 
       throw new CustomError(
@@ -352,7 +379,6 @@ export const tapServices = {
     });
 
     if (userSocketId) {
-      console.log(`Emitting tap-scan to ${userSocketId}`);
       io.to(userSocketId).emit("tap-scan", {
         isOwned: true,
         data: {
@@ -364,6 +390,8 @@ export const tapServices = {
           bonusCheck: result.bonusCheck,
         },
       });
+
+      logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
     }
 
     return result;
