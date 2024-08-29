@@ -7,7 +7,7 @@ const logger = createLogger({
   format: combine(timestamp(), json(), prettyPrint()),
   transports: [
     new transports.Console({
-      format: format.combine(json(), prettyPrint(), timestamp(), splat()),
+      format: format.combine(json(), timestamp(), splat()),
     }),
   ],
 });
