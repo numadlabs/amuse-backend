@@ -45,28 +45,28 @@ export const tapServices = {
       throw new CustomError("Invalid employeeId.", 400);
 
     const userSocketId = await redis.get(`socket:${user.id}`);
-    const tapCheck = await tapRepository.getLatestTapByUserId(user.id);
-    if (tapCheck) {
-      const currentTime = new Date();
-      const timeDifference =
-        currentTime.getTime() - tapCheck.tappedAt.getTime();
+    // const tapCheck = await tapRepository.getLatestTapByUserId(user.id);
+    // if (tapCheck) {
+    //   const currentTime = new Date();
+    //   const timeDifference =
+    //     currentTime.getTime() - tapCheck.tappedAt.getTime();
 
-      if (timeDifference < TAP_LOCK_TIME * 1000) {
-        if (userSocketId) {
-          io.to(userSocketId).emit("tap-scan", {
-            isOwned: false,
-            restaurantId: waiter.restaurantId,
-          });
+    //   if (timeDifference < TAP_LOCK_TIME * 1000) {
+    //     if (userSocketId) {
+    //       io.to(userSocketId).emit("tap-scan", {
+    //         isOwned: false,
+    //         restaurantId: waiter.restaurantId,
+    //       });
 
-          logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
-        }
+    //       logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
+    //     }
 
-        throw new CustomError(
-          "Please wait 10 seconds before scanning again.",
-          400
-        );
-      }
-    }
+    //     throw new CustomError(
+    //       "Please wait 10 seconds before scanning again.",
+    //       400
+    //     );
+    //   }
+    // }
 
     const restaurant = await restaurantRepository.getById(waiter.restaurantId);
     if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);

@@ -26,8 +26,6 @@ import morgan from "morgan";
 import logger from "./config/winston";
 import { rateLimiter } from "./middlewares/rateLimiter";
 import { sizeLimitConstants } from "./lib/constants";
-import { authenticateToken } from "./middlewares/authenticateToken";
-import blockSimultaneousRequests from "./middlewares/blockSimultaneousRequests";
 
 const app = express();
 
@@ -61,19 +59,14 @@ app.use(
   })
 );
 
-app.get(
-  "/",
-  authenticateToken(),
-  blockSimultaneousRequests,
-  (req: Request, res: Response) => {
-    setTimeout(() => {
-      res.status(200).json({
-        message: "API - 👋🌎🌍",
-        version: "0.0.1",
-      });
-    }, 5000);
-  }
-);
+app.get("/", (req: Request, res: Response) => {
+  setTimeout(() => {
+    res.status(200).json({
+      message: "API - 👋🌎🌍",
+      version: "0.0.1",
+    });
+  }, 5000);
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/restaurants", restaurantRoutes);
