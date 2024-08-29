@@ -1,5 +1,5 @@
-import { Insertable, Updateable } from "kysely";
-import { Employee } from "../types/db/types";
+import { Insertable, Kysely, Transaction, Updateable } from "kysely";
+import { DB, Employee } from "../types/db/types";
 import { db } from "../utils/db";
 
 export const employeeRepository = {
@@ -12,7 +12,10 @@ export const employeeRepository = {
 
     return employee;
   },
-  create: async (data: Insertable<Employee>) => {
+  create: async (
+    db: Kysely<DB> | Transaction<DB>,
+    data: Insertable<Employee>
+  ) => {
     const employee = await db
       .insertInto("Employee")
       .values(data)
@@ -23,6 +26,7 @@ export const employeeRepository = {
         "Employee.role",
         "Employee.restaurantId",
         "Employee.passwordUpdateAt",
+        "Employee.isOnboarded",
       ])
       .executeTakeFirstOrThrow(
         () => new Error("Could not create the employee.")
@@ -60,6 +64,7 @@ export const employeeRepository = {
         "Employee.fullname",
         "Employee.role",
         "Employee.createdAt",
+        "Employee.isOnboarded",
       ])
       .where("Employee.restaurantId", "=", restaurantId)
       .execute();

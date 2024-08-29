@@ -21,7 +21,7 @@ const currency: Insertable<Currency>[] = [
 const user: Insertable<User>[] = [
   {
     id: "0c7e8a8b-81e2-4f43-9e58-dd972d551d0c",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -35,7 +35,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "58ba40c8-0ffb-46ee-965a-27583e726826",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -49,7 +49,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "6223c9f0-90ae-4e8e-8395-19fb5f84351d",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -63,7 +63,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "1d890e21-927f-476a-bfc0-c8349de07b21",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -77,7 +77,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "55e20404-f4a3-440a-a9bd-fa5ab245d6c5",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -91,7 +91,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "cc28b7bb-c183-466a-817b-1f45c1dd7594",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -105,7 +105,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "37d4b288-9451-4a3d-950d-ec59734e9ed3",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -119,7 +119,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "e98b78cd-1717-4fd0-be9f-5bcc89737854",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -133,7 +133,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "9fed645a-795d-430a-8429-51449ddeb7cf",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -147,7 +147,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "34772c16-0186-4ee4-86d9-a1f8ec6a89dc",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -161,7 +161,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "8347dafd-4a49-4e74-9f2e-cda4325eae40",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -175,7 +175,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "ba999f2e-6acc-423b-8c5e-aeff4db622a4",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -189,7 +189,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "41f0b72c-d56d-424f-ada1-e5a3d2c8f887",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -203,7 +203,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "c4e22f4d-3570-49f9-9a05-d5a7558b8a17",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -217,7 +217,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "5e891dea-0701-4068-aa4d-b8853f9ab596",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -231,7 +231,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "c58b6079-6ace-4708-a061-127f59eb2a9d",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -245,7 +245,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "692b8fa0-d684-4a29-bc35-d4d575ab99b9",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -259,7 +259,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "16b928d6-bd99-4387-82f8-1a3dda245703",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -273,7 +273,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "437b319d-f775-4f48-b15e-e3531b273051",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,
@@ -287,7 +287,7 @@ const user: Insertable<User>[] = [
   },
   {
     id: "00b0fbad-fb2b-4466-bec1-fde419ddd0bb",
-    password: "Password12",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     nickname: "tester",
     role: "USER",
     profilePicture: null,

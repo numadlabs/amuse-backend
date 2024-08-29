@@ -14,6 +14,7 @@ import { restaurantRepository } from "../repository/restaurantRepository";
 import { ROLES } from "../types/db/enums";
 import { emailOtpRepository } from "../repository/emailOtpRepository";
 import { hideSensitiveData } from "../lib/hideDataHelper";
+import { db } from "../utils/db";
 const crypto = require("crypto");
 
 const MAX = verificationCodeConstants.MAX_VALUE,
@@ -47,28 +48,32 @@ export const employeeServices = {
     const password = crypto.randomBytes(16).toString("base64").slice(0, 16);
     const hashedPassword = await encryptionHelper.encrypt(password);
 
-    data.password = hashedPassword;
-    const employee = await employeeRepository.create(data);
+    const result = await db.transaction().execute(async (trx) => {
+      await sendEmail(
+        "Welcome to Amuse Bouche – Your Login Details",
+        `
+  Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
+  
+  To get started, please use the following credentials to log in to your account:
+  
+  Login Email: ${data.email}
+  Password: ${password}
+  
+  Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
+  
+  Best regards,  
+  The Amuse Bouche Team
+  `,
+        data.email
+      );
 
-    await sendEmail(
-      "Welcome to Amuse Bouche – Your Login Details",
-      `
-Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
+      data.password = hashedPassword;
+      const employee = await employeeRepository.create(trx, data);
 
-To get started, please use the following credentials to log in to your account:
+      return employee;
+    });
 
-Login Email: ${data.email}
-Password: ${password}
-
-Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
-
-Best regards,  
-The Amuse Bouche Team
-`,
-      employee.email
-    );
-
-    return employee;
+    return result;
   },
   createAsSuperAdmin: async (data: Insertable<Employee>) => {
     if (data.role === "SUPER_ADMIN" || data.role === "USER")
@@ -87,27 +92,32 @@ The Amuse Bouche Team
     const password = crypto.randomBytes(16).toString("base64").slice(0, 16);
     const hashedPassword = await encryptionHelper.encrypt(password);
 
-    data.password = hashedPassword;
-    const employee = await employeeRepository.create(data);
-
-    if (!employee.restaurantId)
+    const result = await db.transaction().execute(async (trx) => {
       await sendEmail(
         "Welcome to Amuse Bouche – Your Login Details",
         `
-Welcome to Amuse Bouche! We’re excited to have you on board and look forward to helping you set up your restaurant profile.
-
-To get started, please use the following credentials to log in to your account and complete your profile setup:
-
-Login Email: ${employee.email}
-Password: ${password}
-
-Best regards,  
-The Amuse Bouche Team
-`,
-        employee.email
+  Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
+  
+  To get started, please use the following credentials to log in to your account:
+  
+  Login Email: ${data.email}
+  Password: ${password}
+  
+  Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
+  
+  Best regards,  
+  The Amuse Bouche Team
+  `,
+        data.email
       );
 
-    return employee;
+      data.password = hashedPassword;
+      const employee = await employeeRepository.create(trx, data);
+
+      return employee;
+    });
+
+    return result;
   },
   updateInfo: async (
     data: Updateable<Employee>,
@@ -145,7 +155,6 @@ The Amuse Bouche Team
   },
   setEmailOTP: async (email: string) => {
     const employeeById = await employeeRepository.getByEmail(email);
-
     if (!employeeById) throw new CustomError("Employee does not exist.", 400);
 
     const randomNumber = Math.floor(Math.random() * (MAX - MIN + 1)) + MIN;
@@ -154,23 +163,22 @@ The Amuse Bouche Team
       verificationCodeConstants.EMAIL_EXPIRATION_TIME
     );
 
-    await sendEmail(
-      "Amuse Bouche OTP",
-      `Your Amuse Bouche verification code is: ${randomNumber}`,
-      employeeById.email
-    );
+    const result = await db.transaction().execute(async (trx) => {
+      const isSent = await sendEmail(
+        "Amuse Bouche OTP",
+        `Your Amuse Bouche verification code is: ${randomNumber}`,
+        employeeById.email
+      );
+      if (!isSent.accepted)
+        throw new Error("Error has occured while sending the OTP.");
 
-    await emailOtpRepository.create({
-      email: email.toLowerCase(),
-      verificationCode: emailVerificationToken,
+      await emailOtpRepository.create(trx, {
+        email: email.toLowerCase(),
+        verificationCode: emailVerificationToken,
+      });
     });
 
-    const employee = await employeeRepository.update(
-      employeeById.id,
-      employeeById
-    );
-
-    return employee;
+    return employeeById;
   },
   checkEmailOTP: async (email: string, verificationCode: number) => {
     const employee = await employeeRepository.getByEmail(email);

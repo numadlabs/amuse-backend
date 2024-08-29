@@ -11,6 +11,7 @@ import { employeeRepository } from "../../../src/repository/employeeRepository";
 import { encryptionHelper } from "../../../src/lib/encryptionHelper";
 import { employeeServices } from "../../../src/services/employeeServices";
 import { ROLES } from "../../../src/types/db/enums";
+import { db } from "../../../src/utils/db";
 
 jest.mock("../../../src/repository/emailOtpRepository");
 
@@ -70,7 +71,7 @@ export const testHelpers = {
     const restaurant = await restaurantRepository.create(restaurantPayload);
 
     const ownerPassword = faker.internet.password();
-    const owner = await employeeRepository.create({
+    const owner = await employeeRepository.create(db, {
       email: faker.internet.email().toLowerCase(),
       password: await encryptionHelper.encrypt(ownerPassword),
       fullname: faker.company.name(),
@@ -109,7 +110,7 @@ export const testHelpers = {
     const restaurant = await restaurantRepository.create(restaurantPayload);
 
     const ownerPassword = faker.internet.password();
-    const owner = await employeeRepository.create({
+    const owner = await employeeRepository.create(db, {
       email: faker.internet.email().toLowerCase(),
       password: await encryptionHelper.encrypt(ownerPassword),
       fullname: faker.company.name(),
@@ -133,7 +134,7 @@ export const testHelpers = {
   },
   createEmployee: async (restaurantId: string | null, role: ROLES) => {
     const password = faker.internet.password();
-    const employee = await employeeRepository.create({
+    const employee = await employeeRepository.create(db, {
       email: faker.internet.email().toLowerCase(),
       password: await encryptionHelper.encrypt(password),
       fullname: faker.company.name(),

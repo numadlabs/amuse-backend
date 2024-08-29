@@ -93,25 +93,27 @@ export const userServices = {
             verificationCodeConstants.MIN_VALUE +
             1)
       ) + verificationCodeConstants.MIN_VALUE;
-    const emailVerificationCode = generateVerificationToken(
+    const emailVerificationToken = generateVerificationToken(
       randomNumber,
       verificationCodeConstants.EMAIL_EXPIRATION_TIME
     );
 
-    const isSent = await sendEmail(
-      "Amuse Bouche OTP",
-      `Your Amuse Bouche verification code is: ${randomNumber}`,
-      email
-    );
-    if (!isSent.accepted)
-      throw new Error("Error has occured while sending the OTP.");
+    const result = await db.transaction().execute(async (trx) => {
+      const isSent = await sendEmail(
+        "Amuse Bouche OTP",
+        `Your Amuse Bouche verification code is: ${randomNumber}`,
+        email
+      );
+      if (!isSent.accepted)
+        throw new Error("Error has occured while sending the OTP.");
 
-    const emailOtp = await emailOtpRepository.create({
-      email: email.toLowerCase(),
-      verificationCode: emailVerificationCode,
+      await emailOtpRepository.create(trx, {
+        email: email.toLowerCase(),
+        verificationCode: emailVerificationToken,
+      });
     });
 
-    return emailOtp;
+    return true;
   },
   checkOTP: async (email: string, verificationCode: number) => {
     const emailOtp = await emailOtpRepository.getByEmail(email.toLowerCase());
@@ -166,19 +168,23 @@ export const userServices = {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
 
-    if ((file && findUser.profilePicture) || data.profilePicture === "") {
-      await deleteFromS3(`user/${findUser.profilePicture}`);
-      data.profilePicture = null;
-    }
+    const result = await db.transaction().execute(async (trx) => {
+      if ((file && findUser.profilePicture) || data.profilePicture === "") {
+        await deleteFromS3(`user/${findUser.profilePicture}`);
+        data.profilePicture = null;
+      }
 
-    if (file) {
-      const randomKey = randomUUID();
-      await uploadToS3(`user/${randomKey}`, file);
-      data.profilePicture = randomKey;
-    }
+      if (file) {
+        const randomKey = randomUUID();
+        await uploadToS3(`user/${randomKey}`, file);
+        data.profilePicture = randomKey;
+      }
 
-    const user = await userRepository.update(db, findUser.id, data);
-    const sanitizedUser = hideSensitiveData(user, ["password"]);
+      const user = await userRepository.update(trx, findUser.id, data);
+
+      return user;
+    });
+    const sanitizedUser = hideSensitiveData(result, ["password"]);
 
     return sanitizedUser;
   },
@@ -186,22 +192,27 @@ export const userServices = {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
 
-    if (findUser.profilePicture)
-      await deleteFromS3(`user/${findUser.profilePicture}`);
+    const result = await db.transaction().execute(async (trx) => {
+      if (findUser.profilePicture)
+        await deleteFromS3(`user/${findUser.profilePicture}`);
 
-    const userCards = await userCardReposity.getByUserIdWithRestaurantDetails(
-      findUser.id
-    );
-    const updatePromises = userCards.map((userCard) =>
-      restaurantRepository.increaseBalanceByRestaurantId(
-        userCard.restaurantId,
-        userCard.balance
-      )
-    );
-    await Promise.all(updatePromises);
+      const userCards = await userCardReposity.getByUserIdWithRestaurantDetails(
+        findUser.id
+      );
+      const updatePromises = userCards.map((userCard) =>
+        restaurantRepository.increaseBalanceByRestaurantId(
+          userCard.restaurantId,
+          userCard.balance
+        )
+      );
+      await Promise.all(updatePromises);
 
-    const user = await userRepository.delete(findUser.id);
-    const sanitizedUser = hideSensitiveData(user, ["password"]);
+      const user = await userRepository.delete(trx, findUser.id);
+
+      return user;
+    });
+
+    const sanitizedUser = hideSensitiveData(result, ["password"]);
 
     return sanitizedUser;
   },

@@ -8,6 +8,7 @@ import { CustomError } from "../exceptions/CustomError";
 import { config } from "../config/config";
 import { employeeRepository } from "../repository/employeeRepository";
 import { fi } from "@faker-js/faker";
+import { db } from "../utils/db";
 
 const s3BucketName = config.AWS_S3_BUCKET_NAME;
 
@@ -45,7 +46,7 @@ export const cardServices = {
 
     card.nftImageUrl = randomKey;
 
-    const updatedCard = await cardRepository.update(card.id, card);
+    const updatedCard = await cardRepository.update(db, card.id, card);
 
     return updatedCard;
   },
@@ -66,20 +67,22 @@ export const cardServices = {
         400
       );
 
-    if (file && card.nftImageUrl) {
-      await deleteFromS3(`restaurant/${card.nftImageUrl}`);
-    }
+    const result = await db.transaction().execute(async (trx) => {
+      if (file && card.nftImageUrl) {
+        await deleteFromS3(`restaurant/${card.nftImageUrl}`);
+      }
 
-    if (file) {
-      const randomKey = randomUUID();
-      await uploadToS3(`restaurant/${randomKey}`, file);
+      if (file) {
+        const randomKey = randomUUID();
+        await uploadToS3(`restaurant/${randomKey}`, file);
 
-      data.nftImageUrl = randomKey;
-    }
+        data.nftImageUrl = randomKey;
+      }
 
-    const updatedCard = await cardRepository.update(card.id, data);
+      const updatedCard = await cardRepository.update(trx, card.id, data);
+    });
 
-    return updatedCard;
+    return result;
   },
   delete: async (id: string) => {
     const card = await cardRepository.getById(id);

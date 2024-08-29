@@ -87,7 +87,10 @@ export const UserController = {
         success: true,
         data: {
           user: sanitizedUser,
-          convertedBalance: user.balance * btc.price * currency.price,
+          convertedBalance:
+            (Math.floor(user.balance * 10 ** 8) / 10 ** 8) *
+            btc.price *
+            currency.price,
         },
       });
     } catch (e) {

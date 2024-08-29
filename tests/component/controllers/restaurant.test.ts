@@ -9,6 +9,7 @@ import { faker } from "@faker-js/faker";
 import { employeeRepository } from "../../../src/repository/employeeRepository";
 import { encryptionHelper } from "../../../src/lib/encryptionHelper";
 import { restaurantRepository } from "../../../src/repository/restaurantRepository";
+import { db } from "../../../src/utils/db";
 
 jest.mock("../../../src/lib/emailHelper");
 jest.mock("../../../src/utils/aws");
@@ -82,7 +83,7 @@ describe("Restaurant APIs", () => {
         await employeeServices.login(ownerPayload.email, ownerPayload.password)
       ).accessToken;
 
-      const owner = await employeeRepository.create({
+      const owner = await employeeRepository.create(db, {
         email: faker.internet.email().toLowerCase(),
         password: await encryptionHelper.encrypt("Password12"),
         fullname: "restaurant",
@@ -172,7 +173,7 @@ describe("Restaurant APIs", () => {
       });
       restaurantId = restaurant.id;
 
-      const owner = await employeeRepository.create({
+      const owner = await employeeRepository.create(db, {
         email: faker.internet.email().toLowerCase(),
         password: await encryptionHelper.encrypt("Password12"),
         fullname: "restaurant",
@@ -333,7 +334,7 @@ describe("Restaurant APIs", () => {
       });
       restaurantId = restaurant.id;
 
-      const owner = await employeeRepository.create({
+      const owner = await employeeRepository.create(db, {
         email: faker.internet.email().toLowerCase(),
         password: await encryptionHelper.encrypt("Password12"),
         fullname: "restaurant",

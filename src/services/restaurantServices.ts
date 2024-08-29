@@ -7,7 +7,6 @@ import { randomUUID } from "crypto";
 import { timetableRepository } from "../repository/timetableRepository";
 import { employeeRepository } from "../repository/employeeRepository";
 import { parseLatLong } from "../lib/locationParser";
-import { config } from "../config/config";
 import { db } from "../utils/db";
 
 export const restaurantServices = {
@@ -18,7 +17,7 @@ export const restaurantServices = {
   ) => {
     const owner = await employeeRepository.getById(ownerId);
     if (!owner) throw new CustomError("Owner not found.", 400);
-    if (owner.restaurantId)
+    if (owner.restaurantId || owner.isOnboarded)
       throw new CustomError("You are not allowed to create restaurant.", 400);
 
     if (!data.googleMapsUrl)
@@ -119,24 +118,28 @@ export const restaurantServices = {
       data.longitude = longitude;
     }
 
-    if (file && restaurant.logo) {
-      await deleteFromS3(`restaurant/${restaurant.logo}`);
-    }
+    const result = await db.transaction().execute(async (trx) => {
+      if (file && restaurant.logo) {
+        await deleteFromS3(`restaurant/${restaurant.logo}`);
+      }
 
-    if (file) {
-      const randomKey = randomUUID();
-      await uploadToS3(`restaurant/${randomKey}`, file);
+      if (file) {
+        const randomKey = randomUUID();
+        await uploadToS3(`restaurant/${randomKey}`, file);
 
-      data.logo = randomKey;
-    }
+        data.logo = randomKey;
+      }
 
-    const updatedRestaurant = await restaurantRepository.update(
-      db,
-      restaurant.id,
-      data
-    );
+      const updatedRestaurant = await restaurantRepository.update(
+        trx,
+        restaurant.id,
+        data
+      );
 
-    return updatedRestaurant;
+      return updatedRestaurant;
+    });
+
+    return result;
   },
   delete: async (id: string) => {
     const restaurant = await restaurantRepository.getById(id);

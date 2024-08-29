@@ -1,10 +1,13 @@
-import { Insertable, Updateable } from "kysely";
-import { EmailOtp } from "../types/db/types";
+import { Insertable, Kysely, Transaction, Updateable } from "kysely";
+import { DB, EmailOtp } from "../types/db/types";
 import { db } from "../utils/db";
 import { CustomError } from "../exceptions/CustomError";
 
 export const emailOtpRepository = {
-  create: async (data: Insertable<EmailOtp>) => {
+  create: async (
+    db: Kysely<DB> | Transaction<DB>,
+    data: Insertable<EmailOtp>
+  ) => {
     const emailOtp = await db
       .insertInto("EmailOtp")
       .values(data)

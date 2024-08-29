@@ -28,6 +28,8 @@ import { createAdapter } from "@socket.io/redis-adapter";
 import { config } from "./config/config";
 import { hostname } from "os";
 import { insertSeed } from "./seeders/main";
+import morgan from "morgan";
+import logger from "./config/winston";
 
 const app = express();
 export const server = createServer(app);
@@ -41,19 +43,34 @@ pubClient.on("error", (err) => {
   console.error("Redis error:", err);
 });
 
-app.get("/", (req: Request, res: Response) => {
-  const hostName = hostname();
-  res.status(200).json({
-    message: "API - 👋🌎🌍",
-    version: "3.0.1",
-    host: hostName,
-  });
-});
-
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
 app.use(bodyParser.json());
+
+const morganFormat = ":method :url :status :response-time ms";
+app.use(
+  morgan(morganFormat, {
+    stream: {
+      write: (message) => {
+        const logObject = {
+          method: message.split(" ")[0],
+          url: message.split(" ")[1],
+          status: message.split(" ")[2],
+          responseTime: message.split(" ")[3],
+        };
+        logger.info(logObject);
+      },
+    },
+  })
+);
+
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).json({
+    message: "API - 👋🌎🌍",
+    version: "3.0.1",
+  });
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

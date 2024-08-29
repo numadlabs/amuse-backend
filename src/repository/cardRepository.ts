@@ -1,5 +1,5 @@
-import { Insertable, Updateable } from "kysely";
-import { Card } from "../types/db/types";
+import { Insertable, Kysely, Transaction, Updateable } from "kysely";
+import { Card, DB } from "../types/db/types";
 import { db } from "../utils/db";
 import { CustomError } from "../exceptions/CustomError";
 
@@ -13,7 +13,11 @@ export const cardRepository = {
 
     return card;
   },
-  update: async (id: string, data: Updateable<Card>) => {
+  update: async (
+    db: Kysely<DB> | Transaction<DB>,
+    id: string,
+    data: Updateable<Card>
+  ) => {
     const card = db
       .updateTable("Card")
       .set(data)

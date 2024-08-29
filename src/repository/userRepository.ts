@@ -75,7 +75,7 @@ export const userRepository = {
 
     return user;
   },
-  delete: async (id: string) => {
+  delete: async (db: Kysely<DB> | Transaction<DB>, id: string) => {
     const deletedUser = await db
       .deleteFrom("User")
       .where("User.id", "=", id)
