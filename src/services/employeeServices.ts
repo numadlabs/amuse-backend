@@ -45,8 +45,9 @@ export const employeeServices = {
     const restaurant = await restaurantRepository.getById(data.restaurantId);
     if (!restaurant) throw new CustomError("Restaurant not found.", 400);
 
-    const password = crypto.randomBytes(16).toString("base64").slice(0, 16);
-    const hashedPassword = await encryptionHelper.encrypt(password);
+    const password =
+      crypto.randomBytes(16).toString("base64").slice(0, 16) + "12";
+    const hashedPassword = await encryptionHelper.encrypt(password + "1");
 
     const result = await db.transaction().execute(async (trx) => {
       await sendEmail(
@@ -89,7 +90,8 @@ export const employeeServices = {
     if (emailCheck)
       throw new CustomError("Email has already been registed.", 400);
 
-    const password = crypto.randomBytes(16).toString("base64").slice(0, 16);
+    const password =
+      crypto.randomBytes(16).toString("base64").slice(0, 16) + "12";
     const hashedPassword = await encryptionHelper.encrypt(password);
 
     const result = await db.transaction().execute(async (trx) => {
