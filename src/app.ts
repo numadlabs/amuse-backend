@@ -62,7 +62,7 @@ app.use(
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     message: "API - 👋🌎🌍",
-    version: "0.0.1",
+    version: "0.0.2",
   });
 });
 app.use("/api/auth", authRoutes);

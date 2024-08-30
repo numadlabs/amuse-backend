@@ -47,7 +47,7 @@ export const employeeServices = {
 
     const password =
       crypto.randomBytes(16).toString("base64").slice(0, 16) + "12";
-    const hashedPassword = await encryptionHelper.encrypt(password + "1");
+    const hashedPassword = await encryptionHelper.encrypt(password);
 
     const result = await db.transaction().execute(async (trx) => {
       await sendEmail(
