@@ -41,7 +41,7 @@ LEFT JOIN (
     SUM(CASE WHEN tapCount > 5 THEN 1 ELSE 0 END) AS "+5"
 FROM (
     SELECT
-        c.name,
+        co.name,
         u.id AS "userId",
         r.id AS "restaurantId",
         COUNT(u.id) AS tapCount
@@ -51,12 +51,12 @@ FROM (
         INNER JOIN "Card" c ON c.id = uc."cardId" 
         INNER JOIN "Restaurant" r ON r.id = c."restaurantId" 
         INNER JOIN "User" u ON u.id = t."userId"
-        INNER JOIN "Country" c ON c.id = u."countryId" 
+        INNER JOIN "Country" co ON co.id = u."countryId" 
     WHERE
         r.id = ${restaurantId}
         AND t."tappedAt" BETWEEN ${startDate} AND ${endDate}
     GROUP BY
-        u.id, r.id, c.name
+        u.id, r.id, co.name
 ) AS subquery
 GROUP BY name;`.execute(db);
 
