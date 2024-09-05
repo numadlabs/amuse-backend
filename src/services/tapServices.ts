@@ -38,13 +38,14 @@ export const tapServices = {
 
     if (!data.userId) throw new CustomError("Invalid QR.", 400);
     const user = await userRepository.getUserById(data.userId);
-    if (!user) throw new CustomError("Invalid QR.", 400);
+    if (!user) throw new CustomError("Invalid userId.", 400);
 
     const waiter = await employeeRepository.getById(waiterId);
     if (!waiter || !waiter.restaurantId)
       throw new CustomError("Invalid employeeId.", 400);
 
     const userSocketId = await redis.get(`socket:${user.id}`);
+    //handle the no latest tap case
     // const tapCheck = await tapRepository.getLatestTapByUserId(user.id);
     // if (tapCheck) {
     //   const currentTime = new Date();
@@ -124,7 +125,7 @@ export const tapServices = {
         (restaurant.rewardAmount / (btc.price * currency.price)) *
         tier.rewardMultiplier;
 
-      if (user.email && user.location && user.dateOfBirth)
+      if (user.email && user.countryId && user.birthMonth && user.birthYear)
         incrementBtc *= BOOST_MULTIPLIER;
 
       if (restaurant.balance >= incrementBtc) {
@@ -322,7 +323,7 @@ export const tapServices = {
         (restaurant.rewardAmount / (btc.price * currency.price)) *
         tier.rewardMultiplier;
 
-      // if (user.email && user.location && user.dateOfBirth)
+      // if (user.email && user.countryId && user.birthMonth && user.birthYear)
       //   incrementBtc *= BOOST_MULTIPLIER;
 
       if (restaurant.balance >= incrementBtc) {

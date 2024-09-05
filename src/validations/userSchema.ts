@@ -7,25 +7,33 @@ export const updateUserInfoSchema = z
       .trim()
       .max(30, "Nickname must be at most 30 characters.")
       .optional(),
-    location: z
+    countryId: z
       .string()
       .trim()
+      .uuid()
       .max(100, "Location must be at most 100 characters.")
       .optional(),
-    dateOfBirth: z
+    birthYear: z
       .string()
       .trim()
-      .transform((val) => (val === "" ? null : val))
-      .refine(
-        (val) => {
-          if (val === null) return true;
-          const date = new Date(val);
-          return !isNaN(date.getTime());
-        },
-        {
-          message: "Invalid date format. Must be a valid date or null.",
-        }
-      )
+      .transform((val) => parseInt(val, 10))
+      .refine((val) => !isNaN(val), {
+        message: "Invalid number format",
+      })
+      .refine((val) => val >= 1900 && val <= 2024, {
+        message: "Month must be between 1 and 12",
+      })
+      .optional(),
+    birthMonth: z
+      .string()
+      .trim()
+      .transform((val) => parseInt(val, 10))
+      .refine((val) => !isNaN(val), {
+        message: "Invalid number format",
+      })
+      .refine((val) => val >= 1 && val <= 12, {
+        message: "Month must be between 1 and 12",
+      })
       .optional(),
     profilePicture: z
       .string()

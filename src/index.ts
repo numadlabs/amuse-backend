@@ -14,7 +14,7 @@ const pubClient = redis.duplicate();
 const subClient = pubClient.duplicate();
 io.adapter(createAdapter(pubClient, subClient));
 
-pubClient.on("error", (err) => {
+redis.on("error", (err) => {
   logger.error(`Error in Redis client: ${err}`);
 });
 

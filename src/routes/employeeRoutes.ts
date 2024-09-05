@@ -21,10 +21,22 @@ employeeRouter.post(
   authorize("SUPER_ADMIN"),
   employeeController.createAsSuperAdmin
 );
-employeeRouter.post("/login", employeeController.login);
-employeeRouter.post("/sendOTP", employeeController.sendEmailOTP);
-employeeRouter.post("/checkOTP", employeeController.checkEmailOTP);
-employeeRouter.post("/forgotPassword", employeeController.forgotPassword);
+employeeRouter.post("/login", authRateLimiter, employeeController.login);
+employeeRouter.post(
+  "/sendOTP",
+  sendOtpRateLimiter,
+  employeeController.sendEmailOTP
+);
+employeeRouter.post(
+  "/checkOTP",
+  checkOtpRateLimiter,
+  employeeController.checkEmailOTP
+);
+employeeRouter.post(
+  "/forgotPassword",
+  checkOtpRateLimiter,
+  employeeController.forgotPassword
+);
 employeeRouter.put(
   "/onboarding-create-password",
   authenticateToken(),

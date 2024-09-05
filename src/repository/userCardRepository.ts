@@ -11,6 +11,7 @@ export const userCardReposity = {
         userId: userId,
         cardId: cardId,
       })
+      .onConflict((oc) => oc.columns(["userId", "cardId"]).doNothing())
       .returningAll()
       .executeTakeFirstOrThrow(
         () => new Error("Could not create the userCard.")

@@ -26,6 +26,7 @@ import morgan from "morgan";
 import logger from "./config/winston";
 import { rateLimiter } from "./middlewares/rateLimiter";
 import { sizeLimitConstants } from "./lib/constants";
+import countryRouter from "./routes/countryRoutes";
 
 const app = express();
 
@@ -81,6 +82,7 @@ app.use("/api/employees", employeeRouter);
 app.use("/api/userTiers", userTierRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/transactions", transactionRouter);
+app.use("/api/countries", countryRouter);
 
 app.use(notFound);
 app.use(errorHandler);

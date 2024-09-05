@@ -18,7 +18,7 @@ LEFT JOIN (
 	    inner join "Card" c on c.id = uc."cardId" 
 	    inner join "Restaurant" r on r.id = c."restaurantId"
 	    inner join "User" u on u.id = uc."userId"
-	    where r.id = ${restaurantId} AND (${location}='1' OR u."location" = ${location})
+	    where r.id = ${restaurantId}
 	    group by t."tappedAt"::date, r.id
 	    order by t."tappedAt"::date
         ) query_result ON gs.date = query_result.creation_date
@@ -32,7 +32,7 @@ LEFT JOIN (
     endDate: Date
   ) => {
     const data = await sql`SELECT
-    COALESCE(location, 'Not defined') AS location,
+    COALESCE(name, 'Not defined') AS location,
     SUM(CASE WHEN tapCount = 1 THEN 1 ELSE 0 END) AS "1",
     SUM(CASE WHEN tapCount = 2 THEN 1 ELSE 0 END) AS "2",
     SUM(CASE WHEN tapCount = 3 THEN 1 ELSE 0 END) AS "3",
@@ -41,7 +41,7 @@ LEFT JOIN (
     SUM(CASE WHEN tapCount > 5 THEN 1 ELSE 0 END) AS "+5"
 FROM (
     SELECT
-        u.location,
+        c.name,
         u.id AS "userId",
         r.id AS "restaurantId",
         COUNT(u.id) AS tapCount
@@ -50,14 +50,15 @@ FROM (
         INNER JOIN "UserCard" uc ON uc.id = t."userCardId" 
         INNER JOIN "Card" c ON c.id = uc."cardId" 
         INNER JOIN "Restaurant" r ON r.id = c."restaurantId" 
-        INNER JOIN "User" u ON u.id = t."userId" 
+        INNER JOIN "User" u ON u.id = t."userId"
+        INNER JOIN "Country" c ON c.id = u."countryId" 
     WHERE
         r.id = ${restaurantId}
         AND t."tappedAt" BETWEEN ${startDate} AND ${endDate}
     GROUP BY
-        u.id, r.id, u.location
+        u.id, r.id, c.name
 ) AS subquery
-GROUP BY location;`.execute(db);
+GROUP BY name;`.execute(db);
 
     return data.rows;
   },

@@ -84,4 +84,12 @@ export const transactionServices = {
 
     return transaction;
   },
+  getBudget: async (restaurantId: string) => {
+    const totalDeposit =
+      await transactionRepository.getTotalDepositByRestaurantId(restaurantId);
+    const totalWithdraw =
+      await transactionRepository.getTotalWithdrawByRestaurantId(restaurantId);
+
+    return totalDeposit.totalDeposit - totalWithdraw.totalWithdraw;
+  },
 };

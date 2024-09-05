@@ -110,7 +110,7 @@ export const userBonusRepository = {
         "Employee.fullname",
         "User.nickname",
         "User.email",
-        "User.location",
+        "User.countryId",
         "UserBonus.usedAt",
       ])
       .execute();

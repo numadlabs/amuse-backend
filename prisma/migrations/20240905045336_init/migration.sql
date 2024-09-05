@@ -1,11 +1,14 @@
 -- CreateEnum
-CREATE TYPE "ROLES" AS ENUM ('SUPER_ADMIN', 'RESTAURANT_OWNER', 'RESTAURANT_WAITER', 'USER');
+CREATE TYPE "ROLES" AS ENUM ('SUPER_ADMIN', 'RESTAURANT_OWNER', 'RESTAURANT_MANAGER', 'RESTAURANT_WAITER', 'USER');
 
 -- CreateEnum
 CREATE TYPE "BONUS_TYPE" AS ENUM ('SINGLE', 'RECURRING', 'REDEEMABLE');
 
 -- CreateEnum
 CREATE TYPE "TRANSACTION_TYPE" AS ENUM ('WITHDRAW', 'DEPOSIT', 'PURCHASE', 'REWARD');
+
+-- CreateEnum
+CREATE TYPE "NOTIFICATION_TYPE" AS ENUM ('TAP', 'BONUS', 'REWARD', 'CARD');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -14,7 +17,8 @@ CREATE TABLE "User" (
     "nickname" TEXT NOT NULL,
     "role" "ROLES" NOT NULL DEFAULT 'USER',
     "profilePicture" TEXT,
-    "dateOfBirth" TIMESTAMP(3),
+    "birthYear" INTEGER,
+    "birthMonth" INTEGER,
     "location" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -28,12 +32,13 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Employee" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "passwordUpdateAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "password" TEXT NOT NULL,
-    "firstname" TEXT NOT NULL,
-    "lastname" TEXT NOT NULL,
+    "fullname" TEXT NOT NULL DEFAULT 'Employee',
     "role" "ROLES" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "email" TEXT NOT NULL,
+    "isOnboarded" BOOLEAN NOT NULL DEFAULT false,
     "restaurantId" TEXT,
 
     CONSTRAINT "Employee_pkey" PRIMARY KEY ("id")
@@ -66,6 +71,7 @@ CREATE TABLE "Device" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "pushToken" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" TEXT,
 
     CONSTRAINT "Device_pkey" PRIMARY KEY ("id")
 );
@@ -77,6 +83,7 @@ CREATE TABLE "Restaurant" (
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "location" TEXT NOT NULL,
+    "googleMapsUrl" TEXT,
     "latitude" DOUBLE PRECISION NOT NULL,
     "longitude" DOUBLE PRECISION NOT NULL,
     "logo" TEXT,
@@ -170,6 +177,7 @@ CREATE TABLE "UserBonus" (
     "userId" TEXT NOT NULL,
     "userCardId" TEXT NOT NULL,
     "bonusId" TEXT NOT NULL,
+    "waiterId" TEXT,
 
     CONSTRAINT "UserBonus_pkey" PRIMARY KEY ("id")
 );
@@ -178,9 +186,11 @@ CREATE TABLE "UserBonus" (
 CREATE TABLE "Notification" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "message" TEXT NOT NULL,
-    "isRead" BOOLEAN NOT NULL,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
+    "type" "NOTIFICATION_TYPE" NOT NULL DEFAULT 'REWARD',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" TEXT NOT NULL,
+    "userId" TEXT,
+    "employeeId" TEXT,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
@@ -217,6 +227,9 @@ CREATE UNIQUE INDEX "Employee_email_key" ON "Employee"("email");
 -- CreateIndex
 CREATE UNIQUE INDEX "Device_pushToken_key" ON "Device"("pushToken");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "UserCard_cardId_userId_key" ON "UserCard"("cardId", "userId");
+
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_userTierId_fkey" FOREIGN KEY ("userTierId") REFERENCES "UserTier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -225,6 +238,9 @@ ALTER TABLE "Employee" ADD CONSTRAINT "Employee_restaurantId_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "UserTier" ADD CONSTRAINT "UserTier_nextTierId_fkey" FOREIGN KEY ("nextTierId") REFERENCES "UserTier"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Device" ADD CONSTRAINT "Device_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Restaurant" ADD CONSTRAINT "Restaurant_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -260,7 +276,13 @@ ALTER TABLE "UserBonus" ADD CONSTRAINT "UserBonus_userCardId_fkey" FOREIGN KEY (
 ALTER TABLE "UserBonus" ADD CONSTRAINT "UserBonus_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "UserBonus" ADD CONSTRAINT "UserBonus_waiterId_fkey" FOREIGN KEY ("waiterId") REFERENCES "Employee"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "Employee"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;

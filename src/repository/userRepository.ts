@@ -98,7 +98,7 @@ export const userRepository = {
       .selectFrom("User")
       .select(({ eb, fn }) => [
         fn
-          .coalesce("User.location", sql<string>`'Not provided'`)
+          .coalesce("User.countryId", sql<string>`'Not provided'`)
           .as("location"),
       ])
       .distinct()

@@ -14,7 +14,7 @@ export const authRateLimiter = createRateLimiter({
 
 export const sendOtpRateLimiter = createRateLimiter({
   keyPrefix: "ratelimiter-otp-send",
-  limit: 3,
+  limit: 5,
   window: 5 * 60,
 });
 

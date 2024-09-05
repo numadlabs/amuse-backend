@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Employee" ADD COLUMN     "passwordUpdateAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

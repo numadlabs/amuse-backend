@@ -15,25 +15,28 @@ datasource db {
 }
 
 model User {
-  id             String         @id @default(dbgenerated("gen_random_uuid()"))
+  id             String   @id @default(dbgenerated("gen_random_uuid()"))
   password       String
   nickname       String
-  role           ROLES          @default(USER)
+  role           ROLES    @default(USER)
   profilePicture String?
-  dateOfBirth    DateTime?
-  location       String?
-  createdAt      DateTime       @default(now())
-  balance        Float          @default(0)
-  visitCount     Int            @default(0)
-  email          String?        @unique
+  birthYear      Int?
+  birthMonth     Int?
+  createdAt      DateTime @default(now())
+  balance        Float    @default(0)
+  visitCount     Int      @default(0)
+  email          String?  @unique
   userTierId     String
-  Notification   Notification[]
-  Tap            Tap[]
-  Transaction    Transaction[]
-  Tier           UserTier       @relation(fields: [userTierId], references: [id])
-  UserBonus      UserBonus[]
-  UserCard       UserCard[]
-  Device         Device[]
+  countryId      String?
+
+  Country      Country?       @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  Notification Notification[]
+  Tap          Tap[]
+  Transaction  Transaction[]
+  Tier         UserTier       @relation(fields: [userTierId], references: [id])
+  UserBonus    UserBonus[]
+  UserCard     UserCard[]
+  Device       Device[]
 }
 
 model Employee {
@@ -143,6 +146,8 @@ model UserCard {
   UserBonus  UserBonus[]
   Card       Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
   User       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, userId])
 }
 
 model Tap {
@@ -217,6 +222,14 @@ model Transaction {
   userId       String?
   Restaurant   Restaurant?      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   User         User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Country {
+  id          String @id @default(dbgenerated("gen_random_uuid()"))
+  name        String
+  alpha3      String
+  countryCode String
+  User        User[]
 }
 
 enum ROLES {

@@ -148,7 +148,6 @@ export const UserController = {
           eb.ref("Restaurant.id").as("restaurantId"),
           "Restaurant.location",
           "Restaurant.latitude",
-          "Restaurant.location",
           "Restaurant.categoryId",
           "Category.name as categoryName",
           "Restaurant.name",

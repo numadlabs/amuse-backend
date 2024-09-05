@@ -2,12 +2,33 @@ import logger from "./config/winston";
 import { getBtcPrice, getCurrency } from "./lib/btcPriceHelper";
 import { currencyRepository } from "./repository/currencyRepository";
 import cron from "node-cron";
+import { db } from "./utils/db";
+import { faker } from "@faker-js/faker";
+import { redis } from ".";
+const Bull = require("bull");
 
 export async function updateCurrencyPrice() {
-  cron.schedule("0 * * * *", async () => {
-    await getAndUpdateBitcoinPrice();
-    await getAndUpdateEUR();
+  const currencyQueue = new Bull("currency-queue", {
+    redis: redis,
   });
+
+  currencyQueue.process(async () => {
+    try {
+      await getAndUpdateBitcoinPrice();
+      await getAndUpdateEUR();
+    } catch (error) {
+      logger.error("Error processing currency-queue: ", error);
+    }
+  });
+
+  currencyQueue.add(
+    {},
+    {
+      repeat: {
+        cron: "0 * * * *",
+      },
+    }
+  );
 }
 
 export async function getAndUpdateBitcoinPrice() {

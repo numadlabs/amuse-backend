@@ -1,8 +1,6 @@
-import { Insertable } from "kysely";
 import { cardRepository } from "../repository/cardRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { CustomError } from "../exceptions/CustomError";
-import { UserCard } from "../types/db/types";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { notificationRepository } from "../repository/notificationRepository";
 import { db } from "../utils/db";

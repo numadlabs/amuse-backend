@@ -21,6 +21,8 @@ import { tapRepository } from "../repository/tapRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { db } from "../utils/db";
 import { verificationCodeConstants } from "../lib/constants";
+import { da } from "@faker-js/faker";
+import { countryRepository } from "../repository/countryRepository";
 
 export const userServices = {
   create: async (
@@ -167,6 +169,11 @@ export const userServices = {
   ) => {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
+
+    if (data.countryId) {
+      const countryCheck = await countryRepository.getById(data.countryId);
+      if (!countryCheck) throw new CustomError("Invalid countryId.", 400);
+    }
 
     const result = await db.transaction().execute(async (trx) => {
       if ((file && findUser.profilePicture) || data.profilePicture === "") {

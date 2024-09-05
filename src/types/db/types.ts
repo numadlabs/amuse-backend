@@ -31,6 +31,12 @@ export type Category = {
     name: string;
     createdAt: Generated<Timestamp>;
 };
+export type Country = {
+    id: Generated<string>;
+    name: string;
+    alpha3: string;
+    countryCode: string;
+};
 export type Currency = {
     id: Generated<string>;
     ticker: string;
@@ -116,13 +122,14 @@ export type User = {
     nickname: string;
     role: Generated<ROLES>;
     profilePicture: string | null;
-    dateOfBirth: Timestamp | null;
-    location: string | null;
+    birthYear: number | null;
+    birthMonth: number | null;
     createdAt: Generated<Timestamp>;
     balance: Generated<number>;
     visitCount: Generated<number>;
     email: string | null;
     userTierId: string;
+    countryId: string | null;
 };
 export type UserBonus = {
     id: Generated<string>;
@@ -153,6 +160,7 @@ export type DB = {
     Bonus: Bonus;
     Card: Card;
     Category: Category;
+    Country: Country;
     Currency: Currency;
     Device: Device;
     EmailOtp: EmailOtp;
