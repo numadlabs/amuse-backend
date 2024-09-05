@@ -40,8 +40,7 @@ app.use(
 );
 app.use(helmet());
 app.use(bodyParser.json());
-
-// app.use(rateLimiter);
+app.use(rateLimiter);
 
 const morganFormat = ":method :url :status :response-time ms";
 app.use(
