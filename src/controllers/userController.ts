@@ -72,7 +72,7 @@ export const UserController = {
     try {
       const { id } = idSchema.parse(req.params);
 
-      const user = await userRepository.getUserById(id);
+      const user = await userRepository.getUserByIdWithCountry(id);
 
       if (!user)
         return res

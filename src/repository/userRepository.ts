@@ -6,6 +6,15 @@ export const userRepository = {
   getUserById: async (id: string) => {
     const user = await db
       .selectFrom("User")
+      .selectAll()
+      .where("User.id", "=", id)
+      .executeTakeFirst();
+
+    return user;
+  },
+  getUserByIdWithCountry: async (id: string) => {
+    const user = await db
+      .selectFrom("User")
       .leftJoin("Country", "Country.id", "User.countryId")
       .where("User.id", "=", id)
       .select([
