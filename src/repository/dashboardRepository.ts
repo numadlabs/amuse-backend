@@ -32,7 +32,7 @@ LEFT JOIN (
     endDate: Date
   ) => {
     const data = await sql`SELECT
-    COALESCE(name, 'Not defined') AS location,
+    COALESCE(name, 'Not Provided') AS location,
     SUM(CASE WHEN tapCount = 1 THEN 1 ELSE 0 END) AS "1",
     SUM(CASE WHEN tapCount = 2 THEN 1 ELSE 0 END) AS "2",
     SUM(CASE WHEN tapCount = 3 THEN 1 ELSE 0 END) AS "3",
@@ -51,7 +51,7 @@ FROM (
         INNER JOIN "Card" c ON c.id = uc."cardId" 
         INNER JOIN "Restaurant" r ON r.id = c."restaurantId" 
         INNER JOIN "User" u ON u.id = t."userId"
-        INNER JOIN "Country" co ON co.id = u."countryId" 
+        LEFT JOIN "Country" co ON co.id = u."countryId" 
     WHERE
         r.id = ${restaurantId}
         AND t."tappedAt" BETWEEN ${startDate} AND ${endDate}
