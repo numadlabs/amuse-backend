@@ -170,6 +170,8 @@ export const userServices = {
     const findUser = await userRepository.getUserById(id);
     if (!findUser) throw new CustomError("User does not exist.", 400);
 
+    if (data.countryId === "") data.countryId = null;
+
     if (data.countryId) {
       const countryCheck = await countryRepository.getById(data.countryId);
       if (!countryCheck) throw new CustomError("Invalid countryId.", 400);

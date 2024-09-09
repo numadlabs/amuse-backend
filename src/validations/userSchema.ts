@@ -7,12 +7,7 @@ export const updateUserInfoSchema = z
       .trim()
       .max(30, "Nickname must be at most 30 characters.")
       .optional(),
-    countryId: z
-      .string()
-      .trim()
-      .uuid()
-      .max(100, "Location must be at most 100 characters.")
-      .optional(),
+    countryId: z.string().optional(),
     birthYear: z
       .string()
       .trim()
