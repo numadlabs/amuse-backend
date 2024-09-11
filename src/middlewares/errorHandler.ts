@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { MulterError } from "multer";
 import logger from "../config/winston";
 import { AuthenticatedRequest } from "../../custom";
+import { config } from "../config/config";
 
 export function errorHandler(
   err: CustomError | ZodError | MulterError,
@@ -34,6 +35,6 @@ export function errorHandler(
     success: false,
     data: null,
     error: message,
-    stack: process.env.NODE_ENV === "production" ? "🥞" : err.stack,
+    stack: config.NODE_ENV === "production" ? "🥞" : err.stack,
   });
 }

@@ -1,3 +1,5 @@
+import { config } from "../config/config";
+
 export const verificationCodeConstants = {
   MIN_VALUE: 1000,
   MAX_VALUE: 9999,
@@ -16,6 +18,6 @@ export const sizeLimitConstants = {
 };
 
 //IN NUMBER OF SECONDS
-export const TAP_LOCK_TIME = process.env.NODE_ENV === "production" ? 10 : 0;
+export const TAP_LOCK_TIME = config.NODE_ENV === "production" ? 10 : 0;
 
 export const BOOST_MULTIPLIER = 1.2;

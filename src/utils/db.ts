@@ -4,6 +4,8 @@ import { Pool } from "pg";
 import type { DB } from "../types/db/types";
 import { config } from "../config/config";
 
+const isSslEnabled = config.NODE_ENV === "development" ? false : true;
+
 export const db = new Kysely<DB>({
   dialect: new PostgresDialect({
     pool: new Pool({
@@ -11,7 +13,7 @@ export const db = new Kysely<DB>({
       host: config.PGHOST,
       user: config.PGUSER,
       password: config.PGPASSWORD,
-      ssl: true,
+      ssl: isSslEnabled,
     }),
   }),
 });

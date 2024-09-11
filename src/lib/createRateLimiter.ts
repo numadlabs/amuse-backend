@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { redis } from "../index";
 import { CustomError } from "../exceptions/CustomError";
 import logger from "../config/winston";
+import { config } from "../config/config";
 
 interface RateLimitInfo {
   limit: number;
@@ -24,7 +25,7 @@ export function createRateLimiter(options: RateLimiterOptions) {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    if (process.env.NODE_ENV !== "production") {
+    if (config.NODE_ENV !== "production") {
       return next();
     }
 

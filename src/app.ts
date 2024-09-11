@@ -26,6 +26,7 @@ import logger from "./config/winston";
 import { rateLimiter } from "./middlewares/rateLimiter";
 import { sizeLimitConstants } from "./lib/constants";
 import countryRouter from "./routes/countryRoutes";
+import { config } from "./config/config";
 
 const app = express();
 
@@ -86,7 +87,7 @@ app.use(errorHandler);
 
 updateCurrencyPrice();
 // insertSeed().then(() =>
-//   logger.info(`Inserted seed data to DB: ${process.env.PGDATABASE}`)
+//   logger.info(`Inserted seed data to DB: ${config.NODE_ENV}`)
 // );
 
 export default app;

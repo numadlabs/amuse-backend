@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import { redis } from "../index";
 import { CustomError } from "../exceptions/CustomError";
+import { config } from "../config/config";
 
 const BLOCKED_REQUEST_TIMEOUT = 30;
 
@@ -10,7 +11,7 @@ const blockSimultaneousRequests = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (process.env.NODE_ENV !== "production") {
+  if (config.NODE_ENV !== "production") {
     return next();
   }
 

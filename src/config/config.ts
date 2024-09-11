@@ -3,6 +3,7 @@ import logger from "./winston";
 require("dotenv").config();
 
 const envSchema = z.object({
+  NODE_ENV: z.string(),
   PORT: z.string(),
   DATABASE_URL: z.string(),
   PGHOST: z.string(),
