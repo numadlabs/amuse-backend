@@ -1,77 +1,94 @@
 import request from "supertest";
-import app from "../../../src/app";
+import { testHelpers } from "../helpers/testHelpers";
+import { faker } from "@faker-js/faker";
+import { sendEmail } from "../../../src/lib/emailHelper";
 import { emailOtpRepository } from "../../../src/repository/emailOtpRepository";
 import {
   generateRefreshToken,
   generateVerificationToken,
 } from "../../../src/utils/jwt";
-import { faker } from "@faker-js/faker";
-import { sendEmail } from "../../../src/lib/emailHelper";
-import { userServices } from "../../../src/services/userServices";
-import { testHelpers } from "../helpers/testHelpers";
+import app from "../../../src/app";
 
-jest.mock("../../../src/repository/emailOtpRepository");
 jest.mock("../../../src/lib/emailHelper");
+jest.mock("../../../src/repository/emailOtpRepository");
 
 describe("Auth APIs", () => {
   describe("POST /api/auth/login", () => {
-    let userId: string,
-      userAccessToken: string,
-      password: string,
-      email: string;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (
-        typeof result.result.user.id === "string" &&
-        typeof result.result.user.email === "string"
-      ) {
-        userId = result.result.user.id;
-        email = result.result.user.email;
-      }
-
-      userAccessToken = result.result.accessToken;
-      password = result.password;
+    beforeEach(async () => {
+      jest.clearAllMocks();
     });
 
-    it("should fail on invalid email", async () => {
+    it("should fail on invalid email format", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+
       const response = await request(app).post("/api/auth/login").send({
-        email: "nonexisting@email.com",
-        password: password,
+        email: "invalidEmailFormat.com",
+        password: createdUser.password,
       });
 
-      expect(response.status).toBe(400);
+      expect(response.statusCode).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it("should fail on invalid password format", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+
+      const response = await request(app).post("/api/auth/login").send({
+        email: createdUser.user.email,
+        password: "InvalidPasswordFormat",
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it("should fail on wrong email", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+
+      const response = await request(app).post("/api/auth/login").send({
+        email: faker.internet.email(),
+        password: createdUser.password,
+      });
+
+      expect(response.statusCode).toBe(400);
       expect(response.body.success).toBe(false);
     });
 
     it("should fail on wrong password", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+
       const response = await request(app).post("/api/auth/login").send({
-        email: email,
-        password: "wrongPassword12",
+        email: createdUser.user.email,
+        password: faker.internet.password(),
       });
 
-      expect(response.status).toBe(400);
+      expect(response.statusCode).toBe(400);
       expect(response.body.success).toBe(false);
     });
 
     it("should successfully log-in a user", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+
       const response = await request(app).post("/api/auth/login").send({
-        email: email,
-        password: password,
+        email: createdUser.user.email,
+        password: createdUser.password,
       });
 
-      expect(response.status).toBe(200);
+      expect(response.statusCode).toBe(200);
       expect(response.body.success).toBe(true);
+      expect(response.body.data.user.balance).toBe(0);
+      expect(response.body.data.user.visitCount).toBe(0);
     });
   });
 
   describe("POST /api/auth/sendOTP", () => {
-    beforeAll(async () => {
-      (sendEmail as jest.Mock).mockResolvedValue({ accepted: true });
+    beforeEach(async () => {
+      jest.clearAllMocks();
     });
 
     it("should fail on invalid email format", async () => {
       const response = await request(app).post("/api/auth/sendOTP").send({
-        email: "invalidformat.com",
+        email: "invalidEmailFormat.com",
       });
 
       expect(response.status).toBe(400);
@@ -79,6 +96,8 @@ describe("Auth APIs", () => {
     });
 
     it("should successfully send OTP", async () => {
+      (sendEmail as jest.Mock).mockResolvedValue({ accepted: true });
+
       const response = await request(app).post("/api/auth/sendOTP").send({
         email: faker.internet.email(),
       });
@@ -90,29 +109,19 @@ describe("Auth APIs", () => {
   });
 
   describe("POST /api/auth/checkOTP", () => {
-    let userId: string,
-      userAccessToken: string,
-      password: string,
-      email: string,
-      verificationCode: number;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (
-        typeof result.result.user.id === "string" &&
-        typeof result.result.user.email === "string"
-      ) {
-        email = result.result.user.email;
-        userId = result.result.user.id;
-      }
-
-      userAccessToken = result.result.accessToken;
-      password = result.password;
-      verificationCode = faker.number.int({ min: 1000, max: 9999 });
+    beforeEach(async () => {
+      jest.clearAllMocks();
     });
 
-    it("should fail on invalid email", async () => {
+    it("should fail on invalid email format", async () => {
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
+      (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
+        verificationCode: generateVerificationToken(verificationCode, "1h"),
+        isUsed: false,
+      });
+
       const response = await request(app).post("/api/auth/checkOTP").send({
-        email: "invalid@gmail.com",
+        email: "invalidEmailFormat.com",
         verificationCode: verificationCode,
       });
 
@@ -120,10 +129,31 @@ describe("Auth APIs", () => {
       expect(response.body.success).toBe(false);
     });
 
-    it("should fail on invalid verificationCode", async () => {
+    it("should fail on invalid verification code format", async () => {
       const response = await request(app).post("/api/auth/checkOTP").send({
-        email: email,
-        verificationCode: 9999, //invalid verification code, different from mockResolvedValue
+        email: faker.internet.email(),
+        verificationCode: 123,
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it("should fail on invalid verificationCode", async () => {
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
+      (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
+        verificationCode: generateVerificationToken(verificationCode, "1h"),
+        isUsed: false,
+      });
+      const invalidVerificationCode = faker.number.int({
+        min: 1000,
+        max: 9999,
+      });
+      expect(verificationCode).not.toBe(invalidVerificationCode);
+
+      const response = await request(app).post("/api/auth/checkOTP").send({
+        email: faker.internet.email(),
+        verificationCode: invalidVerificationCode,
       });
 
       expect(response.status).toBe(400);
@@ -131,13 +161,14 @@ describe("Auth APIs", () => {
     });
 
     it("should successfully check valid verificationCode", async () => {
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
       (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
         verificationCode: generateVerificationToken(verificationCode, "1h"),
         isUsed: false,
       });
 
       const response = await request(app).post("/api/auth/checkOTP").send({
-        email: email,
+        email: faker.internet.email(),
         verificationCode: verificationCode,
       });
 
@@ -147,27 +178,17 @@ describe("Auth APIs", () => {
   });
 
   describe("POST /api/auth/register", () => {
-    let userId: string,
-      userAccessToken: string,
-      password: string,
-      email: string,
-      verificationCode: number;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (
-        typeof result.result.user.id === "string" &&
-        typeof result.result.user.email === "string"
-      ) {
-        email = result.result.user.email;
-        userId = result.result.user.id;
-      }
-
-      userAccessToken = result.result.accessToken;
-      password = result.password;
-      verificationCode = faker.number.int({ min: 1000, max: 9999 });
+    beforeEach(async () => {
+      jest.clearAllMocks();
     });
 
     it("should fail on unexpected fields", async () => {
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
+      (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
+        verificationCode: generateVerificationToken(verificationCode, "1h"),
+        isUsed: false,
+      });
+
       const response = await request(app).post("/api/auth/register").send({
         nickname: faker.internet.userName(),
         email: faker.internet.email(),
@@ -175,7 +196,7 @@ describe("Auth APIs", () => {
         verificationCode: verificationCode,
         balance: 100,
         visitCount: 10,
-        userTierId: "invalid-id",
+        userTierId: faker.string.uuid(),
       });
 
       expect(response.status).toBe(400);
@@ -183,11 +204,22 @@ describe("Auth APIs", () => {
     });
 
     it("should fail on invalid verificationCode", async () => {
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
+      (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
+        verificationCode: generateVerificationToken(verificationCode, "1h"),
+        isUsed: false,
+      });
+      const invalidVerificationCode = faker.number.int({
+        min: 1000,
+        max: 9999,
+      });
+      expect(verificationCode).not.toBe(invalidVerificationCode);
+
       const response = await request(app).post("/api/auth/register").send({
         nickname: faker.internet.userName(),
-        email: email,
+        email: faker.internet.email(),
         password: faker.internet.password(),
-        verificationCode: 9999, //invalid verification code, different from mockResolvedValue
+        verificationCode: invalidVerificationCode,
       });
 
       expect(response.status).toBe(400);
@@ -195,27 +227,16 @@ describe("Auth APIs", () => {
     });
 
     it("should fail if email has already been registed", async () => {
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
+      const existingUser = await testHelpers.createUserWithMockedOtp();
       (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
         verificationCode: generateVerificationToken(verificationCode, "1h"),
         isUsed: false,
       });
 
-      const payload = {
-        nickname: faker.internet.userName(),
-        email: faker.internet.email().toLowerCase(),
-        password: faker.internet.password(),
-        verificationCode: verificationCode,
-      };
-      const user = await userServices.create(
-        payload.email,
-        payload.password,
-        payload.nickname,
-        payload.verificationCode
-      );
-
       const response = await request(app).post("/api/auth/register").send({
+        email: existingUser.user.email,
         nickname: faker.internet.userName(),
-        email: user.user.email,
         password: faker.internet.password(),
         verificationCode: verificationCode,
       });
@@ -225,6 +246,7 @@ describe("Auth APIs", () => {
     });
 
     it("should successfully register a user", async () => {
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
       (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
         verificationCode: generateVerificationToken(verificationCode, "1h"),
         isUsed: false,
@@ -232,7 +254,7 @@ describe("Auth APIs", () => {
 
       const response = await request(app).post("/api/auth/register").send({
         nickname: faker.internet.userName(),
-        email: faker.internet.email().toLowerCase(),
+        email: faker.internet.email(),
         password: faker.internet.password(),
         verificationCode: verificationCode,
       });
@@ -244,8 +266,11 @@ describe("Auth APIs", () => {
 
   describe("POST /api/auth/refreshToken", () => {
     it("should fail on invalid refreshToken", async () => {
+      const invalidToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJjZjlhZWFjLWIxNmMtNDg0Mi05OThkLWJmNzEyZjEyYjUyYSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzIyOTU0OTUwLCJleHAiOjE3MjI5OTgxNTB9.0a2qwlPzBGBhyNNAFvUkauwjnX7ztJD69-bbVxuXqz8";
+
       const response = await request(app).post("/api/auth/refreshToken").send({
-        refreshToken: faker.internet.domainWord(),
+        refreshToken: invalidToken,
       });
 
       expect(response.status).toBe(401);
@@ -253,18 +278,18 @@ describe("Auth APIs", () => {
     });
 
     it("should successfully provide accessToken.", async () => {
-      const response = await request(app)
-        .post("/api/auth/refreshToken")
-        .send({
-          refreshToken: generateRefreshToken({
-            id: faker.string.uuid(),
-            role: "USER",
-            email: faker.internet.email(),
-            userTierId: faker.string.uuid(),
-            password: faker.internet.password(),
-            nickname: faker.internet.userName(),
-          }),
-        });
+      const refreshToken = generateRefreshToken({
+        id: faker.string.uuid(),
+        role: "USER",
+        email: faker.internet.email(),
+        userTierId: faker.string.uuid(),
+        password: faker.internet.password(),
+        nickname: faker.internet.userName(),
+      });
+
+      const response = await request(app).post("/api/auth/refreshToken").send({
+        refreshToken: refreshToken,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -272,29 +297,19 @@ describe("Auth APIs", () => {
   });
 
   describe("POST /api/auth/forgotPassword", () => {
-    let userId: string,
-      userAccessToken: string,
-      password: string,
-      email: string,
-      verificationCode: number;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (
-        typeof result.result.user.id === "string" &&
-        typeof result.result.user.email === "string"
-      ) {
-        email = result.result.user.email;
-        userId = result.result.user.id;
-      }
-
-      userAccessToken = result.result.accessToken;
-      password = result.password;
-      verificationCode = faker.number.int({ min: 1000, max: 9999 });
+    beforeEach(async () => {
+      jest.clearAllMocks();
     });
 
     it("should fail on invalid email", async () => {
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
+      (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
+        verificationCode: generateVerificationToken(verificationCode, "1h"),
+        isUsed: false,
+      });
+
       const response = await request(app).put("/api/auth/forgotPassword").send({
-        email: "invalid@gmail.com",
+        email: "invalidEmail@gmail.com",
         verificationCode: verificationCode,
         password: faker.internet.password(),
       });
@@ -304,14 +319,21 @@ describe("Auth APIs", () => {
     });
 
     it("should fail on invalid verificationCode", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
       (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
         verificationCode: generateVerificationToken(verificationCode, "1h"),
         isUsed: false,
       });
+      const invalidVerificationCode = faker.number.int({
+        min: 1000,
+        max: 9999,
+      });
+      expect(verificationCode).not.toBe(invalidVerificationCode);
 
       const response = await request(app).put("/api/auth/forgotPassword").send({
-        email: email,
-        verificationCode: 9999, //invalid verification code, different from mockResolvedValue
+        email: createdUser.user.email,
+        verificationCode: invalidVerificationCode,
         password: faker.internet.password(),
       });
 
@@ -320,13 +342,15 @@ describe("Auth APIs", () => {
     });
 
     it("should successfully change password given valid verificationCode", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+      const verificationCode = faker.number.int({ min: 1000, max: 9999 });
       (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
         verificationCode: generateVerificationToken(verificationCode, "1h"),
         isUsed: false,
       });
 
       const response = await request(app).put("/api/auth/forgotPassword").send({
-        email: email,
+        email: createdUser.user.email,
         verificationCode: verificationCode,
         password: faker.internet.password(),
       });
@@ -337,29 +361,24 @@ describe("Auth APIs", () => {
   });
 
   describe("POST /api/auth/checkEmail", () => {
-    let userId: string,
-      userAccessToken: string,
-      password: string,
-      email: string,
-      verificationCode: number;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (
-        typeof result.result.user.id === "string" &&
-        typeof result.result.user.email === "string"
-      ) {
-        email = result.result.user.email;
-        userId = result.result.user.id;
-      }
+    beforeEach(async () => {
+      jest.clearAllMocks();
+    });
 
-      userAccessToken = result.result.accessToken;
-      password = result.password;
-      verificationCode = faker.number.int({ min: 1000, max: 9999 });
+    it("should fail on invalid email format", async () => {
+      const response = await request(app).post("/api/auth/checkEmail").send({
+        email: "invalidEmailFormat.com",
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
     });
 
     it("should fail on already registered email", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+
       const response = await request(app).post("/api/auth/checkEmail").send({
-        email: email,
+        email: createdUser.user.email,
       });
 
       expect(response.status).toBe(400);
@@ -368,7 +387,7 @@ describe("Auth APIs", () => {
 
     it("should successfully check given unregistered email", async () => {
       const response = await request(app).post("/api/auth/checkEmail").send({
-        email: "unregistered@gmail.com",
+        email: faker.internet.email(),
       });
 
       expect(response.status).toBe(200);
@@ -377,35 +396,13 @@ describe("Auth APIs", () => {
   });
 
   describe("PUT /api/auth/changePassword", () => {
-    let accessToken: string;
-    let userId: string,
-      userAccessToken: string,
-      password: string,
-      email: string,
-      verificationCode: number;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (
-        typeof result.result.user.id === "string" &&
-        typeof result.result.user.email === "string"
-      ) {
-        email = result.result.user.email;
-        userId = result.result.user.id;
-      }
-
-      userAccessToken = result.result.accessToken;
-      password = result.password;
-      verificationCode = faker.number.int({ min: 1000, max: 9999 });
-
-      (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
-        verificationCode: generateVerificationToken(verificationCode, "1h"),
-        isUsed: false,
-      });
+    beforeEach(async () => {
+      jest.clearAllMocks();
     });
 
-    it('should fail on "Authorization" header not provided', async () => {
+    it("should fail if requester is not authenticated", async () => {
       const response = await request(app).put("/api/auth/changePassword").send({
-        currentPassword: password,
+        currentPassword: faker.internet.password(),
         newPassword: faker.internet.password(),
       });
 
@@ -414,11 +411,13 @@ describe("Auth APIs", () => {
     });
 
     it("should fail on wrong currentPassword", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+
       const response = await request(app)
         .put("/api/auth/changePassword")
-        .set("Authorization", `Bearer ${userAccessToken}`)
+        .set("Authorization", `Bearer ${createdUser.accessToken}`)
         .send({
-          currentPassword: "invalidPassword12", //wrong password, different from userPayload
+          currentPassword: "wrongPassword12",
           newPassword: faker.internet.password(),
         });
 
@@ -427,15 +426,15 @@ describe("Auth APIs", () => {
     });
 
     it("should successfully change password", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+
       const response = await request(app)
         .put("/api/auth/changePassword")
-        .set("Authorization", `Bearer ${userAccessToken}`)
+        .set("Authorization", `Bearer ${createdUser.accessToken}`)
         .send({
-          currentPassword: password,
+          currentPassword: createdUser.password,
           newPassword: faker.internet.password(),
         });
-
-      console.error(response.body);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);

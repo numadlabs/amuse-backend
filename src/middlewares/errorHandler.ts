@@ -11,7 +11,7 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ) {
-  let statusCode = res.statusCode,
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode,
     message = err.message;
 
   if (err instanceof CustomError) {

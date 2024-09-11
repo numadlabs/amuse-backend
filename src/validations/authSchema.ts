@@ -11,10 +11,10 @@ export const loginSchema = z
       .email(),
     password: string()
       .trim()
-      .min(8)
-      .max(30)
+      .min(8, "Password must be at least 8 characters.")
+      .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })
@@ -56,7 +56,7 @@ export const registerSchema = z
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     nickname: string()
@@ -70,7 +70,9 @@ export const registerSchema = z
   })
   .strict("Unexpected field detected.");
 
-export const refreshTokenSchema = z.object({ refreshToken: string() });
+export const refreshTokenSchema = z.object({
+  refreshToken: string().min(1).max(255),
+});
 
 export const forgotPasswordSchema = z
   .object({
@@ -85,7 +87,7 @@ export const forgotPasswordSchema = z
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     verificationCode: number()
@@ -99,18 +101,18 @@ export const changePasswordSchema = z
   .object({
     currentPassword: string()
       .trim()
-      .min(8)
-      .max(30)
+      .min(8, "Password must be at least 8 characters.")
+      .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     newPassword: string()
       .trim()
-      .min(8)
-      .max(30)
+      .min(8, "Password must be at least 8 characters.")
+      .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })
@@ -120,10 +122,10 @@ export const checkPasswordSchema = z
   .object({
     currentPassword: string()
       .trim()
-      .min(8)
-      .max(30)
+      .min(8, "Password must be at least 8 characters.")
+      .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })

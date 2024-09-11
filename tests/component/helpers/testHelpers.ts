@@ -50,11 +50,15 @@ export const testHelpers = {
     let userId: string = "";
     if (typeof result.user.id === "string") userId = result.user.id;
 
-    jest.resetAllMocks();
-
-    return { result, password: defaultPayload.password, userId: userId };
+    return {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      password: defaultPayload.password,
+      userId: userId,
+    };
   },
-  createRestaurant: async () => {
+  createRestaurantWithOwner: async () => {
     const categories = await categoryRepository.create({
       name: faker.commerce.department(),
     });
@@ -82,18 +86,9 @@ export const testHelpers = {
       await employeeServices.login(owner.email, ownerPassword)
     ).accessToken;
 
-    return { restaurantId: restaurant.id, ownerAccessToken };
-
-    // const cardPayload = {
-    //   benefits: faker.commerce.productDescription(),
-    //   instruction: faker.commerce.productDescription(),
-    //   restaurantId: restaurant.id,
-    //   nftUrl: faker.internet.url(),
-    //   nftImageUrl: faker.string.uuid(),
-    // };
-    // const card = await cardRepository.create(cardPayload);
+    return { data: restaurant, ownerAccessToken };
   },
-  createRestaurantWithCard: async () => {
+  createRestaurantWithOwnerAndCard: async () => {
     const categories = await categoryRepository.create({
       name: faker.commerce.department(),
     });
@@ -130,10 +125,11 @@ export const testHelpers = {
     };
     const card = await cardRepository.create(cardPayload);
 
-    return { restaurantId: restaurant.id, ownerAccessToken, card };
+    return { data: restaurant, ownerAccessToken, card };
   },
   createEmployee: async (restaurantId: string | null, role: ROLES) => {
     const password = faker.internet.password();
+
     const employee = await employeeRepository.create(db, {
       email: faker.internet.email().toLowerCase(),
       password: await encryptionHelper.encrypt(password),
@@ -146,5 +142,12 @@ export const testHelpers = {
       .accessToken;
 
     return { employee, password, accessToken };
+  },
+  createCategory: async () => {
+    const category = await categoryRepository.create({
+      name: faker.commerce.department(),
+    });
+
+    return category;
   },
 };

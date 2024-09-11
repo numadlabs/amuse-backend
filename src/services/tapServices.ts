@@ -11,12 +11,13 @@ import { userRepository } from "../repository/userRepository";
 import { currencyRepository } from "../repository/currencyRepository";
 import { userTierRepository } from "../repository/userTierRepository";
 import { employeeRepository } from "../repository/employeeRepository";
-import { io, redis } from "../index";
 import { transactionRepository } from "../repository/transactionRepository";
 import { notificationRepository } from "../repository/notificationRepository";
 import { db } from "../utils/db";
 import { BOOST_MULTIPLIER, TAP_LOCK_TIME } from "../lib/constants";
 import logger from "../config/winston";
+import { io, redis } from "..";
+
 const crypto = require("crypto");
 
 export const tapServices = {

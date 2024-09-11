@@ -1,4 +1,4 @@
-import { redis, io } from "../index";
+import { io, redis } from "..";
 import { CustomError } from "../exceptions/CustomError";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";

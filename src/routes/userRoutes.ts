@@ -25,7 +25,6 @@ userRoutes.delete(
   authorize("USER"),
   UserController.deleteUser
 );
-
 userRoutes.get(
   "/cards",
   authenticateToken(),

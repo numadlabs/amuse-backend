@@ -18,6 +18,6 @@ tapRouter.post(
   blockSimultaneousRequests,
   tapController.redeemTap
 );
-tapRouter.get("/:id", authenticateToken(), tapController.getTapById);
+// tapRouter.get("/:id", authenticateToken(), tapController.getTapById);
 
 export = tapRouter;

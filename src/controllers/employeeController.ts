@@ -138,15 +138,22 @@ export const employeeController = {
     }
   },
   getByRestaurantId: async (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
     try {
       const { restaurantId } = restaurantIdSchema.parse(req.params);
 
-      const employees = await employeeRepository.getByRestaurantId(
-        restaurantId
+      if (!req.user)
+        throw new CustomError(
+          "Could not parse the info from the auth token.",
+          400
+        );
+
+      const employees = await employeeServices.getByRestaurantId(
+        restaurantId,
+        req.user?.id
       );
 
       return res.status(200).json({

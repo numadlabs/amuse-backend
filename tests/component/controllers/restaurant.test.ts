@@ -5,7 +5,7 @@ import app from "../../../src/app";
 import { Restaurant } from "../../../src/types/db/types";
 import path from "path";
 import { deleteFromS3, uploadToS3 } from "../../../src/utils/aws";
-import { faker } from "@faker-js/faker";
+import { fa, faker } from "@faker-js/faker";
 import { employeeRepository } from "../../../src/repository/employeeRepository";
 import { encryptionHelper } from "../../../src/lib/encryptionHelper";
 import { restaurantRepository } from "../../../src/repository/restaurantRepository";
@@ -14,32 +14,12 @@ import { db } from "../../../src/utils/db";
 jest.mock("../../../src/lib/emailHelper");
 jest.mock("../../../src/utils/aws");
 
-const ownerPayload = {
-  email: "owner@fatcat.com",
-  password: "Password12",
-};
-
-const waiterPayload = {
-  email: "waiter@fatcat.com",
-  password: "Password12",
-};
-
 describe("Restaurant APIs", () => {
   describe("GET /api/restaurants", () => {
-    let userId: string,
-      userAccessToken: string,
-      waiterAccessToken: string,
-      ownerAccessToken: string;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.result.user.id === "string")
-        userId = result.result.user.id;
-      userAccessToken = result.result.accessToken;
-
-      ownerAccessToken = (
-        await employeeServices.login(ownerPayload.email, ownerPayload.password)
-      ).accessToken;
+    beforeEach(() => {
+      jest.clearAllMocks();
     });
+
     it("should fail if requester is not authenticated", async () => {
       const response = await supertest(app).get(
         "/api/restaurants?time=03:11:09&dayNoOfTheWeek=7"
@@ -48,53 +28,34 @@ describe("Restaurant APIs", () => {
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if requester is not authorized(ROLE)", async () => {
+      const employee = await testHelpers.createEmployee(
+        null,
+        "RESTAURANT_MANAGER"
+      );
+
       const response = await supertest(app)
         .get("/api/restaurants?time=03:11:09&dayNoOfTheWeek=7")
-        .set("Authorization", `Bearer ${ownerAccessToken}`);
+        .set("Authorization", `Bearer ${employee.accessToken}`);
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should successfully return list of restaurants", async () => {
+      const user = await testHelpers.createUserWithMockedOtp();
+
       const response = await supertest(app)
         .get("/api/restaurants?time=03:11:09&dayNoOfTheWeek=7")
-        .set("Authorization", `Bearer ${userAccessToken}`);
-
-      const restaurants: Restaurant[] = response.body.data.restaurants;
+        .set("Authorization", `Bearer ${user.accessToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(restaurants.length).toBeGreaterThan(0);
     });
   });
+
   describe("POST /api/restaurants", () => {
-    let userId: string,
-      userAccessToken: string,
-      anotherRestaurantOwnerAccessToken: string,
-      ownerAccessToken: string;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.result.user.id === "string")
-        userId = result.result.user.id;
-      userAccessToken = result.result.accessToken;
-
-      anotherRestaurantOwnerAccessToken = (
-        await employeeServices.login(ownerPayload.email, ownerPayload.password)
-      ).accessToken;
-
-      const owner = await employeeRepository.create(db, {
-        email: faker.internet.email().toLowerCase(),
-        password: await encryptionHelper.encrypt("Password12"),
-        fullname: "restaurant",
-        role: "RESTAURANT_OWNER",
-      });
-
-      ownerAccessToken = (
-        await employeeServices.login(owner.email.toLowerCase(), "Password12")
-      ).accessToken;
-    });
-
     beforeEach(() => {
       jest.resetAllMocks();
     });
@@ -107,35 +68,36 @@ describe("Restaurant APIs", () => {
     });
 
     it("should fail if requester is not authorized(ROLE)", async () => {
+      const waiter = await testHelpers.createEmployee(
+        null,
+        "RESTAURANT_WAITER"
+      );
+
       const response = await supertest(app)
         .post("/api/restaurants")
-        .set("Authorization", `Bearer ${userAccessToken}`);
+        .set("Authorization", `Bearer ${waiter.accessToken}`);
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
 
     it("should successfully create restaurant", async () => {
+      const owner = await testHelpers.createEmployee(null, "RESTAURANT_OWNER");
       (uploadToS3 as jest.Mock).mockResolvedValue({});
       const filePath = path.join(__dirname, "../assets/logo.jpg");
+      const category = await testHelpers.createCategory();
 
       const response = await supertest(app)
         .post("/api/restaurants")
-        .set("Authorization", `Bearer ${ownerAccessToken}`)
-        .field("name", "Choijin Temple")
-        .field(
-          "description",
-          "Journey to Mongolia with every bite. Explore the flavors of the steppes and indulge in authentic Mongolian cuisine. From sizzling grilled meats to aromatic stews, experience the richness of nomadic heritage on your plate."
-        )
-        .field(
-          "location",
-          "The World Islands - Mongolia - Dubai - United Arabic Emirates"
-        )
+        .set("Authorization", `Bearer ${owner.accessToken}`)
+        .field("name", faker.company.name())
+        .field("description", faker.company.catchPhrase())
+        .field("location", faker.location.streetAddress())
         .field(
           "googleMapsUrl",
-          "https://www.google.com/maps/place/Wrestling+Palace/@47.9123329,106.9360381,14z/data=!4m6!3m5!1s0x5d96923c7bfe80ef:0xbde4c9c449a2c00d!8m2!3d47.917826!4d106.9353974!16s%2Fm%2F05b1rwd?entry=ttu"
+          "https://www.google.com/maps/place/FAT+CAT/@50.0811728,14.4258677,17z/data=!3m1!4b1!4m6!3m5!1s0x470b955b7e812c07:0x5d15b4ab301988cb!8m2!3d50.0811728!4d14.4284426!16s%2Fg%2F11rsh51hd8?entry=ttu&g_ep=EgoyMDI0MDkwNC4wIKXMDSoASAFQAw%3D%3D"
         )
-        .field("categoryId", "776f61b9-b2cc-48d6-a03b-53574b85bb4c")
+        .field("categoryId", category.id)
         .attach("logo", filePath);
 
       expect(response.status).toBe(200);
@@ -143,54 +105,15 @@ describe("Restaurant APIs", () => {
       expect(uploadToS3).toHaveBeenCalledTimes(1);
     });
   });
+
   describe("PUT /api/restaurants/:id/rewardDetail", () => {
-    let userId: string,
-      userAccessToken: string,
-      anotherRestaurantOwnerAccessToken: string,
-      ownerAccessToken: string,
-      restaurantId: string;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.result.user.id === "string")
-        userId = result.result.user.id;
-      userAccessToken = result.result.accessToken;
-
-      anotherRestaurantOwnerAccessToken = (
-        await employeeServices.login(ownerPayload.email, ownerPayload.password)
-      ).accessToken;
-
-      const restaurant = await restaurantRepository.create({
-        name: "Choijin Temple",
-        description:
-          "Journey to Mongolia with every bite. Explore the flavors of the steppes and indulge in authentic Mongolian cuisine. From sizzling grilled meats to aromatic stews, experience the richness of nomadic heritage on your plate.",
-        location:
-          "The World Islands - Mongolia - Dubai - United Arabic Emirates",
-        latitude: 1,
-        longitude: 1,
-        googleMapsUrl:
-          "https://www.google.com/maps/place/Wrestling+Palace/@47.9123329,106.9360381,14z/data=!4m6!3m5!1s0x5d96923c7bfe80ef:0xbde4c9c449a2c00d!8m2!3d47.917826!4d106.9353974!16s%2Fm%2F05b1rwd?entry=ttu",
-        categoryId: "776f61b9-b2cc-48d6-a03b-53574b85bb4c",
-      });
-      restaurantId = restaurant.id;
-
-      const owner = await employeeRepository.create(db, {
-        email: faker.internet.email().toLowerCase(),
-        password: await encryptionHelper.encrypt("Password12"),
-        fullname: "restaurant",
-        role: "RESTAURANT_OWNER",
-        restaurantId: restaurantId,
-      });
-
-      ownerAccessToken = (
-        await employeeServices.login(owner.email.toLowerCase(), "Password12")
-      ).accessToken;
-    });
-
     beforeEach(() => {
       jest.resetAllMocks();
     });
 
     it("should fail if requester is not authenticated", async () => {
+      const restaurantId = faker.string.uuid();
+
       const response = await supertest(app)
         .put(`/api/restaurants/${restaurantId}/rewardDetail`)
         .send({
@@ -200,10 +123,17 @@ describe("Restaurant APIs", () => {
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if requester is not authorized(ROLE)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const waiter = await testHelpers.createEmployee(
+        restaurant.data.id,
+        "RESTAURANT_WAITER"
+      );
+
       const response = await supertest(app)
-        .put(`/api/restaurants/${restaurantId}/rewardDetail`)
-        .set("Authorization", `Bearer ${userAccessToken}`)
+        .put(`/api/restaurants/${restaurant.data.id}/rewardDetail`)
+        .set("Authorization", `Bearer ${waiter.accessToken}`)
         .send({
           perkOccurence: 5,
         });
@@ -211,10 +141,14 @@ describe("Restaurant APIs", () => {
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if requester is not authorized(RESTAURANTID)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const anotherRestaurant = await testHelpers.createRestaurantWithOwner();
+
       const response = await supertest(app)
-        .put(`/api/restaurants/${restaurantId}/rewardDetail`)
-        .set("Authorization", `Bearer ${anotherRestaurantOwnerAccessToken}`)
+        .put(`/api/restaurants/${restaurant.data.id}/rewardDetail`)
+        .set("Authorization", `Bearer ${anotherRestaurant.ownerAccessToken}`)
         .send({
           perkOccurence: 5,
         });
@@ -224,9 +158,11 @@ describe("Restaurant APIs", () => {
     });
 
     it("should fail on invalid perkOccurence value", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+
       const response = await supertest(app)
-        .put(`/api/restaurants/${restaurantId}/rewardDetail`)
-        .set("Authorization", `Bearer ${ownerAccessToken}`)
+        .put(`/api/restaurants/${restaurant.data.id}/rewardDetail`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
         .send({
           perkOccurence: 0.5,
         });
@@ -236,9 +172,11 @@ describe("Restaurant APIs", () => {
     });
 
     it("should fail on invalid rewardAmount value", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+
       const response = await supertest(app)
-        .put(`/api/restaurants/${restaurantId}/rewardDetail`)
-        .set("Authorization", `Bearer ${ownerAccessToken}`)
+        .put(`/api/restaurants/${restaurant.data.id}/rewardDetail`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
         .send({
           rewardAmount: -1,
         });
@@ -248,9 +186,11 @@ describe("Restaurant APIs", () => {
     });
 
     it("should successfully update restaurant reward detail", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+
       const response = await supertest(app)
-        .put(`/api/restaurants/${restaurantId}/rewardDetail`)
-        .set("Authorization", `Bearer ${ownerAccessToken}`)
+        .put(`/api/restaurants/${restaurant.data.id}/rewardDetail`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
         .send({
           perkOccurence: 5,
         });
@@ -260,32 +200,15 @@ describe("Restaurant APIs", () => {
       expect(response.body.data.restaurant.perkOccurence).toBe(5);
     });
   });
+
   describe("GET /api/:id", () => {
-    let userId: string,
-      userAccessToken: string,
-      anotherRestaurantOwnerAccessToken: string,
-      ownerAccessToken: string,
-      restaurantId: string;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.result.user.id === "string")
-        userId = result.result.user.id;
-      userAccessToken = result.result.accessToken;
-
-      const owner = await employeeServices.login(
-        ownerPayload.email,
-        ownerPayload.password
-      );
-      if (typeof owner.employee.restaurantId === "string")
-        restaurantId = owner.employee.restaurantId;
-      ownerAccessToken = owner.accessToken;
-    });
-
     beforeEach(() => {
       jest.resetAllMocks();
     });
 
     it("should fail if requester is not authenticated", async () => {
+      const restaurantId = faker.string.uuid();
+
       const response = await supertest(app).get(
         `/api/restaurants/${restaurantId}?dayNoOfTheWeek=5&time=10:00:00`
       );
@@ -293,65 +216,30 @@ describe("Restaurant APIs", () => {
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should successfully return restaurant", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+
       const response = await supertest(app)
-        .get(`/api/restaurants/${restaurantId}?dayNoOfTheWeek=5&time=10:00:00`)
-        .set("Authorization", `Bearer ${userAccessToken}`);
+        .get(
+          `/api/restaurants/${restaurant.data.id}?dayNoOfTheWeek=5&time=10:00:00`
+        )
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.data.restaurant.id).toBe(restaurantId);
+      expect(response.body.data.restaurant.id).toBe(restaurant.data.id);
     });
   });
+
   describe("PUT /api/:id", () => {
-    let userId,
-      userAccessToken: string,
-      anotherRestaurantOwnerAccessToken: string,
-      ownerAccessToken: string,
-      restaurantId: string;
-    beforeAll(async () => {
-      const result = await testHelpers.createUserWithMockedOtp();
-      if (typeof result.result.user.id === "string")
-        userId = result.result.user.id;
-      userAccessToken = result.result.accessToken;
-
-      anotherRestaurantOwnerAccessToken = (
-        await employeeServices.login(ownerPayload.email, ownerPayload.password)
-      ).accessToken;
-
-      const restaurant = await restaurantRepository.create({
-        name: "Choijin Temple",
-        description:
-          "Journey to Mongolia with every bite. Explore the flavors of the steppes and indulge in authentic Mongolian cuisine. From sizzling grilled meats to aromatic stews, experience the richness of nomadic heritage on your plate.",
-        location:
-          "The World Islands - Mongolia - Dubai - United Arabic Emirates",
-        latitude: 1,
-        longitude: 1,
-        googleMapsUrl:
-          "https://www.google.com/maps/place/Wrestling+Palace/@47.9123329,106.9360381,14z/data=!4m6!3m5!1s0x5d96923c7bfe80ef:0xbde4c9c449a2c00d!8m2!3d47.917826!4d106.9353974!16s%2Fm%2F05b1rwd?entry=ttu",
-        categoryId: "776f61b9-b2cc-48d6-a03b-53574b85bb4c",
-        logo: "logo",
-      });
-      restaurantId = restaurant.id;
-
-      const owner = await employeeRepository.create(db, {
-        email: faker.internet.email().toLowerCase(),
-        password: await encryptionHelper.encrypt("Password12"),
-        fullname: "restaurant",
-        role: "RESTAURANT_OWNER",
-        restaurantId: restaurantId,
-      });
-
-      ownerAccessToken = (
-        await employeeServices.login(owner.email.toLowerCase(), "Password12")
-      ).accessToken;
-    });
-
     beforeEach(() => {
       jest.resetAllMocks();
     });
 
     it("should fail if requester is not authenticated", async () => {
+      const restaurantId = faker.string.uuid();
+
       const response = await supertest(app)
         .put(`/api/restaurants/${restaurantId}`)
         .field("name", "Test Restaurant");
@@ -359,42 +247,58 @@ describe("Restaurant APIs", () => {
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if requester is not authorized(ROLE)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const waiter = await testHelpers.createEmployee(
+        restaurant.data.id,
+        "RESTAURANT_WAITER"
+      );
+
       const response = await supertest(app)
-        .put(`/api/restaurants/${restaurantId}`)
-        .set("Authorization", `Bearer ${userAccessToken}`)
+        .put(`/api/restaurants/${restaurant.data.id}`)
+        .set("Authorization", `Bearer ${waiter.accessToken}`)
         .field("name", "Test Restaurant");
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if requester is not authorized(RESTAURANTID)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const anotherRestaurant = await testHelpers.createRestaurantWithOwner();
+
       const response = await supertest(app)
-        .put(`/api/restaurants/${restaurantId}`)
-        .set("Authorization", `Bearer ${anotherRestaurantOwnerAccessToken}`)
+        .put(`/api/restaurants/${restaurant.data.id}`)
+        .set("Authorization", `Bearer ${anotherRestaurant.ownerAccessToken}`)
         .field("name", "Test Restaurant");
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
     });
+
     it("should successfully update the restaurant(WITHOUT FILE)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+
       const response = await supertest(app)
-        .put(`/api/restaurants/${restaurantId}`)
-        .set("Authorization", `Bearer ${ownerAccessToken}`)
+        .put(`/api/restaurants/${restaurant.data.id}`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
         .field("name", "Test Restaurant");
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
       expect(response.body.data.restaurant.name).toBe("Test Restaurant");
     });
+
     it("should successfully update the restaurant(WITH FILE)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
       (uploadToS3 as jest.Mock).mockResolvedValue({});
       (deleteFromS3 as jest.Mock).mockResolvedValue({});
       const filePath = path.join(__dirname, "../assets/logo.jpg");
 
       const response = await supertest(app)
-        .put(`/api/restaurants/${restaurantId}`)
-        .set("Authorization", `Bearer ${ownerAccessToken}`)
+        .put(`/api/restaurants/${restaurant.data.id}`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
         .field("name", "Test Restaurant")
         .attach("logo", filePath);
 

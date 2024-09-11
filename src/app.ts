@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import helmet from "helmet";
 import cors from "cors";
-import bodyParser from "body-parser";
 import { notFound } from "./middlewares/notFound";
 import { errorHandler } from "./middlewares/errorHandler";
 import userRoutes from "./routes/userRoutes";
@@ -39,7 +38,6 @@ app.use(
   })
 );
 app.use(helmet());
-app.use(bodyParser.json());
 app.use(rateLimiter);
 
 const morganFormat = ":method :url :status :response-time ms";

@@ -1,5 +1,4 @@
 import supertest from "supertest";
-import { employeeServices } from "../../../src/services/employeeServices";
 import app from "../../../src/app";
 import path from "path";
 import { faker } from "@faker-js/faker";
@@ -9,50 +8,14 @@ import { cardRepository } from "../../../src/repository/cardRepository";
 
 jest.mock("../../../src/utils/aws");
 
-const existingRestaurantOwner = {
-  email: "owner@fatcat.com",
-  password: "Password12",
-};
-
-const existingRestaurantWaiter = {
-  email: "waiter@fatcat.com",
-  password: "Password12",
-};
-
 describe("Card APIs", () => {
   describe("POST /api/cards", () => {
-    let existingRestaurantOwnerAccessToken: string,
-      existingRestaurantWaiterAccessToken: string,
-      existingRestaurantId: string;
-
-    let restaurantId: string, ownerAccessToken: string;
-    beforeAll(async () => {
-      const owner = await employeeServices.login(
-        existingRestaurantOwner.email,
-        existingRestaurantOwner.password
-      );
-      existingRestaurantOwnerAccessToken = owner.accessToken;
-      if (owner.employee.restaurantId)
-        existingRestaurantId = owner.employee.restaurantId;
-
-      const waiter = await employeeServices.login(
-        existingRestaurantWaiter.email,
-        existingRestaurantWaiter.password
-      );
-      existingRestaurantWaiterAccessToken = waiter.accessToken;
-      if (waiter.employee.restaurantId)
-        existingRestaurantId = waiter.employee.restaurantId;
-
-      const result = await testHelpers.createRestaurant();
-      restaurantId = result.restaurantId;
-      ownerAccessToken = result.ownerAccessToken;
-    });
-
     beforeEach(() => {
       jest.resetAllMocks();
     });
 
     it("should fail if requester is not authenticated", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
       const filePath = path.join(__dirname, "../assets/NFT.png");
 
       const response = await supertest(app)
@@ -62,7 +25,7 @@ describe("Card APIs", () => {
           "instruction",
           "Show your Amuse Bouche QR code to check in and unlock rewards with each visit."
         )
-        .field("restaurantId", existingRestaurantId)
+        .field("restaurantId", restaurant.data.id)
         .field(
           "nftUrl",
           "https://opensea.io/assets/ethereum/0xbe9371326f91345777b04394448c23e2bfeaa826/66118"
@@ -72,18 +35,24 @@ describe("Card APIs", () => {
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if requester is not authorized(ROLE)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const manager = await testHelpers.createEmployee(
+        restaurant.data.id,
+        "RESTAURANT_MANAGER"
+      );
       const filePath = path.join(__dirname, "../assets/NFT.png");
 
       const response = await supertest(app)
         .post("/api/cards")
-        .set("Authorization", `Bearer ${existingRestaurantWaiterAccessToken}`)
+        .set("Authorization", `Bearer ${manager.accessToken}`)
         .field("benefits", "Earn Bitcoin for every visit")
         .field(
           "instruction",
           "Show your Amuse Bouche QR code to check in and unlock rewards with each visit."
         )
-        .field("restaurantId", existingRestaurantId)
+        .field("restaurantId", restaurant.data.id)
         .field(
           "nftUrl",
           "https://opensea.io/assets/ethereum/0xbe9371326f91345777b04394448c23e2bfeaa826/66118"
@@ -93,18 +62,21 @@ describe("Card APIs", () => {
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if requester is not authorized(RESTAURANTID)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const differentRestaurant = await testHelpers.createRestaurantWithOwner();
       const filePath = path.join(__dirname, "../assets/NFT.png");
 
       const response = await supertest(app)
         .post("/api/cards")
-        .set("Authorization", `Bearer ${existingRestaurantOwnerAccessToken}`)
+        .set("Authorization", `Bearer ${differentRestaurant.ownerAccessToken}`)
         .field("benefits", "Earn Bitcoin for every visit")
         .field(
           "instruction",
           "Show your Amuse Bouche QR code to check in and unlock rewards with each visit."
         )
-        .field("restaurantId", restaurantId)
+        .field("restaurantId", restaurant.data.id)
         .field(
           "nftUrl",
           "https://opensea.io/assets/ethereum/0xbe9371326f91345777b04394448c23e2bfeaa826/66118"
@@ -114,18 +86,21 @@ describe("Card APIs", () => {
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if restaurant has existing card", async () => {
+      const restaurantWithCard =
+        await testHelpers.createRestaurantWithOwnerAndCard();
       const filePath = path.join(__dirname, "../assets/NFT.png");
 
       const response = await supertest(app)
         .post("/api/cards")
-        .set("Authorization", `Bearer ${existingRestaurantOwnerAccessToken}`)
+        .set("Authorization", `Bearer ${restaurantWithCard.ownerAccessToken}`)
         .field("benefits", "Earn Bitcoin for every visit")
         .field(
           "instruction",
           "Show your Amuse Bouche QR code to check in and unlock rewards with each visit."
         )
-        .field("restaurantId", existingRestaurantId)
+        .field("restaurantId", restaurantWithCard.data.id)
         .field(
           "nftUrl",
           "https://opensea.io/assets/ethereum/0xbe9371326f91345777b04394448c23e2bfeaa826/66118"
@@ -135,19 +110,21 @@ describe("Card APIs", () => {
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
     });
+
     it("should successfully create the card", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
       const filePath = path.join(__dirname, "../assets/NFT.png");
       (uploadToS3 as jest.Mock).mockResolvedValue({});
 
       const response = await supertest(app)
         .post("/api/cards")
-        .set("Authorization", `Bearer ${ownerAccessToken}`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
         .field("benefits", "Earn Bitcoin for every visit")
         .field(
           "instruction",
           "Show your Amuse Bouche QR code to check in and unlock rewards with each visit."
         )
-        .field("restaurantId", restaurantId)
+        .field("restaurantId", restaurant.data.id)
         .field(
           "nftUrl",
           "https://opensea.io/assets/ethereum/0xbe9371326f91345777b04394448c23e2bfeaa826/66118"
@@ -161,86 +138,72 @@ describe("Card APIs", () => {
   });
 
   describe("PUT /api/cards/:id", () => {
-    let existingRestaurantOwnerAccessToken: string,
-      existingRestaurantWaiterAccessToken: string,
-      existingRestaurantId: string,
-      existingCardId: string;
-
-    let anotherRestaurantId: string, anotherRestaurantOwnerAccessToken: string;
-
-    beforeAll(async () => {
-      const owner = await employeeServices.login(
-        existingRestaurantOwner.email,
-        existingRestaurantOwner.password
-      );
-      existingRestaurantOwnerAccessToken = owner.accessToken;
-      if (owner.employee.restaurantId)
-        existingRestaurantId = owner.employee.restaurantId;
-
-      const waiter = await employeeServices.login(
-        existingRestaurantWaiter.email,
-        existingRestaurantWaiter.password
-      );
-      existingRestaurantWaiterAccessToken = waiter.accessToken;
-      if (waiter.employee.restaurantId)
-        existingRestaurantId = waiter.employee.restaurantId;
-      const card = await cardRepository.getByRestaurantId(existingRestaurantId);
-      existingCardId = card[0].id;
-
-      const result = await testHelpers.createRestaurant();
-      anotherRestaurantId = result.restaurantId;
-      anotherRestaurantOwnerAccessToken = result.ownerAccessToken;
-    });
-
-    beforeEach(() => {
-      jest.resetAllMocks();
+    beforeEach(async () => {
+      jest.clearAllMocks();
     });
 
     it("should fail if requester is not authenticated", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+
       const response = await supertest(app)
-        .put(`/api/cards/${existingCardId}`)
-        .field("benefits", "Earn Bitcoin for every visit.");
+        .put(`/api/cards/${restaurant.card.id}`)
+        .field("benefits", faker.company.buzzPhrase());
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if requester is not authorized(ROLE)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+      const waiter = await testHelpers.createEmployee(
+        restaurant.data.id,
+        "RESTAURANT_WAITER"
+      );
+
       const response = await supertest(app)
-        .put(`/api/cards/${existingCardId}`)
-        .set("Authorization", `Bearer ${existingRestaurantWaiterAccessToken}`)
+        .put(`/api/cards/${restaurant.card.id}`)
+        .set("Authorization", `Bearer ${waiter.accessToken}`)
         .field("benefits", "Earn Bitcoin for every visit.");
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should fail if requester is not authorized(RESTAURANTID)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+      const differentRestaurant =
+        await testHelpers.createRestaurantWithOwnerAndCard();
+
       const response = await supertest(app)
-        .put(`/api/cards/${existingCardId}`)
-        .set("Authorization", `Bearer ${anotherRestaurantOwnerAccessToken}`)
-        .field("benefits", "Earn Bitcoin for every visit.");
+        .put(`/api/cards/${restaurant.card.id}`)
+        .set("Authorization", `Bearer ${differentRestaurant.ownerAccessToken}`)
+        .field("benefits", faker.company.buzzPhrase());
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
     });
 
     it("should successfully update the card(WITHOUT FILE)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+
       const response = await supertest(app)
-        .put(`/api/cards/${existingCardId}`)
-        .set("Authorization", `Bearer ${existingRestaurantOwnerAccessToken}`)
-        .field("benefits", "Earn Bitcoin for every visit.");
+        .put(`/api/cards/${restaurant.card.id}`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
+        .field("benefits", faker.company.buzzPhrase());
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
     });
 
     it("should successfully update the card(WITH FILE)", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
       (uploadToS3 as jest.Mock).mockResolvedValue({});
       (deleteFromS3 as jest.Mock).mockResolvedValue({});
       const filePath = path.join(__dirname, "../assets/NFT.png");
 
       const response = await supertest(app)
-        .put(`/api/cards/${existingCardId}`)
-        .set("Authorization", `Bearer ${existingRestaurantOwnerAccessToken}`)
+        .put(`/api/cards/${restaurant.card.id}`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
         .field("benefits", "Earn Bitcoin for every visit.")
         .attach("nftImage", filePath);
 
@@ -252,44 +215,27 @@ describe("Card APIs", () => {
   });
 
   describe("GET /api/cards/:id", () => {
-    let existingRestaurantOwnerAccessToken: string,
-      existingRestaurantWaiterAccessToken: string,
-      existingRestaurantId: string,
-      existingCardId: string;
-
-    beforeAll(async () => {
-      const owner = await employeeServices.login(
-        existingRestaurantOwner.email,
-        existingRestaurantOwner.password
-      );
-      existingRestaurantOwnerAccessToken = owner.accessToken;
-      if (owner.employee.restaurantId)
-        existingRestaurantId = owner.employee.restaurantId;
-
-      const waiter = await employeeServices.login(
-        existingRestaurantWaiter.email,
-        existingRestaurantWaiter.password
-      );
-      existingRestaurantWaiterAccessToken = waiter.accessToken;
-      if (waiter.employee.restaurantId)
-        existingRestaurantId = waiter.employee.restaurantId;
-      const card = await cardRepository.getByRestaurantId(existingRestaurantId);
-      existingCardId = card[0].id;
-    });
-
     beforeEach(() => {
       jest.resetAllMocks();
     });
+
     it("should fail if requester is not authenticated", async () => {
-      const response = await supertest(app).get(`/api/cards/${existingCardId}`);
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+
+      const response = await supertest(app).get(
+        `/api/cards/${restaurant.card.id}`
+      );
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should successfully get the card", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+
       const response = await supertest(app)
-        .get(`/api/cards/${existingCardId}`)
-        .set("Authorization", `Bearer ${existingRestaurantOwnerAccessToken}`);
+        .get(`/api/cards/${restaurant.card.id}`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -297,43 +243,27 @@ describe("Card APIs", () => {
   });
 
   describe("GET /api/cards/:restaurantId/restaurants", () => {
-    let existingRestaurantOwnerAccessToken: string,
-      existingRestaurantWaiterAccessToken: string,
-      existingRestaurantId: string,
-      existingCardId: string;
-
-    beforeAll(async () => {
-      const owner = await employeeServices.login(
-        existingRestaurantOwner.email,
-        existingRestaurantOwner.password
-      );
-      existingRestaurantOwnerAccessToken = owner.accessToken;
-      if (owner.employee.restaurantId)
-        existingRestaurantId = owner.employee.restaurantId;
-
-      const waiter = await employeeServices.login(
-        existingRestaurantWaiter.email,
-        existingRestaurantWaiter.password
-      );
-      existingRestaurantWaiterAccessToken = waiter.accessToken;
-      if (waiter.employee.restaurantId)
-        existingRestaurantId = waiter.employee.restaurantId;
-      const card = await cardRepository.getByRestaurantId(existingRestaurantId);
-      existingCardId = card[0].id;
+    beforeEach(() => {
+      jest.clearAllMocks();
     });
 
     it("should fail if requester is not authenticated", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+
       const response = await supertest(app).get(
-        `/api/cards/${existingRestaurantId}/restaurants`
+        `/api/cards/${restaurant.card.id}/restaurants`
       );
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
     });
+
     it("should successfully get the card", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+
       const response = await supertest(app)
-        .get(`/api/cards/${existingRestaurantId}/restaurants`)
-        .set("Authorization", `Bearer ${existingRestaurantOwnerAccessToken}`);
+        .get(`/api/cards/${restaurant.card.id}/restaurants`)
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);

@@ -348,4 +348,17 @@ export const employeeServices = {
 
     return sanitizedEmployee;
   },
+  getByRestaurantId: async (restaurantId: string, issuerId: string) => {
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      restaurantId
+    );
+
+    if (!issuer)
+      throw new CustomError("You are not allowed to do this action.", 400);
+
+    const employees = await employeeRepository.getByRestaurantId(restaurantId);
+
+    return employees;
+  },
 };
