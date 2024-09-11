@@ -54,17 +54,8 @@ export const tapServices = {
         currentTime.getTime() - tapCheck.tappedAt.getTime();
 
       if (timeDifference < TAP_LOCK_TIME * 1000) {
-        if (userSocketId) {
-          io.to(userSocketId).emit("tap-scan", {
-            isOwned: false,
-            restaurantId: waiter.restaurantId,
-          });
-
-          logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
-        }
-
         throw new CustomError(
-          "Please wait 10 seconds before scanning again.",
+          `Please wait ${TAP_LOCK_TIME} seconds before scanning again.`,
           400
         );
       }
