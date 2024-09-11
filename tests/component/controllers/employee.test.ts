@@ -5,6 +5,7 @@ import app from "../../../src/app";
 import { sendEmail } from "../../../src/lib/emailHelper";
 import { emailOtpRepository } from "../../../src/repository/emailOtpRepository";
 import { generateVerificationToken } from "../../../src/utils/jwt";
+import generatePassword from "../helpers/passwordGenerator";
 
 jest.mock("../../../src/repository/emailOtpRepository");
 jest.mock("../../../src/lib/emailHelper");
@@ -116,7 +117,7 @@ describe("Employee APIs", () => {
 
       const response = await supertest(app).post("/api/employees/login").send({
         email: employee.employee.email,
-        password: faker.internet.password(),
+        password: generatePassword(),
       });
 
       expect(response.status).toBe(400);
@@ -279,7 +280,7 @@ describe("Employee APIs", () => {
         .send({
           email: "unregisteredEmail@gmail.com",
           verificationCode: verificationCode,
-          password: faker.internet.password(),
+          password: generatePassword(),
         });
 
       expect(response.status).toBe(400);
@@ -303,7 +304,7 @@ describe("Employee APIs", () => {
         .send({
           email: faker.internet.email(),
           verificationCode: invalidVerificationCode,
-          password: faker.internet.password(),
+          password: generatePassword(),
         });
 
       expect(response.status).toBe(400);
@@ -326,7 +327,7 @@ describe("Employee APIs", () => {
         .send({
           email: employee.employee.email,
           verificationCode: verificationCode,
-          password: faker.internet.password(),
+          password: generatePassword(),
         });
 
       expect(response.status).toBe(200);
@@ -343,7 +344,7 @@ describe("Employee APIs", () => {
       const response = await supertest(app)
         .post("/api/employees/check-password")
         .send({
-          currentPassword: faker.internet.password(),
+          currentPassword: generatePassword(),
         });
 
       expect(response.status).toBe(401);
@@ -369,7 +370,7 @@ describe("Employee APIs", () => {
         null,
         "RESTAURANT_OWNER"
       );
-      const wrongPassword = faker.internet.password();
+      const wrongPassword = generatePassword();
       expect(employee.password).not.toBe(wrongPassword);
 
       const response = await supertest(app)
@@ -412,8 +413,8 @@ describe("Employee APIs", () => {
       const response = await supertest(app)
         .put("/api/employees/changePassword")
         .send({
-          currentPassword: faker.internet.password(),
-          newPassword: faker.internet.password(),
+          currentPassword: generatePassword(),
+          newPassword: generatePassword(),
         });
 
       expect(response.status).toBe(401);
@@ -428,7 +429,7 @@ describe("Employee APIs", () => {
         .set("Authorization", `Bearer ${user.accessToken}`)
         .send({
           currentPassword: user.password,
-          newPassword: faker.internet.password(),
+          newPassword: generatePassword(),
         });
 
       expect(response.status).toBe(401);
@@ -440,7 +441,7 @@ describe("Employee APIs", () => {
         null,
         "RESTAURANT_OWNER"
       );
-      const wrongPassword = faker.internet.password();
+      const wrongPassword = generatePassword();
       expect(employee.password).not.toBe(wrongPassword);
 
       const response = await supertest(app)
@@ -448,7 +449,7 @@ describe("Employee APIs", () => {
         .set("Authorization", `Bearer ${employee.accessToken}`)
         .send({
           currentPassword: wrongPassword,
-          newPassword: faker.internet.password(),
+          newPassword: generatePassword(),
         });
 
       expect(response.status).toBe(400);
@@ -466,7 +467,7 @@ describe("Employee APIs", () => {
         .set("Authorization", `Bearer ${employee.accessToken}`)
         .send({
           currentPassword: employee.password,
-          newPassword: faker.internet.password(),
+          newPassword: generatePassword(),
         });
 
       console.log(response.body);

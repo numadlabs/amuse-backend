@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { redis } from "../index";
 import { CustomError } from "../exceptions/CustomError";
 import logger from "../config/winston";
 import { config } from "../config/config";
+import { redis } from "../server";
 
 interface RateLimitInfo {
   limit: number;

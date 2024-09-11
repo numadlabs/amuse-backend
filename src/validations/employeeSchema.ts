@@ -6,8 +6,8 @@ export const createEmployeeSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(5, "Email must be at least 5 characters.")
-      .max(50, "Email must be at most 30 characters.")
+      .min(6, "Email must be at least 6 characters.")
+      .max(254, "Email must be at most 254 characters.")
       .email(),
     fullname: string().trim().min(1).max(30).optional(),
     role: z.nativeEnum(ROLES),

@@ -6,8 +6,8 @@ export const loginSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(5, "Email must be at least 5 characters.")
-      .max(30, "Email must be at most 30 characters.")
+      .min(6, "Email must be at least 6 characters.")
+      .max(254, "Email must be at most 254 characters.")
       .email(),
     password: string()
       .min(8, "Password must be at least 8 characters.")
@@ -24,8 +24,8 @@ export const emailSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(5, "Email must be at least 5 characters.")
-      .max(30, "Email must be at most 30 characters.")
+      .min(6, "Email must be at least 6 characters.")
+      .max(254, "Email must be at most 254 characters.")
       .email(),
   })
   .strict("Unexpected field detected.");
@@ -35,8 +35,8 @@ export const otpSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(5, "Email must be at least 5 characters.")
-      .max(50, "Email must be at most 50 characters.")
+      .min(6, "Email must be at least 6 characters.")
+      .max(254, "Email must be at most 254 characters.")
       .email(),
     verificationCode: number().int().lt(10000).gt(999),
   })
@@ -47,8 +47,8 @@ export const registerSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(5, "Email must be at least 5 characters.")
-      .max(50, "Email must be at most 50 characters.")
+      .min(6, "Email must be at least 6 characters.")
+      .max(254, "Email must be at most 254 characters.")
       .email(),
     password: string()
       .min(8, "Password must be at least 8 characters.")
@@ -77,8 +77,8 @@ export const forgotPasswordSchema = z
     email: string()
       .trim()
       .toLowerCase()
-      .min(5, "Email must be at least 5 characters.")
-      .max(50, "Email must be at most 50 characters.")
+      .min(6, "Email must be at least 6 characters.")
+      .max(254, "Email must be at most 254 characters.")
       .email(),
     password: string()
       .min(8, "Password must be at least 8 characters.")

@@ -13,6 +13,7 @@ import { employeeServices } from "../../../src/services/employeeServices";
 import { ROLES } from "../../../src/types/db/enums";
 import { db } from "../../../src/utils/db";
 import { userTierRepository } from "../../../src/repository/userTierRepository";
+import generatePassword from "./passwordGenerator";
 
 jest.mock("../../../src/repository/emailOtpRepository");
 
@@ -27,7 +28,7 @@ export const testHelpers = {
   ) => {
     const defaultPayload = {
       email: faker.internet.email().toLowerCase(),
-      password: faker.internet.password(),
+      password: generatePassword(),
       nickname: faker.internet.userName(),
       verificationCode: faker.number.int({ min: 1000, max: 9999 }),
       ...userPayload, // Overwrite defaults with provided values
@@ -75,7 +76,7 @@ export const testHelpers = {
     };
     const restaurant = await restaurantRepository.create(restaurantPayload);
 
-    const ownerPassword = faker.internet.password();
+    const ownerPassword = generatePassword();
     const owner = await employeeRepository.create(db, {
       email: faker.internet.email().toLowerCase(),
       password: await encryptionHelper.encrypt(ownerPassword),
@@ -105,7 +106,7 @@ export const testHelpers = {
     };
     const restaurant = await restaurantRepository.create(restaurantPayload);
 
-    const ownerPassword = faker.internet.password();
+    const ownerPassword = generatePassword();
     const owner = await employeeRepository.create(db, {
       email: faker.internet.email().toLowerCase(),
       password: await encryptionHelper.encrypt(ownerPassword),
@@ -129,7 +130,7 @@ export const testHelpers = {
     return { data: restaurant, ownerAccessToken, card };
   },
   createEmployee: async (restaurantId: string | null, role: ROLES) => {
-    const password = faker.internet.password();
+    const password = generatePassword();
 
     const employee = await employeeRepository.create(db, {
       email: faker.internet.email().toLowerCase(),

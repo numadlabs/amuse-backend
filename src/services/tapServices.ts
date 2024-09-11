@@ -16,7 +16,7 @@ import { notificationRepository } from "../repository/notificationRepository";
 import { db } from "../utils/db";
 import { BOOST_MULTIPLIER, TAP_LOCK_TIME } from "../lib/constants";
 import logger from "../config/winston";
-import { io, redis } from "..";
+import { io, redis } from "../server";
 
 const crypto = require("crypto");
 

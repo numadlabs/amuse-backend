@@ -1,4 +1,3 @@
-import { io, redis } from "..";
 import { CustomError } from "../exceptions/CustomError";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { bonusRepository } from "../repository/bonusRepository";
@@ -11,6 +10,7 @@ import { userBonusRepository } from "../repository/userBonusRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { userRepository } from "../repository/userRepository";
 import { db } from "../utils/db";
+import { io, redis } from "../server";
 const crypto = require("crypto");
 
 export const userBonusServices = {

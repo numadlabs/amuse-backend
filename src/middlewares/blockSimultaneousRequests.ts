@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
-import { redis } from "../index";
 import { CustomError } from "../exceptions/CustomError";
 import { config } from "../config/config";
+import { redis } from "../server";
 
 const BLOCKED_REQUEST_TIMEOUT = 30;
 

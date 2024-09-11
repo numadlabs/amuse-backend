@@ -8,6 +8,7 @@ import {
   generateVerificationToken,
 } from "../../../src/utils/jwt";
 import app from "../../../src/app";
+import generatePassword from "../helpers/passwordGenerator";
 
 jest.mock("../../../src/lib/emailHelper");
 jest.mock("../../../src/repository/emailOtpRepository");
@@ -59,7 +60,7 @@ describe("Auth APIs", () => {
 
       const response = await request(app).post("/api/auth/login").send({
         email: createdUser.user.email,
-        password: faker.internet.password(),
+        password: generatePassword(),
       });
 
       expect(response.statusCode).toBe(400);
@@ -192,7 +193,7 @@ describe("Auth APIs", () => {
       const response = await request(app).post("/api/auth/register").send({
         nickname: faker.internet.userName(),
         email: faker.internet.email(),
-        password: faker.internet.password(),
+        password: generatePassword(),
         verificationCode: verificationCode,
         balance: 100,
         visitCount: 10,
@@ -218,7 +219,7 @@ describe("Auth APIs", () => {
       const response = await request(app).post("/api/auth/register").send({
         nickname: faker.internet.userName(),
         email: faker.internet.email(),
-        password: faker.internet.password(),
+        password: generatePassword(),
         verificationCode: invalidVerificationCode,
       });
 
@@ -237,7 +238,7 @@ describe("Auth APIs", () => {
       const response = await request(app).post("/api/auth/register").send({
         email: existingUser.user.email,
         nickname: faker.internet.userName(),
-        password: faker.internet.password(),
+        password: generatePassword(),
         verificationCode: verificationCode,
       });
 
@@ -255,7 +256,7 @@ describe("Auth APIs", () => {
       const response = await request(app).post("/api/auth/register").send({
         nickname: faker.internet.userName(),
         email: faker.internet.email(),
-        password: faker.internet.password(),
+        password: generatePassword(),
         verificationCode: verificationCode,
       });
 
@@ -283,7 +284,7 @@ describe("Auth APIs", () => {
         role: "USER",
         email: faker.internet.email(),
         userTierId: faker.string.uuid(),
-        password: faker.internet.password(),
+        password: generatePassword(),
         nickname: faker.internet.userName(),
       });
 
@@ -311,7 +312,7 @@ describe("Auth APIs", () => {
       const response = await request(app).put("/api/auth/forgotPassword").send({
         email: "invalidEmail@gmail.com",
         verificationCode: verificationCode,
-        password: faker.internet.password(),
+        password: generatePassword(),
       });
 
       expect(response.status).toBe(400);
@@ -334,7 +335,7 @@ describe("Auth APIs", () => {
       const response = await request(app).put("/api/auth/forgotPassword").send({
         email: createdUser.user.email,
         verificationCode: invalidVerificationCode,
-        password: faker.internet.password(),
+        password: generatePassword(),
       });
 
       expect(response.status).toBe(400);
@@ -352,7 +353,7 @@ describe("Auth APIs", () => {
       const response = await request(app).put("/api/auth/forgotPassword").send({
         email: createdUser.user.email,
         verificationCode: verificationCode,
-        password: faker.internet.password(),
+        password: generatePassword(),
       });
 
       expect(response.status).toBe(200);
@@ -402,8 +403,8 @@ describe("Auth APIs", () => {
 
     it("should fail if requester is not authenticated", async () => {
       const response = await request(app).put("/api/auth/changePassword").send({
-        currentPassword: faker.internet.password(),
-        newPassword: faker.internet.password(),
+        currentPassword: generatePassword(),
+        newPassword: generatePassword(),
       });
 
       expect(response.status).toBe(401);
@@ -418,7 +419,7 @@ describe("Auth APIs", () => {
         .set("Authorization", `Bearer ${createdUser.accessToken}`)
         .send({
           currentPassword: "wrongPassword12",
-          newPassword: faker.internet.password(),
+          newPassword: generatePassword(),
         });
 
       expect(response.status).toBe(400);
@@ -433,7 +434,7 @@ describe("Auth APIs", () => {
         .set("Authorization", `Bearer ${createdUser.accessToken}`)
         .send({
           currentPassword: createdUser.password,
-          newPassword: faker.internet.password(),
+          newPassword: generatePassword(),
         });
 
       expect(response.status).toBe(200);
