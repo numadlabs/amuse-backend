@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import { CustomError } from "../exceptions/CustomError";
 import { config } from "../config/config";

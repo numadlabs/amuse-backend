@@ -1,4 +1,4 @@
-import { Insertable, Kysely, Transaction, Updateable, sql } from "kysely";
+import { Kysely, Transaction, Updateable, sql } from "kysely";
 import { db } from "../utils/db";
 import { DB, UserCard } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";

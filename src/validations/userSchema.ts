@@ -1,4 +1,4 @@
-import { date, number, string, z } from "zod";
+import { z } from "zod";
 
 export const updateUserInfoSchema = z
   .object({

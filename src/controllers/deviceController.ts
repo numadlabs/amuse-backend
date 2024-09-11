@@ -1,10 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { Insertable } from "kysely";
 import { Device } from "../types/db/types";
-import { CustomError } from "../exceptions/CustomError";
 import { deviceServices } from "../services/deviceServices";
 import { deviceSchema } from "../validations/deviceSchema";
-import { AuthenticatedRequest } from "../../custom";
 
 export const deviceController = {
   create: async (req: Request, res: Response, next: NextFunction) => {

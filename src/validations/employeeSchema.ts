@@ -1,23 +1,25 @@
-import { string, z } from "zod";
+import { z } from "zod";
 import { ROLES } from "../types/db/enums";
 
 export const createEmployeeSchema = z
   .object({
-    email: string()
+    email: z
+      .string()
       .trim()
       .toLowerCase()
       .min(6, "Email must be at least 6 characters.")
       .max(254, "Email must be at most 254 characters.")
       .email(),
-    fullname: string().trim().min(1).max(30).optional(),
+    fullname: z.string().trim().min(1).max(30).optional(),
     role: z.nativeEnum(ROLES),
-    restaurantId: string().trim().uuid().optional(),
+    restaurantId: z.string().trim().uuid().optional(),
   })
   .strict("Unexpected field detected.");
 
 export const updateEmployeeSchema = z
   .object({
-    fullname: string()
+    fullname: z
+      .string()
       .trim()
       .min(1, "First name must be at least 1 character.")
       .max(50, "First name must be at most 50 characters.")
@@ -27,7 +29,8 @@ export const updateEmployeeSchema = z
 
 export const passwordSchema = z
   .object({
-    password: string()
+    password: z
+      .string()
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(

@@ -3,7 +3,6 @@ import { Device } from "../types/db/types";
 import { deviceRepository } from "../repository/deviceRepository";
 import { CustomError } from "../exceptions/CustomError";
 import { Expo } from "expo-server-sdk";
-import { userRepository } from "../repository/userRepository";
 
 export const deviceServices = {
   create: async (data: Insertable<Device>) => {

@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { timetableRepository } from "../repository/timetableRepository";
 import { Timetable } from "../types/db/types";
-import { Insertable, Updateable } from "kysely";
-import { CustomError } from "../exceptions/CustomError";
+import { Updateable } from "kysely";
 import { timetableServices } from "../services/timetableServices";
 import { idSchema, restaurantIdSchema } from "../validations/sharedSchema";
 import { updateTimetableSchema } from "../validations/timetableSchema";

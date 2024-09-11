@@ -4,7 +4,6 @@ import { CustomError } from "../exceptions/CustomError";
 import { notificationServices } from "../services/notificationServices";
 import { notificationSchema } from "../validations/notificationSchema";
 import { AuthenticatedRequest } from "../../custom";
-import { employeeIdSchema, userIdSchema } from "../validations/sharedSchema";
 import { notificationRepository } from "../repository/notificationRepository";
 
 export const notificationController = {

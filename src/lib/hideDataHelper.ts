@@ -1,6 +1,3 @@
-import { Employee, User } from "../types/db/types";
-import { Updateable } from "kysely";
-
 export function hideSensitiveData<T extends Record<string, any>>(
   obj: T,
   keys: Array<keyof T>

@@ -13,7 +13,6 @@ import { Updateable } from "kysely";
 import { User } from "../types/db/types";
 import { userTierRepository } from "../repository/userTierRepository";
 import { emailOtpRepository } from "../repository/emailOtpRepository";
-import { config } from "../config/config";
 import { hideSensitiveData } from "../lib/hideDataHelper";
 import { userCardReposity } from "../repository/userCardRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
@@ -21,7 +20,6 @@ import { tapRepository } from "../repository/tapRepository";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { db } from "../utils/db";
 import { verificationCodeConstants } from "../lib/constants";
-import { da } from "@faker-js/faker";
 import { countryRepository } from "../repository/countryRepository";
 
 export const userServices = {

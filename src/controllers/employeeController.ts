@@ -1,12 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { CustomError } from "../exceptions/CustomError";
 import { employeeServices } from "../services/employeeServices";
-import { generateTokens } from "../utils/jwt";
 import { Insertable, Updateable } from "kysely";
 import { Employee } from "../types/db/types";
 import { employeeRepository } from "../repository/employeeRepository";
 import { AuthenticatedRequest } from "../../custom";
-import { ROLES } from "../types/db/enums";
 import {
   createEmployeeSchema,
   passwordSchema,
@@ -21,7 +19,6 @@ import {
   otpSchema,
 } from "../validations/authSchema";
 import {
-  employeeIdSchema,
   idSchema,
   restaurantIdSchema,
   roleSchema,

@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Insertable } from "kysely";
 import { Transaction } from "../types/db/types";
-import { CustomError } from "../exceptions/CustomError";
 import { transactionRepository } from "../repository/transactionRepository";
 import { transactionServices } from "../services/transactionServices";
 import { AuthenticatedRequest } from "../../custom";

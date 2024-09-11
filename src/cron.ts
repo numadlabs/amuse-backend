@@ -2,7 +2,7 @@ import logger from "./config/winston";
 import { getBtcPrice, getCurrency } from "./lib/btcPriceHelper";
 import { currencyRepository } from "./repository/currencyRepository";
 import cron from "node-cron";
-import { redis } from "./server";
+// import { redis } from "./server";
 // const Bull = require("bull");
 
 export async function updateCurrencyPrice() {

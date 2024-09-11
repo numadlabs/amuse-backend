@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import { CustomError } from "../exceptions/CustomError";
 import { ZodError } from "zod";
 import { MulterError } from "multer";

@@ -1,4 +1,4 @@
-import e, { NextFunction, Request, Response } from "express";
+import e, { NextFunction, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import jwt from "jsonwebtoken";
 import { config } from "../config/config";

@@ -1,8 +1,6 @@
 import { NextFunction, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
-import { Insertable } from "kysely";
 import { userCardServices } from "../services/userCardServices";
-import { UserCard } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
 import { cardIdSchema, idSchema } from "../validations/sharedSchema";
 
