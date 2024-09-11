@@ -1,10 +1,7 @@
 import supertest from "supertest";
-import { restaurantRepository } from "../../../src/repository/restaurantRepository";
-import { restaurantServices } from "../../../src/services/restaurantServices";
 import { testHelpers } from "../helpers/testHelpers";
 import app from "../../../src/app";
 import { faker } from "@faker-js/faker";
-import { userCardServices } from "../../../src/services/userCardServices";
 import { userCardReposity } from "../../../src/repository/userCardRepository";
 
 describe("UserCard APIs", () => {

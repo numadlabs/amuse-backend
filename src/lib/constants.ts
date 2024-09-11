@@ -16,6 +16,6 @@ export const sizeLimitConstants = {
 };
 
 //IN NUMBER OF SECONDS
-export const TAP_LOCK_TIME = 10;
+export const TAP_LOCK_TIME = process.env.NODE_ENV === "production" ? 10 : 0;
 
 export const BOOST_MULTIPLIER = 1.2;

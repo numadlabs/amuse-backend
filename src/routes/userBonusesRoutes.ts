@@ -14,21 +14,25 @@ userBonusesRoutes.post(
 userBonusesRoutes.get(
   "/:userCardId/userCard",
   authenticateToken(),
+  authorize("USER"),
   userBonusController.getUnusedByUserCardId
 );
 userBonusesRoutes.get(
   "/used/:restaurantId/restaurant",
   authenticateToken(),
+  authorize("USER"),
   userBonusController.getUsedByRestaurantId
 );
 userBonusesRoutes.get(
   "/:restaurantId/restaurant/redemption-history",
   authenticateToken(),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   userBonusController.getUsedByRestaurantId
 );
 userBonusesRoutes.get(
   "/:restaurantId/restaurant",
   authenticateToken(),
+  authorize("USER"),
   userBonusController.getUnusedByRestaurantId
 );
 userBonusesRoutes.post(
@@ -41,6 +45,7 @@ userBonusesRoutes.post(
   "/:bonusId/buy",
   authenticateToken(),
   blockSimultaneousRequests,
+  authorize("USER"),
   userBonusController.buy
 );
 

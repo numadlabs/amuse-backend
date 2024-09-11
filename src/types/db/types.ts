@@ -15,7 +15,7 @@ export type Bonus = {
     price: number | null;
     visitNo: number | null;
     type: BONUS_TYPE;
-    cardId: string | null;
+    cardId: string;
 };
 export type Card = {
     id: Generated<string>;

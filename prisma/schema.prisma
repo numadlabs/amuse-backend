@@ -170,8 +170,8 @@ model Bonus {
   price         Float?
   visitNo       Int?
   type          BONUS_TYPE
-  cardId        String?
-  Card          Card?       @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId        String
+  Card          Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
   UserBonus     UserBonus[]
 }
 

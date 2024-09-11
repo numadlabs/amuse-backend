@@ -5,4 +5,5 @@ module.exports = {
   forceExit: true,
   verbose: true,
   // detectOpenHandles: true,
+  openHandlesTimeout: 1000,
 };

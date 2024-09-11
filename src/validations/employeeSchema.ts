@@ -28,11 +28,10 @@ export const updateEmployeeSchema = z
 export const passwordSchema = z
   .object({
     password: string()
-      .trim()
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })

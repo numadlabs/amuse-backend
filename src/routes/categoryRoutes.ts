@@ -4,7 +4,7 @@ import { authenticateToken } from "../middlewares/authenticateToken";
 import { authorize } from "../middlewares/authorization";
 const categoryRouter = express.Router();
 
-categoryRouter.get("/", categoryController.get);
+categoryRouter.get("/", authenticateToken(), categoryController.get);
 categoryRouter.post(
   "/",
   authenticateToken(),

@@ -10,11 +10,10 @@ export const loginSchema = z
       .max(30, "Email must be at most 30 characters.")
       .email(),
     password: string()
-      .trim()
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })
@@ -52,11 +51,10 @@ export const registerSchema = z
       .max(50, "Email must be at most 50 characters.")
       .email(),
     password: string()
-      .trim()
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     nickname: string()
@@ -83,11 +81,10 @@ export const forgotPasswordSchema = z
       .max(50, "Email must be at most 50 characters.")
       .email(),
     password: string()
-      .trim()
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     verificationCode: number()
@@ -100,19 +97,17 @@ export const forgotPasswordSchema = z
 export const changePasswordSchema = z
   .object({
     currentPassword: string()
-      .trim()
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     newPassword: string()
-      .trim()
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })
@@ -121,11 +116,10 @@ export const changePasswordSchema = z
 export const checkPasswordSchema = z
   .object({
     currentPassword: string()
-      .trim()
       .min(8, "Password must be at least 8 characters.")
       .max(30, "Password must be at most 30 characters.")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })

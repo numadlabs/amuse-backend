@@ -46,29 +46,29 @@ export const tapServices = {
       throw new CustomError("Invalid employeeId.", 400);
 
     const userSocketId = await redis.get(`socket:${user.id}`);
-    //handle the no latest tap case
-    // const tapCheck = await tapRepository.getLatestTapByUserId(user.id);
-    // if (tapCheck) {
-    //   const currentTime = new Date();
-    //   const timeDifference =
-    //     currentTime.getTime() - tapCheck.tappedAt.getTime();
 
-    //   if (timeDifference < TAP_LOCK_TIME * 1000) {
-    //     if (userSocketId) {
-    //       io.to(userSocketId).emit("tap-scan", {
-    //         isOwned: false,
-    //         restaurantId: waiter.restaurantId,
-    //       });
+    const tapCheck = await tapRepository.getLatestTapByUserId(user.id);
+    if (tapCheck) {
+      const currentTime = new Date();
+      const timeDifference =
+        currentTime.getTime() - tapCheck.tappedAt.getTime();
 
-    //       logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
-    //     }
+      if (timeDifference < TAP_LOCK_TIME * 1000) {
+        if (userSocketId) {
+          io.to(userSocketId).emit("tap-scan", {
+            isOwned: false,
+            restaurantId: waiter.restaurantId,
+          });
 
-    //     throw new CustomError(
-    //       "Please wait 10 seconds before scanning again.",
-    //       400
-    //     );
-    //   }
-    // }
+          logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
+        }
+
+        throw new CustomError(
+          "Please wait 10 seconds before scanning again.",
+          400
+        );
+      }
+    }
 
     const restaurant = await restaurantRepository.getById(waiter.restaurantId);
     if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
@@ -137,7 +137,7 @@ export const tapServices = {
         await transactionRepository.create(trx, {
           userId: user.id,
           amount: incrementBtc,
-          type: "PURCHASE",
+          type: "REWARD",
           txid: crypto.randomBytes(16).toString("hex"),
         });
         userCard.balance += incrementBtc;

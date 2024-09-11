@@ -12,6 +12,7 @@ import { encryptionHelper } from "../../../src/lib/encryptionHelper";
 import { employeeServices } from "../../../src/services/employeeServices";
 import { ROLES } from "../../../src/types/db/enums";
 import { db } from "../../../src/utils/db";
+import { userTierRepository } from "../../../src/repository/userTierRepository";
 
 jest.mock("../../../src/repository/emailOtpRepository");
 

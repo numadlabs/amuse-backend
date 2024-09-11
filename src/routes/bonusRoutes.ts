@@ -7,21 +7,21 @@ const bonusRoutes = express.Router();
 bonusRoutes.post(
   "/",
   authenticateToken(),
-  // authorize("SUPER_ADMIN"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   bonusController.createBonus
 );
 bonusRoutes.put(
   "/:id",
   authenticateToken(),
-  // authorize("SUPER_ADMIN"),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
   bonusController.updateBonus
 );
-bonusRoutes.delete(
-  "/:id",
-  authenticateToken(),
-  // authorize("SUPER_ADMIN"),
-  bonusController.deleteBonus
-);
+// bonusRoutes.delete(
+//   "/:id",
+//   authenticateToken(),
+//   authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
+//   bonusController.deleteBonus
+// );
 bonusRoutes.get(
   "/:restaurantId/restaurant",
   authenticateToken(),

@@ -14,24 +14,28 @@ notificationRouter.post(
 notificationRouter.get(
   "/user",
   authenticateToken(),
+  authorize("USER"),
   notificationController.getByUserId
 );
 
 notificationRouter.get(
   "/employee",
   authenticateToken(),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER", "RESTAURANT_WAITER"),
   notificationController.getByEmployeeId
 );
 
 notificationRouter.put(
   "/employee/mark-as-read",
   authenticateToken(),
+  authorize("RESTAURANT_OWNER", "RESTAURANT_MANAGER", "RESTAURANT_WAITER"),
   notificationController.markAsReadByEmployeeId
 );
 
 notificationRouter.put(
   "/user/mark-as-read",
   authenticateToken(),
+  authorize("USER"),
   notificationController.markAsReadByUserId
 );
 
