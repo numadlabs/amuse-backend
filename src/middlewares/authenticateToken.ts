@@ -1,4 +1,4 @@
-import e, { NextFunction, Response } from "express";
+import { NextFunction, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import jwt from "jsonwebtoken";
 import { config } from "../config/config";
@@ -15,7 +15,7 @@ export function authenticateToken() {
     if (!token) throw new CustomError("Authentication required.", 401);
 
     jwt.verify(token, jwtAuthSecret, (err, user: any) => {
-      if (err) throw new CustomError(`Invalid token ${e}`, 401);
+      if (err) throw new CustomError(`Invalid auth token.`, 401);
 
       req.user = user;
       next();
