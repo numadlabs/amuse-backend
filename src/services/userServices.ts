@@ -101,7 +101,15 @@ export const userServices = {
     const result = await db.transaction().execute(async (trx) => {
       const isSent = await sendEmail(
         "Amuse Bouche OTP",
-        `Your Amuse Bouche verification code is: ${randomNumber}`,
+        `Your Amuse Bouche verification code is: ${randomNumber}
+
+This OTP will expire in 5 minutes, please complete the authentication process as soon as possible.
+
+If you didn't request this OTP, please ignore this email.
+
+Best regards,  
+The Amuse Bouche Team
+`,
         email
       );
       if (!isSent.accepted)

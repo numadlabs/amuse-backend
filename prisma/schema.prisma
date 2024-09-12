@@ -25,7 +25,7 @@ model User {
   createdAt      DateTime @default(now())
   balance        Float    @default(0)
   visitCount     Int      @default(0)
-  email          String?  @unique
+  email          String?  @unique 
   userTierId     String
   countryId      String?
 
@@ -37,6 +37,8 @@ model User {
   UserBonus    UserBonus[]
   UserCard     UserCard[]
   Device       Device[]
+
+  @@index([email])
 }
 
 model Employee {
@@ -53,6 +55,8 @@ model Employee {
   Restaurant   Restaurant?    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   UserBonus    UserBonus[]
   Notification Notification[]
+
+  @@index([email])
 }
 
 model EmailOtp {

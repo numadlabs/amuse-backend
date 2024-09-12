@@ -139,11 +139,18 @@ export const authController = {
       const { email } = emailSchema.parse(req.body);
       const checkExists = await userRepository.getByEmail(email);
       if (checkExists)
-        throw new CustomError("This email has already been registered.", 400);
+        return res.status(200).json({
+          success: true,
+          data: {
+            isEmailRegistered: true,
+          },
+        });
 
       return res.status(200).json({
         success: true,
-        data: null,
+        data: {
+          isEmailRegistered: false,
+        },
       });
     } catch (e) {
       next(e);

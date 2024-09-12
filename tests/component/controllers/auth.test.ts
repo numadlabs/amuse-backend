@@ -375,15 +375,16 @@ describe("Auth APIs", () => {
       expect(response.body.success).toBe(false);
     });
 
-    it("should fail on already registered email", async () => {
+    it("should successfully check given already registered email", async () => {
       const createdUser = await testHelpers.createUserWithMockedOtp();
 
       const response = await request(app).post("/api/auth/checkEmail").send({
         email: createdUser.user.email,
       });
 
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.isEmailRegistered).toBe(true);
     });
 
     it("should successfully check given unregistered email", async () => {
@@ -393,6 +394,7 @@ describe("Auth APIs", () => {
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
+      expect(response.body.data.isEmailRegistered).toBe(false);
     });
   });
 

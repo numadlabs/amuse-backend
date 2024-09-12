@@ -53,17 +53,17 @@ export const employeeServices = {
       await sendEmail(
         "Welcome to Amuse Bouche – Your Login Details",
         `
-  Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
+Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
   
-  To get started, please use the following credentials to log in to your account:
+To get started, please use the following credentials to log in to your account:
   
-  Login Email: ${data.email}
-  Password: ${password}
+Login Email: ${data.email}
+Password: ${password}
   
-  Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
+Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
   
-  Best regards,  
-  The Amuse Bouche Team
+Best regards,  
+The Amuse Bouche Team
   `,
         data.email
       );
@@ -98,17 +98,17 @@ export const employeeServices = {
       await sendEmail(
         "Welcome to Amuse Bouche – Your Login Details",
         `
-  Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
+Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
   
-  To get started, please use the following credentials to log in to your account:
+To get started, please use the following credentials to log in to your account:
   
-  Login Email: ${data.email}
-  Password: ${password}
+Login Email: ${data.email}
+Password: ${password}
   
-  Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
+Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
   
-  Best regards,  
-  The Amuse Bouche Team
+Best regards,  
+The Amuse Bouche Team
   `,
         data.email
       );
@@ -168,8 +168,16 @@ export const employeeServices = {
     const result = await db.transaction().execute(async (trx) => {
       const isSent = await sendEmail(
         "Amuse Bouche OTP",
-        `Your Amuse Bouche verification code is: ${randomNumber}`,
-        employeeById.email
+        `Your Amuse Bouche verification code is: ${randomNumber}
+
+This OTP will expire in 5 minutes, please complete the authentication process as soon as possible.
+
+If you didn't request this OTP, please ignore this email.
+
+Best regards,  
+The Amuse Bouche Team
+`,
+        email
       );
       if (!isSent.accepted)
         throw new Error("Error has occured while sending the OTP.");
