@@ -787,12 +787,6 @@ const employee: Insertable<Employee>[] = [
   },
   {
     role: "RESTAURANT_WAITER",
-    email: "waiter@fatcat.com",
-    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
-    restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
-  },
-  {
-    role: "RESTAURANT_WAITER",
     email: "staff@fatcat.com",
     password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",

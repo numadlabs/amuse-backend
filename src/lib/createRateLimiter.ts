@@ -25,7 +25,7 @@ export function createRateLimiter(options: RateLimiterOptions) {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    if (config.NODE_ENV !== "production") {
+    if (config.NODE_ENV !== "") {
       return next();
     }
 
