@@ -19,12 +19,12 @@ CREATE TABLE "User" (
     "profilePicture" TEXT,
     "birthYear" INTEGER,
     "birthMonth" INTEGER,
-    "location" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "visitCount" INTEGER NOT NULL DEFAULT 0,
     "email" TEXT,
     "userTierId" TEXT NOT NULL,
+    "countryId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -163,7 +163,7 @@ CREATE TABLE "Bonus" (
     "price" DOUBLE PRECISION,
     "visitNo" INTEGER,
     "type" "BONUS_TYPE" NOT NULL,
-    "cardId" TEXT,
+    "cardId" TEXT NOT NULL,
 
     CONSTRAINT "Bonus_pkey" PRIMARY KEY ("id")
 );
@@ -218,17 +218,36 @@ CREATE TABLE "Transaction" (
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Country" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "name" TEXT NOT NULL,
+    "alpha3" TEXT NOT NULL,
+    "countryCode" TEXT NOT NULL,
+
+    CONSTRAINT "Country_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE INDEX "User_email_idx" ON "User"("email");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Employee_email_key" ON "Employee"("email");
+
+-- CreateIndex
+CREATE INDEX "Employee_email_idx" ON "Employee"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Device_pushToken_key" ON "Device"("pushToken");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserCard_cardId_userId_key" ON "UserCard"("cardId", "userId");
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "Country"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_userTierId_fkey" FOREIGN KEY ("userTierId") REFERENCES "UserTier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
