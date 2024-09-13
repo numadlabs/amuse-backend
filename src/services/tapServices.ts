@@ -86,29 +86,11 @@ export const tapServices = {
     }
 
     const result = await db.transaction().execute(async (trx) => {
-      await notificationRepository.create(trx, {
-        userId: user.id,
-        message: `You checked-in at ${restaurant.name}.`,
-        type: "TAP",
-      });
-
       userCard.visitCount += 1;
-
-      await notificationRepository.create(trx, {
-        userId: user.id,
-        message: `You earned perk of ${restaurant.name}.`,
-        type: "BONUS",
-      });
 
       const tier = await userTierRepository.getByIdWithNextTier(
         user.userTierId
       );
-
-      await notificationRepository.create(trx, {
-        employeeId: waiter.id,
-        message: `You scanned QR of user ${user.email}.`,
-        type: "TAP",
-      });
 
       const btc = await currencyRepository.getByTicker("BTC");
       const currency = await currencyRepository.getByTicker("EUR");
@@ -119,6 +101,18 @@ export const tapServices = {
 
       if (user.email && user.countryId && user.birthMonth && user.birthYear)
         incrementBtc *= BOOST_MULTIPLIER;
+
+      await notificationRepository.create(trx, {
+        userId: user.id,
+        message: `You checked-in at ${restaurant.name}.`,
+        type: "TAP",
+      });
+
+      await notificationRepository.create(trx, {
+        employeeId: waiter.id,
+        message: `You scanned QR of user ${user.email}.`,
+        type: "TAP",
+      });
 
       if (restaurant.balance >= incrementBtc) {
         restaurant.balance -= incrementBtc;
@@ -131,13 +125,14 @@ export const tapServices = {
           type: "REWARD",
           txid: crypto.randomBytes(16).toString("hex"),
         });
+
         userCard.balance += incrementBtc;
         await userCardReposity.update(trx, userCard, userCard.id);
 
         await notificationRepository.create(trx, {
           userId: user.id,
           message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
-          type: "BONUS",
+          type: "REWARD",
         });
       } else incrementBtc = 0;
 

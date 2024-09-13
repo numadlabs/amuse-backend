@@ -5,6 +5,8 @@ import { authorize } from "../middlewares/authorization";
 import {
   authRateLimiter,
   checkOtpRateLimiter,
+  forgotPasswordOtpRateLimiter,
+  registerOtpRateLimiter,
   sendOtpRateLimiter,
 } from "../middlewares/rateLimiter";
 const authRoutes = express.Router();
@@ -13,11 +15,11 @@ authRoutes.post("/login", authRateLimiter, authController.login);
 authRoutes.post("/sendOTP", sendOtpRateLimiter, authController.sendOTP);
 authRoutes.post("/checkOTP", checkOtpRateLimiter, authController.checkOTP);
 authRoutes.post("/checkEmail", authController.checkEmail);
-authRoutes.post("/register", checkOtpRateLimiter, authController.register);
+authRoutes.post("/register", registerOtpRateLimiter, authController.register);
 authRoutes.post("/refreshToken", authController.refreshToken);
 authRoutes.put(
   "/forgotPassword",
-  checkOtpRateLimiter,
+  forgotPasswordOtpRateLimiter,
   authController.forgotPassword
 );
 authRoutes.put(

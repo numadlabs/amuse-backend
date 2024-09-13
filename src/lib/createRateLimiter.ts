@@ -57,7 +57,6 @@ export function createRateLimiter(options: RateLimiterOptions) {
 
       if (count > limit) {
         throw new CustomError("Too Many Requests", 429);
-        return;
       }
 
       // Add X-RateLimit headers
@@ -67,7 +66,6 @@ export function createRateLimiter(options: RateLimiterOptions) {
 
       next();
     } catch (err) {
-      logger.error(`Rate limiting error: ${err}`);
       next(err);
     }
   };

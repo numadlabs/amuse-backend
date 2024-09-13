@@ -9,6 +9,7 @@ userBonusesRoutes.post(
   "/use",
   authenticateToken(),
   authorize("RESTAURANT_WAITER", "RESTAURANT_OWNER", "RESTAURANT_MANAGER"),
+  blockSimultaneousRequests,
   userBonusController.useUserBonus
 );
 userBonusesRoutes.get(

@@ -15,7 +15,8 @@ export function authenticateToken() {
     if (!token) throw new CustomError("Authentication required.", 401);
 
     jwt.verify(token, jwtAuthSecret, (err, user: any) => {
-      if (err) throw new CustomError(`Invalid auth token.`, 401);
+      if (err)
+        throw new CustomError(`Either auth token is invalid or expired.`, 401);
 
       req.user = user;
       next();

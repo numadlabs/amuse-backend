@@ -6,6 +6,7 @@ import { transactionServices } from "../services/transactionServices";
 import { AuthenticatedRequest } from "../../custom";
 import { createTransactionSchema } from "../validations/transactionSchema";
 import { restaurantIdSchema, userIdSchema } from "../validations/sharedSchema";
+import { CustomError } from "../exceptions/CustomError";
 
 export const transactionController = {
   deposit: async (
@@ -60,14 +61,17 @@ export const transactionController = {
     try {
       const { restaurantId } = restaurantIdSchema.parse(req.params);
 
-      const transaction = await transactionRepository.getByRestaurantId(
-        restaurantId
+      if (!req.user) throw new CustomError("Could not parse the token.", 400);
+
+      const transactions = await transactionServices.getByRestaurantId(
+        restaurantId,
+        req.user.id
       );
 
       return res.status(200).json({
         success: true,
         data: {
-          transaction: transaction,
+          transaction: transactions,
         },
       });
     } catch (e) {
@@ -81,6 +85,11 @@ export const transactionController = {
   ) => {
     try {
       const { userId } = userIdSchema.parse(req.params);
+
+      if (!req.user) throw new CustomError("Could not parse the token.", 400);
+
+      if (req.user.id !== userId)
+        throw new CustomError("You are not allowed to do this action.", 400);
 
       const transaction = await transactionRepository.getByUserId(userId);
 

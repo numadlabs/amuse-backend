@@ -7,6 +7,7 @@ import { userRepository } from "../repository/userRepository";
 import { currencyRepository } from "../repository/currencyRepository";
 import { userCardReposity } from "../repository/userCardRepository";
 import { db } from "../utils/db";
+import { employeeServices } from "./employeeServices";
 
 export const transactionServices = {
   deposit: async (data: Insertable<Transaction>) => {
@@ -91,5 +92,17 @@ export const transactionServices = {
       await transactionRepository.getTotalWithdrawByRestaurantId(restaurantId);
 
     return totalDeposit.totalDeposit - totalWithdraw.totalWithdraw;
+  },
+  getByRestaurantId: async (restaurantId: string, issuerId: string) => {
+    const issuer = employeeServices.checkIfEligible(issuerId, restaurantId);
+
+    if (!issuer)
+      throw new CustomError("You are not allowed to do this action.", 400);
+
+    const transactions = await transactionRepository.getByRestaurantId(
+      restaurantId
+    );
+
+    return transactions;
   },
 };

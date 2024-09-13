@@ -5,6 +5,7 @@ import { authorize } from "../middlewares/authorization";
 import {
   authRateLimiter,
   checkOtpRateLimiter,
+  forgotPasswordOtpRateLimiter,
   sendOtpRateLimiter,
 } from "../middlewares/rateLimiter";
 const employeeRouter = express.Router();
@@ -34,7 +35,7 @@ employeeRouter.post(
 );
 employeeRouter.post(
   "/forgotPassword",
-  checkOtpRateLimiter,
+  forgotPasswordOtpRateLimiter,
   employeeController.forgotPassword
 );
 employeeRouter.put(

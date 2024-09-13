@@ -11,10 +11,11 @@ import { userCardReposity } from "../repository/userCardRepository";
 import { userRepository } from "../repository/userRepository";
 import { db } from "../utils/db";
 import { io, redis } from "../server";
+import { employeeServices } from "./employeeServices";
 const crypto = require("crypto");
 
 export const userBonusServices = {
-  buy: async (userId: string, bonusId: string) => {
+  buy: async (bonusId: string, userId: string) => {
     const user = await userRepository.getUserById(userId);
     if (!user) throw new CustomError("No user found.", 400);
 
@@ -36,8 +37,6 @@ export const userBonusServices = {
       bonus.cardId
     );
     if (!userCard) throw new CustomError("No userCard found.", 400);
-    if (userCard.userId !== userId)
-      throw new CustomError("You are not allowed to buy from this card.", 400);
 
     const bonusPrice = bonus.price;
 
@@ -88,6 +87,8 @@ export const userBonusServices = {
   generate: async (id: string, userId: string) => {
     const userBonus = await userBonusRepository.getById(id);
     if (!userBonus) throw new CustomError("Invalid userBonusId.", 400);
+    if (userBonus.isUsed)
+      throw new CustomError("This bonus has already been used.", 400);
     if (userBonus.userId !== userId)
       throw new CustomError("You are not allowed to use it.", 400);
 
@@ -96,9 +97,9 @@ export const userBonusServices = {
       generatedAt: Date.now(),
     };
 
-    const hashedData = encryptionHelper.encryptData(JSON.stringify(data));
+    const encryptData = encryptionHelper.encryptData(JSON.stringify(data));
 
-    return hashedData;
+    return encryptData;
   },
   use: async (encryptedData: string, waiterId: string) => {
     const data = encryptionHelper.decryptData(encryptedData);
@@ -149,18 +150,20 @@ export const userBonusServices = {
 
     return updatedUserBonus;
   },
-  getByRestaurantId: async (restaurantId: string, userId: string) => {
-    const userBonuses = await userBonusRepository.getUserBonusesByRestaurantId(
-      restaurantId,
-      userId
-    );
-
+  getByRestaurantId: async (restaurantId: string, issuerId: string) => {
     const userCard = await userCardReposity.getByUserIdRestaurantId(
-      userId,
+      issuerId,
       restaurantId
     );
 
     if (!userCard) throw new CustomError("No usercard found.", 400);
+    if (userCard.userId !== issuerId)
+      throw new CustomError("You are not allowed to do this action.", 400);
+
+    const userBonuses = await userBonusRepository.getUserBonusesByRestaurantId(
+      restaurantId,
+      issuerId
+    );
 
     const bonuses = await bonusRepository.getByRestaurantId(
       restaurantId,
@@ -189,10 +192,11 @@ export const userBonusServices = {
 
     return { userBonuses, followingBonus };
   },
-  getByUserCardId: async (userCardId: string) => {
+  getByUserCardId: async (userCardId: string, issuerId: string) => {
     const userCard = await userCardReposity.getById(userCardId);
-
     if (!userCard) throw new CustomError("No usercard found.", 400);
+    if (userCard.userId !== issuerId)
+      throw new CustomError("You are not allowed to do this action.", 400);
 
     const bonuses = await bonusRepository.getByCardId(
       userCard.cardId,
@@ -223,5 +227,19 @@ export const userBonusServices = {
     const userBonuses = await userBonusRepository.getByUserCardId(userCardId);
 
     return { userBonuses, followingBonus };
+  },
+  getUsedByRestaurantId: async (restaurantId: string, issuerId: string) => {
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      restaurantId
+    );
+    if (!issuer)
+      throw new CustomError("You are not allowed to do this action.", 400);
+
+    const userBonuses = await userBonusRepository.getUsedByRestaurantId(
+      restaurantId
+    );
+
+    return userBonuses;
   },
 };
