@@ -3,7 +3,7 @@ import { encryptionHelper } from "../lib/encryptionHelper";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { tapRepository } from "../repository/tapRepository";
 import { userCardReposity } from "../repository/userCardRepository";
-import { Tap, UserBonus } from "../types/db/types";
+import { Notification, Tap, UserBonus } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
 import { bonusRepository } from "../repository/bonusRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
@@ -62,6 +62,12 @@ export const tapServices = {
         currentTime.getTime() - tapCheck.tappedAt.getTime();
 
       if (timeDifference < TAP_LOCK_TIME * 1000 * 60 * 60) {
+        if (userSocketId)
+          io.to(userSocketId).emit("tap-scan", {
+            isInTapLock: false,
+            tapId: tapCheck.id,
+          });
+
         throw new CustomError(
           `Please wait ${TAP_LOCK_TIME} hours before scanning again.`,
           400
@@ -93,6 +99,7 @@ export const tapServices = {
       );
     }
 
+    const notifications: Insertable<Notification>[] = [];
     const result = await db.transaction().execute(async (trx) => {
       //start of bonus logic
       const singleBonus = await bonusRepository.getByRestaurantIdAndVisitNo(
@@ -133,12 +140,12 @@ export const tapServices = {
           await Promise.all([
             await userBonusRepository.create(trx, userBonus),
             await bonusRepository.update(trx, bonus, bonus.id),
-            await notificationRepository.create(trx, {
-              userId: user.id,
-              message: `You earned perk of ${restaurant.name}.`,
-              type: "BONUS",
-            }),
           ]);
+          notifications.push({
+            userId: user.id,
+            message: `You earned perk of ${restaurant.name}.`,
+            type: "BONUS",
+          });
         }
       } else {
         bonus = singleBonus;
@@ -152,12 +159,13 @@ export const tapServices = {
         await Promise.all([
           await userBonusRepository.create(trx, userBonus),
           await bonusRepository.update(trx, bonus, bonus.id),
-          await notificationRepository.create(trx, {
-            userId: user.id,
-            message: `You earned perk of ${restaurant.name}.`,
-            type: "BONUS",
-          }),
         ]);
+
+        notifications.push({
+          userId: user.id,
+          message: `You earned perk of ${restaurant.name}.`,
+          type: "BONUS",
+        });
       }
 
       userCard.visitCount += 1;
@@ -175,18 +183,16 @@ export const tapServices = {
       if (user.email && user.countryId && user.birthMonth && user.birthYear)
         incrementBtc *= BOOST_MULTIPLIER;
 
-      await Promise.all([
-        notificationRepository.create(trx, {
-          userId: user.id,
-          message: `You checked-in at ${restaurant.name}.`,
-          type: "TAP",
-        }),
-        notificationRepository.create(trx, {
-          employeeId: waiter.id,
-          message: `You scanned QR of user ${user.email}.`,
-          type: "TAP",
-        }),
-      ]);
+      notifications.push({
+        userId: user.id,
+        message: `You checked-in at ${restaurant.name}.`,
+        type: "TAP",
+      });
+      notifications.push({
+        employeeId: waiter.id,
+        message: `You scanned QR of user ${user.email}.`,
+        type: "TAP",
+      });
 
       if (restaurant.balance >= incrementBtc) {
         restaurant.balance -= incrementBtc;
@@ -202,7 +208,7 @@ export const tapServices = {
             txid: crypto.randomBytes(16).toString("hex"),
           }),
           userCardReposity.update(trx, userCard, userCard.id),
-          notificationRepository.create(trx, {
+          notifications.push({
             userId: user.id,
             message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
             type: "REWARD",
@@ -237,6 +243,9 @@ export const tapServices = {
 
         updatedUserTier = result[1];
       }
+
+      if (notifications.length > 1)
+        notificationRepository.createInBatch(notifications);
 
       return {
         increment: incrementBtc * btc.price * currency.price,

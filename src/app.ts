@@ -26,6 +26,7 @@ import logger from "./config/winston";
 import { rateLimiter } from "./middlewares/rateLimiter";
 import { sizeLimitConstants } from "./lib/constants";
 import countryRouter from "./routes/countryRoutes";
+import { config } from "./config/config";
 
 const app = express();
 

@@ -61,4 +61,13 @@ export const notificationRepository = {
 
     return notifications;
   },
+  createInBatch: async (data: Insertable<Notification>[]) => {
+    const notifications = await db
+      .insertInto("Notification")
+      .values(data)
+      .returningAll()
+      .execute();
+
+    return notifications;
+  },
 };
