@@ -44,10 +44,12 @@ export const tapServices = {
     if (Date.now() - data.generatedAt > TAP_EXPIRATION_TIME * 1000)
       throw new CustomError("The QR has expired.", 400);
 
-    const user = await userRepository.getUserById(data.userId);
-    if (!user) throw new CustomError("Invalid userId.", 400);
+    const [user, waiter] = await Promise.all([
+      userRepository.getUserById(data.userId),
+      employeeRepository.getById(waiterId),
+    ]);
 
-    const waiter = await employeeRepository.getById(waiterId);
+    if (!user) throw new CustomError("Invalid userId.", 400);
     if (!waiter || !waiter.restaurantId)
       throw new CustomError("Invalid employeeId.", 400);
 
@@ -92,154 +94,6 @@ export const tapServices = {
     }
 
     const result = await db.transaction().execute(async (trx) => {
-      userCard.visitCount += 1;
-
-      const tier = await userTierRepository.getByIdWithNextTier(
-        user.userTierId
-      );
-
-      const btc = await currencyRepository.getByTicker("BTC");
-      const currency = await currencyRepository.getByTicker("EUR");
-
-      let incrementBtc =
-        (restaurant.rewardAmount / (btc.price * currency.price)) *
-        tier.rewardMultiplier;
-
-      if (user.email && user.countryId && user.birthMonth && user.birthYear)
-        incrementBtc *= BOOST_MULTIPLIER;
-
-      await notificationRepository.create(trx, {
-        userId: user.id,
-        message: `You checked-in at ${restaurant.name}.`,
-        type: "TAP",
-      });
-
-      await notificationRepository.create(trx, {
-        employeeId: waiter.id,
-        message: `You scanned QR of user ${user.email}.`,
-        type: "TAP",
-      });
-
-      if (restaurant.balance >= incrementBtc) {
-        restaurant.balance -= incrementBtc;
-        restaurantRepository.update(trx, restaurant.id, restaurant);
-        user.balance = user.balance + incrementBtc;
-
-        await transactionRepository.create(trx, {
-          userId: user.id,
-          amount: incrementBtc,
-          type: "REWARD",
-          txid: crypto.randomBytes(16).toString("hex"),
-        });
-
-        userCard.balance += incrementBtc;
-        await userCardReposity.update(trx, userCard, userCard.id);
-
-        await notificationRepository.create(trx, {
-          userId: user.id,
-          message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
-          type: "REWARD",
-        });
-      } else incrementBtc = 0;
-
-      user.visitCount += 1;
-      await userRepository.update(trx, user.id, user);
-
-      const tapData: Insertable<Tap> = {
-        userCardId: userCard.id,
-        userId: user.id,
-        amount: incrementBtc,
-      };
-
-      await tapRepository.create(trx, tapData);
-
-      let updatedUserTier = null;
-      if (
-        tier.nextTierNo &&
-        tier.nextTierId &&
-        user.visitCount >= tier.nextTierNo
-      ) {
-        await userRepository.update(trx, user.id, {
-          userTierId: tier.nextTierId,
-        });
-        updatedUserTier = await userTierRepository.getById(tier.nextTierId);
-      }
-
-      return {
-        increment: incrementBtc * btc.price * currency.price,
-        ticker: "EUR",
-        bonus: null,
-        userTier: updatedUserTier,
-        bonusCheck: false,
-      };
-    });
-
-    if (userSocketId) {
-      io.to(userSocketId).emit("tap-scan", {
-        isOwned: true,
-        data: {
-          restaurantId: restaurant.id,
-          increment: result.increment,
-          ticker: "EUR",
-          bonus: result.bonus,
-          userTier: result.userTier,
-          bonusCheck: result.bonusCheck,
-        },
-      });
-
-      logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
-    }
-
-    return result;
-  },
-  redeemTapWithBonus: async (hashedData: string, waiterId: string) => {
-    const data = encryptionHelper.decryptData(hashedData);
-
-    // if (Date.now() - data.issuedAt > TAP_EXPIRATION_TIME * 1000)
-    //   throw new CustomError("The QR has expired.", 400);
-
-    if (!data.userId) throw new CustomError("Invalid QR.", 400);
-    const user = await userRepository.getUserById(data.userId);
-    if (!user) throw new CustomError("Invalid QR.", 400);
-
-    const waiter = await employeeRepository.getById(waiterId);
-    if (!waiter || !waiter.restaurantId)
-      throw new CustomError("Invalid employeeId.", 400);
-
-    const restaurant = await restaurantRepository.getById(waiter.restaurantId);
-    if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
-
-    const userCard = await userCardReposity.getByUserIdRestaurantId(
-      user.id,
-      restaurant.id
-    );
-
-    const userSocketId = await redis.get(`socket:${user.id}`);
-    if (!userCard) {
-      if (userSocketId) {
-        io.to(userSocketId).emit("tap-scan", {
-          isOwned: false,
-          restaurantId: restaurant.id,
-        });
-
-        logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
-      }
-
-      throw new CustomError(
-        "Customer does not have a membership card for this restaurant.",
-        400
-      );
-    }
-
-    const result = await db.transaction().execute(async (trx) => {
-      await notificationRepository.create(trx, {
-        userId: user.id,
-        message: `You checked-in at ${restaurant.name}.`,
-        type: "TAP",
-      });
-
-      userCard.visitCount += 1;
-
       //start of bonus logic
       const singleBonus = await bonusRepository.getByRestaurantIdAndVisitNo(
         restaurant.id,
@@ -274,17 +128,17 @@ export const tapServices = {
             userId: user.id,
             userCardId: userCard.id,
           };
-
-          await userBonusRepository.create(trx, userBonus);
-
           bonus.currentSupply++;
-          await bonusRepository.update(trx, bonus, bonus.id);
 
-          await notificationRepository.create(trx, {
-            userId: user.id,
-            message: `You earned perk of ${restaurant.name}.`,
-            type: "BONUS",
-          });
+          await Promise.all([
+            await userBonusRepository.create(trx, userBonus),
+            await bonusRepository.update(trx, bonus, bonus.id),
+            await notificationRepository.create(trx, {
+              userId: user.id,
+              message: `You earned perk of ${restaurant.name}.`,
+              type: "BONUS",
+            }),
+          ]);
         }
       } else {
         bonus = singleBonus;
@@ -293,63 +147,80 @@ export const tapServices = {
           userId: user.id,
           userCardId: userCard.id,
         };
-
-        await userBonusRepository.create(trx, userBonus);
         bonus.currentSupply++;
-        await bonusRepository.update(trx, bonus, bonus.id);
 
-        await notificationRepository.create(trx, {
-          userId: user.id,
-          message: `You earned perk of ${restaurant.name}.`,
-          type: "BONUS",
-        });
+        await Promise.all([
+          await userBonusRepository.create(trx, userBonus),
+          await bonusRepository.update(trx, bonus, bonus.id),
+          await notificationRepository.create(trx, {
+            userId: user.id,
+            message: `You earned perk of ${restaurant.name}.`,
+            type: "BONUS",
+          }),
+        ]);
       }
 
-      const tier = await userTierRepository.getByIdWithNextTier(
-        user.userTierId
-      );
+      userCard.visitCount += 1;
 
-      const btc = await currencyRepository.getByTicker("BTC");
-      const currency = await currencyRepository.getByTicker("EUR");
+      const [tier, btc, currency] = await Promise.all([
+        userTierRepository.getByIdWithNextTier(user.userTierId),
+        currencyRepository.getByTicker("BTC"),
+        currencyRepository.getByTicker("EUR"),
+      ]);
 
       let incrementBtc =
         (restaurant.rewardAmount / (btc.price * currency.price)) *
         tier.rewardMultiplier;
 
-      // if (user.email && user.countryId && user.birthMonth && user.birthYear)
-      //   incrementBtc *= BOOST_MULTIPLIER;
+      if (user.email && user.countryId && user.birthMonth && user.birthYear)
+        incrementBtc *= BOOST_MULTIPLIER;
+
+      await Promise.all([
+        notificationRepository.create(trx, {
+          userId: user.id,
+          message: `You checked-in at ${restaurant.name}.`,
+          type: "TAP",
+        }),
+        notificationRepository.create(trx, {
+          employeeId: waiter.id,
+          message: `You scanned QR of user ${user.email}.`,
+          type: "TAP",
+        }),
+      ]);
 
       if (restaurant.balance >= incrementBtc) {
         restaurant.balance -= incrementBtc;
         restaurantRepository.update(trx, restaurant.id, restaurant);
         user.balance = user.balance + incrementBtc;
-
-        await transactionRepository.create(trx, {
-          userId: user.id,
-          amount: incrementBtc,
-          type: "PURCHASE",
-          txid: crypto.randomBytes(16).toString("hex"),
-        });
         userCard.balance += incrementBtc;
-        await userCardReposity.update(trx, userCard, userCard.id);
 
-        await notificationRepository.create(trx, {
-          userId: user.id,
-          message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
-          type: "BONUS",
-        });
+        await Promise.all([
+          transactionRepository.create(trx, {
+            userId: user.id,
+            amount: incrementBtc,
+            type: "REWARD",
+            txid: crypto.randomBytes(16).toString("hex"),
+          }),
+          userCardReposity.update(trx, userCard, userCard.id),
+          notificationRepository.create(trx, {
+            userId: user.id,
+            message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
+            type: "REWARD",
+          }),
+        ]);
       } else incrementBtc = 0;
 
       user.visitCount += 1;
-      await userRepository.update(trx, user.id, user);
-
       const tapData: Insertable<Tap> = {
         userCardId: userCard.id,
         userId: user.id,
         amount: incrementBtc,
       };
 
-      await tapRepository.create(trx, tapData);
+      await Promise.all([
+        userRepository.update(trx, user.id, user),
+        tapRepository.create(trx, tapData),
+      ]);
 
       let updatedUserTier = null;
       if (
@@ -357,10 +228,14 @@ export const tapServices = {
         tier.nextTierId &&
         user.visitCount >= tier.nextTierNo
       ) {
-        await userRepository.update(trx, user.id, {
-          userTierId: tier.nextTierId,
-        });
-        updatedUserTier = await userTierRepository.getById(tier.nextTierId);
+        const result = await Promise.all([
+          userRepository.update(trx, user.id, {
+            userTierId: tier.nextTierId,
+          }),
+          userTierRepository.getById(tier.nextTierId),
+        ]);
+
+        updatedUserTier = result[1];
       }
 
       return {
