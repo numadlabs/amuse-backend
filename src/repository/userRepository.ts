@@ -135,4 +135,12 @@ export const userRepository = {
   cleanUp: async () => {
     await db.deleteFrom("User").execute();
   },
+  acquireLockById: async (db: Kysely<DB> | Transaction<DB>, userId: string) => {
+    await db
+      .selectFrom("User")
+      .where("id", "=", userId)
+      .forUpdate()
+      .noWait()
+      .execute();
+  },
 };

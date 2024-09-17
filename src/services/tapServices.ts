@@ -1,4 +1,4 @@
-import { Insertable } from "kysely";
+import { Insertable, sql } from "kysely";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { tapRepository } from "../repository/tapRepository";
@@ -21,6 +21,7 @@ import {
 } from "../lib/constants";
 import logger from "../config/winston";
 import { io, redis } from "../server";
+import { DatabaseError } from "pg";
 
 const crypto = require("crypto");
 
@@ -55,26 +56,6 @@ export const tapServices = {
 
     const userSocketId = await redis.get(`socket:${user.id}`);
 
-    const tapCheck = await tapRepository.getLatestTapByUserId(user.id);
-    if (tapCheck) {
-      const currentTime = new Date();
-      const timeDifference =
-        currentTime.getTime() - tapCheck.tappedAt.getTime();
-
-      if (timeDifference < TAP_LOCK_TIME * 1000 * 60 * 60) {
-        if (userSocketId)
-          io.to(userSocketId).emit("tap-scan", {
-            isInTapLock: false,
-            tapId: tapCheck.id,
-          });
-
-        throw new CustomError(
-          `Please wait ${TAP_LOCK_TIME} hours before scanning again.`,
-          400
-        );
-      }
-    }
-
     const restaurant = await restaurantRepository.getById(waiter.restaurantId);
     if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
@@ -101,6 +82,38 @@ export const tapServices = {
 
     const notifications: Insertable<Notification>[] = [];
     const result = await db.transaction().execute(async (trx) => {
+      try {
+        await userRepository.acquireLockById(trx, user.id);
+      } catch (error) {
+        if (error instanceof DatabaseError && error.code === "55P03") {
+          throw new CustomError(
+            "This user's data is currently being processed. Please try again in a few moments.",
+            409
+          );
+        }
+
+        throw error;
+      }
+
+      const tapCheck = await tapRepository.getLatestTapByUserId(user.id);
+      if (tapCheck) {
+        const currentTime = new Date();
+        const timeDifference =
+          currentTime.getTime() - tapCheck.tappedAt.getTime();
+
+        if (timeDifference < TAP_LOCK_TIME * 1000 * 60 * 60) {
+          if (userSocketId)
+            io.to(userSocketId).emit("tap-scan", {
+              isInTapLock: false,
+              tapId: tapCheck.id,
+            });
+
+          throw new CustomError(
+            `Please wait ${TAP_LOCK_TIME} hours before scanning again.`,
+            400
+          );
+        }
+      }
       //start of bonus logic
       let bonus = null;
       let hasRecurringBonus = true;

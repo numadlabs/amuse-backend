@@ -76,7 +76,7 @@ export const UserController = {
 
       if (!user)
         return res
-          .status(200)
+          .status(400)
           .json({ success: false, data: null, error: "User does not exist." });
 
       const sanitizedUser = hideSensitiveData(user, ["password"]);
