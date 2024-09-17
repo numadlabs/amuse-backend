@@ -112,4 +112,16 @@ export const bonusRepository = {
 
     return bonus;
   },
+  getAvailableBonusesByCardId: async (cardId: string) => {
+    const bonuses = await db
+      .selectFrom("Bonus")
+      .selectAll()
+      .where("Bonus.cardId", "=", cardId)
+      .where((eb) =>
+        eb("Bonus.currentSupply", "<", eb.ref("Bonus.totalSupply"))
+      )
+      .execute();
+
+    return bonuses;
+  },
 };

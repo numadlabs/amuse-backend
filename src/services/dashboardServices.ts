@@ -67,8 +67,10 @@ export const dashboardServices = {
     const awarded = totalAmount || 0;
     const redeemed = awarded - totalBalance;
 
-    const btc = await currencyRepository.getByTicker("BTC");
-    const currency = await currencyRepository.getByTicker("EUR");
+    const [btc, currency] = await Promise.all([
+      currencyRepository.getByTicker("BTC"),
+      currencyRepository.getByTicker("EUR"),
+    ]);
 
     return {
       budgetAmount: budget * btc.price * currency.price,

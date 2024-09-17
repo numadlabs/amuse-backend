@@ -80,8 +80,10 @@ export const UserController = {
           .json({ success: false, data: null, error: "User does not exist." });
 
       const sanitizedUser = hideSensitiveData(user, ["password"]);
-      const btc = await currencyRepository.getByTicker("BTC");
-      const currency = await currencyRepository.getByTicker("EUR");
+      const [btc, currency] = await Promise.all([
+        currencyRepository.getByTicker("BTC"),
+        currencyRepository.getByTicker("EUR"),
+      ]);
 
       return res.status(200).json({
         success: true,

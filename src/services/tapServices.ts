@@ -102,34 +102,56 @@ export const tapServices = {
     const notifications: Insertable<Notification>[] = [];
     const result = await db.transaction().execute(async (trx) => {
       //start of bonus logic
-      const singleBonus = await bonusRepository.getByRestaurantIdAndVisitNo(
-        restaurant.id,
-        userCard.visitCount
-      );
       let bonus = null;
       let hasRecurringBonus = true;
-
-      if (!singleBonus) {
-        const recurringBonuses = await bonusRepository.getByCardId(
-          userCard.cardId,
-          "RECURRING"
+      const availableBonuses =
+        await bonusRepository.getAvailableBonusesByCardId(userCard.cardId);
+      if (availableBonuses.length > 0) {
+        const singleBonus = await bonusRepository.getByRestaurantIdAndVisitNo(
+          restaurant.id,
+          userCard.visitCount
         );
 
-        if (
-          userCard.visitCount % restaurant.perkOccurence === 0 &&
-          recurringBonuses.length === 0
-        )
-          hasRecurringBonus = false;
+        if (!singleBonus) {
+          const recurringBonuses = await bonusRepository.getByCardId(
+            userCard.cardId,
+            "RECURRING"
+          );
 
-        if (
-          (userCard.visitCount === 1 ||
-            userCard.visitCount % restaurant.perkOccurence === 0) &&
-          recurringBonuses.length > 0
-        ) {
-          const index =
-            Math.floor(userCard.visitCount / restaurant.perkOccurence) %
-            recurringBonuses.length;
-          bonus = recurringBonuses[index];
+          if (
+            userCard.visitCount % restaurant.perkOccurence === 0 &&
+            recurringBonuses.length === 0
+          )
+            hasRecurringBonus = false;
+
+          if (
+            (userCard.visitCount === 1 ||
+              userCard.visitCount % restaurant.perkOccurence === 0) &&
+            recurringBonuses.length > 0
+          ) {
+            const index =
+              Math.floor(userCard.visitCount / restaurant.perkOccurence) %
+              recurringBonuses.length;
+            bonus = recurringBonuses[index];
+            const userBonus: Insertable<UserBonus> = {
+              bonusId: bonus.id,
+              userId: user.id,
+              userCardId: userCard.id,
+            };
+            bonus.currentSupply++;
+
+            await Promise.all([
+              await userBonusRepository.create(trx, userBonus),
+              await bonusRepository.update(trx, bonus, bonus.id),
+            ]);
+            notifications.push({
+              userId: user.id,
+              message: `You earned perk of ${restaurant.name}.`,
+              type: "BONUS",
+            });
+          }
+        } else {
+          bonus = singleBonus;
           const userBonus: Insertable<UserBonus> = {
             bonusId: bonus.id,
             userId: user.id,
@@ -141,33 +163,16 @@ export const tapServices = {
             await userBonusRepository.create(trx, userBonus),
             await bonusRepository.update(trx, bonus, bonus.id),
           ]);
+
           notifications.push({
             userId: user.id,
             message: `You earned perk of ${restaurant.name}.`,
             type: "BONUS",
           });
         }
-      } else {
-        bonus = singleBonus;
-        const userBonus: Insertable<UserBonus> = {
-          bonusId: bonus.id,
-          userId: user.id,
-          userCardId: userCard.id,
-        };
-        bonus.currentSupply++;
-
-        await Promise.all([
-          await userBonusRepository.create(trx, userBonus),
-          await bonusRepository.update(trx, bonus, bonus.id),
-        ]);
-
-        notifications.push({
-          userId: user.id,
-          message: `You earned perk of ${restaurant.name}.`,
-          type: "BONUS",
-        });
       }
 
+      //start of reward logic
       userCard.visitCount += 1;
 
       const [tier, btc, currency] = await Promise.all([
@@ -208,12 +213,13 @@ export const tapServices = {
             txid: crypto.randomBytes(16).toString("hex"),
           }),
           userCardReposity.update(trx, userCard, userCard.id),
-          notifications.push({
-            userId: user.id,
-            message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
-            type: "REWARD",
-          }),
         ]);
+
+        notifications.push({
+          userId: user.id,
+          message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
+          type: "REWARD",
+        });
       } else incrementBtc = 0;
 
       user.visitCount += 1;
@@ -244,9 +250,6 @@ export const tapServices = {
         updatedUserTier = result[1];
       }
 
-      if (notifications.length > 1)
-        notificationRepository.createInBatch(notifications);
-
       return {
         increment: incrementBtc * btc.price * currency.price,
         ticker: "EUR",
@@ -255,6 +258,9 @@ export const tapServices = {
         bonusCheck: hasRecurringBonus,
       };
     });
+
+    if (notifications.length > 0)
+      notificationRepository.createInBatch(notifications);
 
     if (userSocketId) {
       io.to(userSocketId).emit("tap-scan", {
