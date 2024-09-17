@@ -48,7 +48,11 @@ export function extractVerification(token: string) {
   }
   let verificationCode: number = 0;
   verify(token, jwtVerificationSecret, (err, payload: any) => {
-    if (err) throw new Error(`The verification code is expired or invalid.`);
+    if (err)
+      throw new CustomError(
+        `The verification code is expired or invalid.`,
+        400
+      );
     verificationCode = payload.verificationCode;
   });
   return verificationCode;

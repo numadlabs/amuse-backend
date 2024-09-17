@@ -7,8 +7,8 @@ export const verificationCodeConstants = {
 };
 
 //IN NUMBER OF SECONDS
-export const TAP_EXPIRATION_TIME = 600;
-export const BONUS_REDEEM_EXPIRATION_TIME = 600;
+export const TAP_EXPIRATION_TIME = 300;
+export const BONUS_REDEEM_EXPIRATION_TIME = 300;
 
 //IN BINARY
 export const sizeLimitConstants = {
@@ -17,7 +17,7 @@ export const sizeLimitConstants = {
   jsonSizeLimit: "1mb",
 };
 
-//IN NUMBER OF SECONDS
-export const TAP_LOCK_TIME = config.NODE_ENV === "production" ? 10 : 0;
+//IN NUMBER OF MINUTES
+export const TAP_LOCK_TIME = config.NODE_ENV === "production" ? 24 : 1;
 
 export const BOOST_MULTIPLIER = 1.2;

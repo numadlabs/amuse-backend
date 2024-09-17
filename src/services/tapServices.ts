@@ -14,7 +14,11 @@ import { employeeRepository } from "../repository/employeeRepository";
 import { transactionRepository } from "../repository/transactionRepository";
 import { notificationRepository } from "../repository/notificationRepository";
 import { db } from "../utils/db";
-import { BOOST_MULTIPLIER, TAP_LOCK_TIME } from "../lib/constants";
+import {
+  BOOST_MULTIPLIER,
+  TAP_EXPIRATION_TIME,
+  TAP_LOCK_TIME,
+} from "../lib/constants";
 import logger from "../config/winston";
 import { io, redis } from "../server";
 
@@ -34,10 +38,12 @@ export const tapServices = {
   redeemTap: async (hashedData: string, waiterId: string) => {
     const data = encryptionHelper.decryptData(hashedData);
 
-    // if (Date.now() - data.issuedAt > TAP_EXPIRATION_TIME * 1000)
-    //   throw new CustomError("The QR has expired.", 400);
+    if (!data || !data.userId || !data.generatedAt)
+      throw new CustomError("Invalid QR.", 400);
 
-    if (!data.userId) throw new CustomError("Invalid QR.", 400);
+    if (Date.now() - data.generatedAt > TAP_EXPIRATION_TIME * 1000)
+      throw new CustomError("The QR has expired.", 400);
+
     const user = await userRepository.getUserById(data.userId);
     if (!user) throw new CustomError("Invalid userId.", 400);
 
@@ -53,9 +59,9 @@ export const tapServices = {
       const timeDifference =
         currentTime.getTime() - tapCheck.tappedAt.getTime();
 
-      if (timeDifference < TAP_LOCK_TIME * 1000) {
+      if (timeDifference < TAP_LOCK_TIME * 1000 * 60 * 60) {
         throw new CustomError(
-          `Please wait ${TAP_LOCK_TIME} seconds before scanning again.`,
+          `Please wait ${TAP_LOCK_TIME} hours before scanning again.`,
           400
         );
       }
