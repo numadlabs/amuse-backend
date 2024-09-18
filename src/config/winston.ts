@@ -2,7 +2,6 @@ import { config, createLogger, format, transports } from "winston";
 const { combine, timestamp, json, prettyPrint, splat } = format;
 
 const logger = createLogger({
-  levels: config.syslog.levels,
   level: "info",
   format: combine(timestamp(), json(), prettyPrint()),
   transports: [

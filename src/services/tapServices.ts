@@ -68,7 +68,10 @@ export const tapServices = {
       if (userSocketId) {
         io.to(userSocketId).emit("tap-scan", {
           isOwned: false,
-          restaurantId: restaurant.id,
+          isInTapLock: false,
+          data: {
+            restaurantId: restaurant.id,
+          },
         });
 
         logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
@@ -104,8 +107,12 @@ export const tapServices = {
         if (timeDifference < TAP_LOCK_TIME * 1000 * 60 * 60) {
           if (userSocketId)
             io.to(userSocketId).emit("tap-scan", {
-              isInTapLock: false,
-              tapId: tapCheck.id,
+              isOwned: true,
+              isInTapLock: true,
+              data: {
+                tapId: tapCheck.id,
+                restaurantId: restaurant.id,
+              },
             });
 
           throw new CustomError(
@@ -198,14 +205,15 @@ export const tapServices = {
         (restaurant.rewardAmount / (btc.price * currency.price)) *
         tier.rewardMultiplier;
 
-      if (user.email && user.countryId && user.birthMonth && user.birthYear)
-        incrementBtc *= BOOST_MULTIPLIER;
+      // if (user.email && user.countryId && user.birthMonth && user.birthYear)
+      //   incrementBtc *= BOOST_MULTIPLIER;
 
       notifications.push({
         userId: user.id,
         message: `You checked-in at ${restaurant.name}.`,
         type: "TAP",
       });
+
       notifications.push({
         employeeId: waiter.id,
         message: `You scanned QR of user ${user.email}.`,
@@ -278,6 +286,7 @@ export const tapServices = {
     if (userSocketId) {
       io.to(userSocketId).emit("tap-scan", {
         isOwned: true,
+        isInTapLock: false,
         data: {
           restaurantId: restaurant.id,
           increment: result.increment,

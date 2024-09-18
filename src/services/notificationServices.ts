@@ -11,7 +11,7 @@ export const notificationServices = {
     for (let device of devices) {
       const pushToken = device.pushToken;
       if (!Expo.isExpoPushToken(pushToken)) {
-        logger.error(`Push token ${pushToken} is not a valid Expo push token`);
+        logger.info(`Push token ${pushToken} is not a valid Expo push token`);
         continue;
       }
 

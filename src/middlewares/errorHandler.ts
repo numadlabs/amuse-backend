@@ -29,7 +29,7 @@ export function errorHandler(
   if (req.user?.id) userId = req.user.id;
 
   if (statusCode.toString().startsWith("4"))
-    logger.notice({ message: message, userId: userId });
+    logger.warn({ message: message, userId: userId });
   if (statusCode.toString().startsWith("5"))
     logger.error({ message: message, userId: userId });
 

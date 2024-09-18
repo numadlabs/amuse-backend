@@ -15,7 +15,7 @@ const subClient = pubClient.duplicate();
 io.adapter(createAdapter(pubClient, subClient));
 
 redis.on("error", (err) => {
-  logger.crit(`Error in Redis client: ${err}`);
+  logger.error(`Error in Redis client: ${err}`);
 });
 
 io.on("connection", (socket) => {
@@ -39,12 +39,12 @@ function startServer() {
   });
 
   process.on("uncaughtException", async (err) => {
-    logger.emerg(`Uncaught exception: ${err}`);
+    logger.error(`Uncaught exception: ${err}`);
     process.exit(1);
   });
 
   process.on("unhandledRejection", async (err) => {
-    logger.emerg(`Uncaught rejection: ${err}`);
+    logger.error(`Uncaught rejection: ${err}`);
     process.exit(1);
   });
 }
