@@ -90,7 +90,7 @@ export const testHelpers = {
 
     return { data: restaurant, ownerAccessToken };
   },
-  createRestaurantWithOwnerAndCard: async () => {
+  createRestaurantWithOwnerAndCard: async (balance: number = 0) => {
     const categories = await categoryRepository.create({
       name: faker.commerce.department(),
     });
@@ -103,6 +103,7 @@ export const testHelpers = {
       longitude: faker.location.longitude(),
       categoryId: categories.id,
       logo: faker.string.uuid(),
+      balance: balance,
     };
     const restaurant = await restaurantRepository.create(restaurantPayload);
 

@@ -84,7 +84,7 @@ describe("Tap APIs", () => {
     });
 
     it("should successfully redeem a tap", async () => {
-      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard(1);
       const user = await testHelpers.createUserWithMockedOtp();
       const userCard = await userCardServices.buy(
         user.userId,
