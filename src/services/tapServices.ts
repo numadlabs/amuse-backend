@@ -111,6 +111,7 @@ export const tapServices = {
               isInTapLock: true,
               data: {
                 tapId: tapCheck.id,
+                tappedAt: tapCheck.tappedAt,
                 restaurantId: restaurant.id,
               },
             });

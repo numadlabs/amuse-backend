@@ -42,22 +42,22 @@ app.use(
 app.use(helmet());
 app.use(rateLimiter);
 
-const morganFormat = ":method :url :status :response-time ms";
-app.use(
-  morgan(morganFormat, {
-    stream: {
-      write: (message) => {
-        const logObject = {
-          method: message.split(" ")[0],
-          url: message.split(" ")[1],
-          status: message.split(" ")[2],
-          responseTime: message.split(" ")[3],
-        };
-        logger.info(logObject);
-      },
-    },
-  })
-);
+// const morganFormat = ":method :url :status :response-time ms";
+// app.use(
+//   morgan(morganFormat, {
+//     stream: {
+//       write: (message) => {
+//         const logObject = {
+//           method: message.split(" ")[0],
+//           url: message.split(" ")[1],
+//           status: message.split(" ")[2],
+//           responseTime: message.split(" ")[3],
+//         };
+//         logger.info(logObject);
+//       },
+//     },
+//   })
+// );
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({

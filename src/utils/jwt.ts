@@ -34,7 +34,8 @@ export function generateVerificationToken(
 export function verifyRefreshToken(token: string) {
   let tokens;
   jwt.verify(token, jwtRefreshSecret, (err: any, user: any) => {
-    if (err) throw new CustomError("Invalid refresh token.", 401);
+    if (err)
+      throw new CustomError(`Either refresh token is invalid or expired.`, 401);
     tokens = generateTokens(user);
   });
 

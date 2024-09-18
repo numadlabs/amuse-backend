@@ -7,36 +7,64 @@ import { AuthenticatedRequest } from "../../custom";
 import { config } from "../config/config";
 import { DatabaseError } from "pg";
 
+interface ErrorResponse {
+  success: false;
+  data: null;
+  error: string;
+  stack?: string;
+}
+
 export function errorHandler(
-  err: CustomError | ZodError | MulterError,
+  err: Error | CustomError | ZodError | MulterError,
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-) {
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode,
-    message = err.message;
+): void {
+  const statusCode = getStatusCode(err, res);
+  const message = getErrorMessage(err);
+  const userId = req.user?.id ?? "-";
 
-  if (err instanceof CustomError) {
-    statusCode = err.errorCode;
-  } else if (err instanceof ZodError) {
-    statusCode = 400;
-    message = `Invalid ${err.errors[0].path} input.`;
-  } else if (err instanceof MulterError) {
-    statusCode = 400;
-  }
+  logError(statusCode, message, userId);
 
-  let userId = "-";
-  if (req.user?.id) userId = req.user.id;
-
-  if (statusCode.toString().startsWith("4"))
-    logger.warn({ message: message, userId: userId });
-  if (statusCode.toString().startsWith("5"))
-    logger.error({ message: message, userId: userId });
-
-  res.status(statusCode).json({
+  const errorResponse: ErrorResponse = {
     success: false,
     data: null,
     error: message,
-    stack: config.NODE_ENV === "production" ? "🥞" : err.stack,
-  });
+  };
+
+  if (config.NODE_ENV !== "production") {
+    errorResponse.stack = err.stack;
+  }
+
+  res.status(statusCode).json(errorResponse);
+}
+
+function getStatusCode(
+  err: Error | CustomError | ZodError | MulterError,
+  res: Response
+): number {
+  if (err instanceof CustomError) return err.errorCode;
+  if (err instanceof ZodError || err instanceof MulterError) return 400;
+  return res.statusCode !== 200 ? res.statusCode : 500;
+}
+
+function getErrorMessage(
+  err: Error | CustomError | ZodError | MulterError
+): string {
+  if (err instanceof ZodError) {
+    return `Invalid ${err.errors[0].path.join(".")} input`;
+  }
+  return err.message;
+}
+
+function logError(statusCode: number, message: string, userId: string): void {
+  const logData = { message, userId };
+
+  if (statusCode >= 500) {
+    logger.error(logData);
+  } else if (statusCode === 429 || statusCode === 404 || statusCode === 409) {
+    logger.warn(logData);
+  } else if (statusCode >= 400) {
+    logger.error(logData);
+  }
 }
