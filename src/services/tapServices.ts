@@ -87,7 +87,7 @@ export const tapServices = {
       } catch (error) {
         if (error instanceof DatabaseError && error.code === "55P03") {
           throw new CustomError(
-            "This user's data is currently being processed. Please try again in a few moments.",
+            "Previous request is currently being processed. Please try again in a few moments.",
             409
           );
         }

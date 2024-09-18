@@ -17,6 +17,16 @@ export type Bonus = {
     type: BONUS_TYPE;
     cardId: string;
 };
+export type BugReport = {
+    id: Generated<string>;
+    deviceModel: string;
+    appVersion: string;
+    osVersion: string;
+    reason: string;
+    description: string | null;
+    createdAt: Generated<Timestamp>;
+    userId: string;
+};
 export type Card = {
     id: Generated<string>;
     createdAt: Generated<Timestamp>;
@@ -158,6 +168,7 @@ export type UserTier = {
 };
 export type DB = {
     Bonus: Bonus;
+    BugReport: BugReport;
     Card: Card;
     Category: Category;
     Country: Country;

@@ -25,7 +25,7 @@ model User {
   createdAt      DateTime @default(now())
   balance        Float    @default(0)
   visitCount     Int      @default(0)
-  email          String?  @unique 
+  email          String?  @unique
   userTierId     String
   countryId      String?
 
@@ -37,6 +37,7 @@ model User {
   UserBonus    UserBonus[]
   UserCard     UserCard[]
   Device       Device[]
+  BugReport    BugReport[]
 
   @@index([email])
 }
@@ -234,6 +235,19 @@ model Country {
   alpha3      String
   countryCode String
   User        User[]
+}
+
+model BugReport {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  deviceModel String
+  appVersion  String
+  osVersion   String
+  reason      String
+  description String?
+  createdAt   DateTime @default(now())
+  userId      String
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum ROLES {

@@ -5,6 +5,7 @@ import { MulterError } from "multer";
 import logger from "../config/winston";
 import { AuthenticatedRequest } from "../../custom";
 import { config } from "../config/config";
+import { DatabaseError } from "pg";
 
 export function errorHandler(
   err: CustomError | ZodError | MulterError,
@@ -26,8 +27,9 @@ export function errorHandler(
 
   let userId = "-";
   if (req.user?.id) userId = req.user.id;
+
   if (statusCode.toString().startsWith("4"))
-    logger.warn({ message: message, userId: userId });
+    logger.notice({ message: message, userId: userId });
   if (statusCode.toString().startsWith("5"))
     logger.error({ message: message, userId: userId });
 

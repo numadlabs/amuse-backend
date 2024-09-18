@@ -27,6 +27,7 @@ import { rateLimiter } from "./middlewares/rateLimiter";
 import { sizeLimitConstants } from "./lib/constants";
 import countryRouter from "./routes/countryRoutes";
 import { config } from "./config/config";
+import bugReportRouter from "./routes/bugReportRoutes";
 
 const app = express();
 
@@ -81,6 +82,7 @@ app.use("/api/userTiers", userTierRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/transactions", transactionRouter);
 app.use("/api/countries", countryRouter);
+app.use("/api/bug-reports", bugReportRouter);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -7,8 +7,10 @@ export const verificationCodeConstants = {
 };
 
 //IN NUMBER OF SECONDS
-export const TAP_EXPIRATION_TIME = 300;
-export const BONUS_REDEEM_EXPIRATION_TIME = 300;
+export const TAP_EXPIRATION_TIME =
+  config.NODE_ENV === "production" ? 300 : 3000;
+export const BONUS_REDEEM_EXPIRATION_TIME =
+  config.NODE_ENV === "production" ? 300 : 3000;
 
 //IN BINARY
 export const sizeLimitConstants = {
