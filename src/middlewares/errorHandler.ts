@@ -22,7 +22,7 @@ export function errorHandler(
 ): void {
   const statusCode = getStatusCode(err, res);
   const message = getErrorMessage(err);
-  const userId = req.user?.id ?? "-";
+  const userId = req.user?.id;
 
   logError(statusCode, message, userId);
 
@@ -57,7 +57,11 @@ function getErrorMessage(
   return err.message;
 }
 
-function logError(statusCode: number, message: string, userId: string): void {
+function logError(
+  statusCode: number,
+  message: string,
+  userId: string | undefined
+): void {
   const logData = { message, userId };
 
   if (statusCode >= 500) {

@@ -59,6 +59,26 @@ export const tapServices = {
     const restaurant = await restaurantRepository.getById(waiter.restaurantId);
     if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
+    const [btc, currency] = await Promise.all([
+      // userTierRepository.getByIdWithNextTier(user.userTierId),
+      currencyRepository.getByTicker("BTC"),
+      currencyRepository.getByTicker("EUR"),
+    ]);
+
+    let incrementBtc = restaurant.rewardAmount / (btc.price * currency.price); // * tier.rewardMultiplier;
+    // if (user.email && user.countryId && user.birthMonth && user.birthYear)
+    //   incrementBtc *= BOOST_MULTIPLIER;
+
+    if (restaurant.balance < incrementBtc)
+      // throw new CustomError(
+      //   "Restaurant reward budget needs to be refilled, refer to our Help section for more details.",
+      //   400
+      // );
+      throw new CustomError(
+        "No bitcoin awarded, contact our Help desk if necessary",
+        400
+      );
+
     const userCard = await userCardReposity.getByUserIdRestaurantId(
       user.id,
       restaurant.id
@@ -196,19 +216,6 @@ export const tapServices = {
       //start of reward logic
       userCard.visitCount += 1;
 
-      const [tier, btc, currency] = await Promise.all([
-        userTierRepository.getByIdWithNextTier(user.userTierId),
-        currencyRepository.getByTicker("BTC"),
-        currencyRepository.getByTicker("EUR"),
-      ]);
-
-      let incrementBtc =
-        (restaurant.rewardAmount / (btc.price * currency.price)) *
-        tier.rewardMultiplier;
-
-      // if (user.email && user.countryId && user.birthMonth && user.birthYear)
-      //   incrementBtc *= BOOST_MULTIPLIER;
-
       notifications.push({
         userId: user.id,
         message: `You checked-in at ${restaurant.name}.`,
@@ -221,28 +228,26 @@ export const tapServices = {
         type: "TAP",
       });
 
-      if (restaurant.balance >= incrementBtc) {
-        restaurant.balance -= incrementBtc;
-        restaurantRepository.update(trx, restaurant.id, restaurant);
-        user.balance = user.balance + incrementBtc;
-        userCard.balance += incrementBtc;
+      restaurant.balance -= incrementBtc;
+      restaurantRepository.update(trx, restaurant.id, restaurant);
+      user.balance = user.balance + incrementBtc;
+      userCard.balance += incrementBtc;
 
-        await Promise.all([
-          transactionRepository.create(trx, {
-            userId: user.id,
-            amount: incrementBtc,
-            type: "REWARD",
-            txid: crypto.randomBytes(16).toString("hex"),
-          }),
-          userCardReposity.update(trx, userCard, userCard.id),
-        ]);
-
-        notifications.push({
+      await Promise.all([
+        transactionRepository.create(trx, {
           userId: user.id,
-          message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
+          amount: incrementBtc,
           type: "REWARD",
-        });
-      } else incrementBtc = 0;
+          txid: crypto.randomBytes(16).toString("hex"),
+        }),
+        userCardReposity.update(trx, userCard, userCard.id),
+      ]);
+
+      notifications.push({
+        userId: user.id,
+        message: `You got €${restaurant.rewardAmount} of Bitcoin.`,
+        type: "REWARD",
+      });
 
       user.visitCount += 1;
       const tapData: Insertable<Tap> = {
@@ -257,20 +262,20 @@ export const tapServices = {
       ]);
 
       let updatedUserTier = null;
-      if (
-        tier.nextTierNo &&
-        tier.nextTierId &&
-        user.visitCount >= tier.nextTierNo
-      ) {
-        const result = await Promise.all([
-          userRepository.update(trx, user.id, {
-            userTierId: tier.nextTierId,
-          }),
-          userTierRepository.getById(tier.nextTierId),
-        ]);
+      // if (
+      //   tier.nextTierNo &&
+      //   tier.nextTierId &&
+      //   user.visitCount >= tier.nextTierNo
+      // ) {
+      //   const result = await Promise.all([
+      //     userRepository.update(trx, user.id, {
+      //       userTierId: tier.nextTierId,
+      //     }),
+      //     userTierRepository.getById(tier.nextTierId),
+      //   ]);
 
-        updatedUserTier = result[1];
-      }
+      //   updatedUserTier = result[1];
+      // }
 
       return {
         increment: incrementBtc * btc.price * currency.price,

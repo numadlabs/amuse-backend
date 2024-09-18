@@ -28,6 +28,7 @@ jobs:
           secret: ${{ github.TOKEN }}
           approvers: gombochirr
           minimum-approvals: 1
+          timeout-minutes: 15
           issue-title: "Approve deployment to production"
           issue-body: "Please approve or deny the deployment to production"
           exclude-workflow-initiator-as-approver: false
