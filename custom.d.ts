@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { ROLES } from "./src/types/db/enums";
 
-interface AuthenticatedUser {
+export interface AuthenticatedUser {
   id: string;
   role: ROLES;
   iat: number;

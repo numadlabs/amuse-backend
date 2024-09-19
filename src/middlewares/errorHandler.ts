@@ -57,11 +57,7 @@ function getErrorMessage(
   return err.message;
 }
 
-function logError(
-  statusCode: number,
-  message: string,
-  userId: string | undefined
-): void {
+function logError(statusCode: number, message: string, userId?: string): void {
   const logData = { message, userId };
 
   if (statusCode >= 500) {
@@ -69,6 +65,6 @@ function logError(
   } else if (statusCode === 429 || statusCode === 404 || statusCode === 409) {
     logger.warn(logData);
   } else if (statusCode >= 400) {
-    logger.error(logData);
+    logger.info(logData);
   }
 }

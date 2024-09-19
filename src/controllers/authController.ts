@@ -102,7 +102,7 @@ export const authController = {
     try {
       const { refreshToken } = refreshTokenSchema.parse(req.body);
 
-      const tokens = verifyRefreshToken(refreshToken);
+      const tokens = await verifyRefreshToken(refreshToken);
 
       return res.status(200).json({
         success: true,

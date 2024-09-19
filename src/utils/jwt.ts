@@ -31,15 +31,19 @@ export function generateVerificationToken(
   });
 }
 
-export function verifyRefreshToken(token: string) {
-  let tokens;
-  jwt.verify(token, jwtRefreshSecret, (err: any, user: any) => {
-    if (err)
-      throw new CustomError(`Either refresh token is invalid or expired.`, 401);
-    tokens = generateTokens(user);
+export function verifyRefreshToken(token: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, jwtRefreshSecret, (err: any, user: any) => {
+      if (err) {
+        reject(
+          new CustomError(`Either refresh token is invalid or expired.`, 401)
+        );
+      } else {
+        const tokens = generateTokens(user);
+        resolve(tokens);
+      }
+    });
   });
-
-  return tokens;
 }
 
 export function extractVerification(token: string) {
