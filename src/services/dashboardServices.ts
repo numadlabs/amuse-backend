@@ -67,18 +67,15 @@ export const dashboardServices = {
     const awarded = totalAmount || 0;
     const redeemed = awarded - totalBalance;
 
-    const [btc, currency] = await Promise.all([
-      currencyRepository.getByTicker("BTC"),
-      currencyRepository.getByTicker("EUR"),
-    ]);
+    const currencies = await currencyRepository.getByTickerWithBtc("EUR");
 
     return {
-      budgetAmount: budget * btc.price * currency.price,
+      budgetAmount: budget * currencies.btcPrice * currencies.tickerPrice,
       budgetPercentage: 100,
-      awardedAmount: awarded * btc.price * currency.price,
+      awardedAmount: awarded * currencies.btcPrice * currencies.tickerPrice,
       awardedPercentage: parseFloat(((awarded / budget) * 100).toFixed(3)),
       redeemedAmount: parseFloat(
-        (redeemed * btc.price * currency.price).toFixed(3)
+        (redeemed * currencies.btcPrice * currencies.tickerPrice).toFixed(3)
       ),
       redeemedPercentage: parseFloat(((redeemed / budget) * 100).toFixed(3)),
     };

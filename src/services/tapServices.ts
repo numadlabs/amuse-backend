@@ -59,13 +59,9 @@ export const tapServices = {
     const restaurant = await restaurantRepository.getById(waiter.restaurantId);
     if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
-    const [btc, currency] = await Promise.all([
-      // userTierRepository.getByIdWithNextTier(user.userTierId),
-      currencyRepository.getByTicker("BTC"),
-      currencyRepository.getByTicker("EUR"),
-    ]);
-
-    let incrementBtc = restaurant.rewardAmount / (btc.price * currency.price); // * tier.rewardMultiplier;
+    const currencies = await currencyRepository.getByTickerWithBtc("EUR");
+    let incrementBtc =
+      restaurant.rewardAmount / (currencies.btcPrice * currencies.tickerPrice); // * tier.rewardMultiplier;
     // if (user.email && user.countryId && user.birthMonth && user.birthYear)
     //   incrementBtc *= BOOST_MULTIPLIER;
 
@@ -270,7 +266,7 @@ export const tapServices = {
       // }
 
       return {
-        increment: incrementBtc * btc.price * currency.price,
+        increment: incrementBtc * currencies.btcPrice * currencies.tickerPrice,
         ticker: "EUR",
         bonus: bonus,
         userTier: updatedUserTier,

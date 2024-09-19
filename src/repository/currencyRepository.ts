@@ -24,4 +24,15 @@ export const currencyRepository = {
 
     return currency;
   },
+  getByTickerWithBtc: async (ticker: string) => {
+    const currency = await db
+      .selectFrom("Currency as c1")
+      .innerJoin("Currency as c2", (join) =>
+        join.on("c1.ticker", "=", ticker).on("c2.ticker", "=", "BTC")
+      )
+      .select(["c1.price as tickerPrice", "c2.price as btcPrice"])
+      .executeTakeFirstOrThrow(() => new Error("Currency not found."));
+
+    return currency;
+  },
 };

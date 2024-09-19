@@ -246,15 +246,12 @@ export const restaurantController = {
       let data;
 
       if (req.user.role !== "USER") {
-        const [btc, currency] = await Promise.all([
-          currencyRepository.getByTicker("BTC"),
-          currencyRepository.getByTicker("EUR"),
-        ]);
+        const currencies = await currencyRepository.getByTickerWithBtc("EUR");
 
         convertedBalance =
           (Math.floor(restaurant.balance * 10 ** 8) / 10 ** 8) *
-          btc.price *
-          currency.price;
+          currencies.btcPrice *
+          currencies.tickerPrice;
         data = {
           restaurant: restaurant,
           convertedBalance: convertedBalance,

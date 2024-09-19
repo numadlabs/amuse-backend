@@ -17,12 +17,9 @@ export const transactionServices = {
         400
       );
 
-    const [btc, currency] = await Promise.all([
-      currencyRepository.getByTicker("BTC"),
-      currencyRepository.getByTicker("EUR"),
-    ]);
+    const currencies = await currencyRepository.getByTickerWithBtc("EUR");
     //converting the amount to bitcoin
-    const amount = data.amount / (btc.price * currency.price);
+    const amount = data.amount / (currencies.btcPrice * currencies.tickerPrice);
 
     if (data.restaurantId) {
       const restaurant = await restaurantRepository.getById(data.restaurantId);
@@ -50,11 +47,8 @@ export const transactionServices = {
     if (data.restaurantId && data.userId)
       throw new CustomError("Cannot provide both restaurantId and userId", 400);
 
-    const [btc, currency] = await Promise.all([
-      currencyRepository.getByTicker("BTC"),
-      currencyRepository.getByTicker("EUR"),
-    ]);
-    const amount = data.amount / (btc.price * currency.price);
+    const currencies = await currencyRepository.getByTickerWithBtc("EUR");
+    const amount = data.amount / (currencies.btcPrice * currencies.tickerPrice);
 
     if (data.restaurantId) {
       const restaurant = await restaurantRepository.getById(data.restaurantId);
