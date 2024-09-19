@@ -83,8 +83,8 @@ describe("Tap APIs", () => {
       expect(response.body.success).toBe(false);
     });
 
-    it("should successfully redeem a tap", async () => {
-      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard(1);
+    it("should successfully redeem a tap on restaurant with 0 balance", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard(0);
       const user = await testHelpers.createUserWithMockedOtp();
       const userCard = await userCardServices.buy(
         user.userId,
@@ -99,6 +99,31 @@ describe("Tap APIs", () => {
           encryptedData: encryptedData,
         });
 
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
+    it("should successfully redeem a tap on restaurant with sufficient balance", async () => {
+      const createdRestaurant =
+        await testHelpers.createRestaurantWithOwnerAndCard(1);
+      const user = await testHelpers.createUserWithMockedOtp();
+      const userCard = await userCardServices.buy(
+        user.userId,
+        createdRestaurant.card.id
+      );
+      const encryptedData = await tapServices.generate(user.userId);
+
+      const response = await supertest(app)
+        .post(`/api/taps/redeem`)
+        .set("Authorization", `Bearer ${createdRestaurant.ownerAccessToken}`)
+        .send({
+          encryptedData: encryptedData,
+        });
+
+      const restaurant = await restaurantRepository.getById(
+        createdRestaurant.data.id
+      );
+      expect(restaurant.balance < createdRestaurant.data.balance);
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
     });

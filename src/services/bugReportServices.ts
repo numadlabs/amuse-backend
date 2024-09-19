@@ -6,7 +6,7 @@ import { bugReportRepository } from "../repository/bugReportRepository";
 
 export const bugReportServices = {
   create: async (data: Insertable<BugReport>, issuerId: string) => {
-    data.userId = "issuerId";
+    data.userId = issuerId;
     const bugReport = await bugReportRepository.create(data);
 
     return bugReport;

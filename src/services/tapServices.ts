@@ -69,16 +69,6 @@ export const tapServices = {
     // if (user.email && user.countryId && user.birthMonth && user.birthYear)
     //   incrementBtc *= BOOST_MULTIPLIER;
 
-    if (restaurant.balance < incrementBtc)
-      // throw new CustomError(
-      //   "Restaurant reward budget needs to be refilled, refer to our Help section for more details.",
-      //   400
-      // );
-      throw new CustomError(
-        "No bitcoin awarded, contact our Help desk if necessary",
-        400
-      );
-
     const userCard = await userCardReposity.getByUserIdRestaurantId(
       user.id,
       restaurant.id
@@ -228,10 +218,12 @@ export const tapServices = {
         type: "TAP",
       });
 
-      restaurant.balance -= incrementBtc;
-      restaurantRepository.update(trx, restaurant.id, restaurant);
-      user.balance = user.balance + incrementBtc;
-      userCard.balance += incrementBtc;
+      if (restaurant.balance >= incrementBtc) {
+        restaurant.balance -= incrementBtc;
+        restaurantRepository.update(trx, restaurant.id, restaurant);
+        user.balance = user.balance + incrementBtc;
+        userCard.balance += incrementBtc;
+      } else incrementBtc = 0;
 
       await Promise.all([
         transactionRepository.create(trx, {
