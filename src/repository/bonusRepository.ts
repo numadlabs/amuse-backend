@@ -124,4 +124,22 @@ export const bonusRepository = {
 
     return bonuses;
   },
+  incrementCurrentSupplyById: async (
+    db: Kysely<DB> | Transaction<DB>,
+    id: string
+  ) => {
+    const bonus = await db
+      .updateTable("Bonus")
+      .set((eb) => ({ currentSupply: eb("Bonus.currentSupply", "+", 1) }))
+      .where("Bonus.id", "=", id)
+      .where((eb) =>
+        eb("Bonus.currentSupply", "<", eb.ref("Bonus.totalSupply"))
+      )
+      .returning(["Bonus.currentSupply", "Bonus.totalSupply"])
+      .executeTakeFirstOrThrow(
+        () => new Error("Could not increment the bonus current supply.")
+      );
+
+    return bonus;
+  },
 };

@@ -159,4 +159,21 @@ export const restaurantRepository = {
 
     return restaurants;
   },
+  decrementBalanceById: async (
+    db: Kysely<DB> | Transaction<DB>,
+    id: string,
+    amount: number
+  ) => {
+    const restaurant = await db
+      .updateTable("Restaurant")
+      .set((eb) => ({ balance: eb("Restaurant.balance", "-", amount) }))
+      .where("Restaurant.id", "=", id)
+      .where("Restaurant.balance", ">=", amount)
+      .returning(["Restaurant.balance"])
+      .executeTakeFirstOrThrow(
+        () => new Error("Could not decrement the restaurant balance.")
+      );
+
+    return restaurant;
+  },
 };

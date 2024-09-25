@@ -165,12 +165,12 @@ export const tapServices = {
               userId: user.id,
               userCardId: userCard.id,
             };
-            bonus.currentSupply++;
 
             await Promise.all([
               await userBonusRepository.create(trx, userBonus),
-              await bonusRepository.update(trx, bonus, bonus.id),
+              await bonusRepository.incrementCurrentSupplyById(trx, bonus.id),
             ]);
+
             notifications.push({
               userId: user.id,
               message: `You earned perk of ${restaurant.name}.`,
@@ -184,11 +184,10 @@ export const tapServices = {
             userId: user.id,
             userCardId: userCard.id,
           };
-          bonus.currentSupply++;
 
           await Promise.all([
             await userBonusRepository.create(trx, userBonus),
-            await bonusRepository.update(trx, bonus, bonus.id),
+            await bonusRepository.incrementCurrentSupplyById(trx, bonus.id),
           ]);
 
           notifications.push({
@@ -215,8 +214,11 @@ export const tapServices = {
       });
 
       if (restaurant.balance >= incrementBtc) {
-        restaurant.balance -= incrementBtc;
-        restaurantRepository.update(trx, restaurant.id, restaurant);
+        await restaurantRepository.decrementBalanceById(
+          trx,
+          restaurant.id,
+          incrementBtc
+        );
         user.balance = user.balance + incrementBtc;
         userCard.balance += incrementBtc;
       } else incrementBtc = 0;
