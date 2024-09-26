@@ -26,9 +26,9 @@ model User {
   balance        Float    @default(0)
   visitCount     Int      @default(0)
   email          String?  @unique
+
   userTierId     String
   countryId      String?
-
   Country      Country?       @relation(fields: [countryId], references: [id], onDelete: Cascade)
   Notification Notification[]
   Tap          Tap[]
@@ -74,6 +74,7 @@ model UserTier {
   requiredNo       Int
   rewardMultiplier Float
   nextTierId       String?
+
   User             User[]
   nextTier         UserTier?  @relation("tierHierarchy", fields: [nextTierId], references: [id])
   precedingTiers   UserTier[] @relation("tierHierarchy")
@@ -83,9 +84,10 @@ model Device {
   id        String   @id @default(dbgenerated("gen_random_uuid()"))
   pushToken String   @unique
   createdAt DateTime @default(now())
-  userId    String?
 
+  userId    String?
   User User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([pushToken])
 }
 
 model Restaurant {
@@ -101,6 +103,7 @@ model Restaurant {
   balance       Float         @default(0)
   rewardAmount  Float         @default(1)
   perkOccurence Int           @default(3)
+
   categoryId    String
   Card          Card[]
   Employee      Employee[]
@@ -113,6 +116,7 @@ model Category {
   id         String       @id @default(dbgenerated("gen_random_uuid()"))
   name       String
   createdAt  DateTime     @default(now())
+
   Restaurant Restaurant[]
 }
 
@@ -123,6 +127,7 @@ model Timetable {
   closesAt       String?
   isOffDay       Boolean    @default(false)
   createdAt      DateTime   @default(now())
+
   restaurantId   String
   Restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
@@ -135,6 +140,7 @@ model Card {
   instruction  String
   benefits     String
   restaurantId String
+
   Bonus        Bonus[]
   Restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   UserCard     UserCard[]
@@ -145,6 +151,7 @@ model UserCard {
   visitCount Int         @default(0)
   balance    Float       @default(0)
   ownedAt    DateTime    @default(now())
+
   cardId     String
   userId     String
   Tap        Tap[]
@@ -159,9 +166,9 @@ model Tap {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
   amount     Float
   tappedAt   DateTime @default(now())
+
   userId     String
   userCardId String
-
   UserCard UserCard @relation(fields: [userCardId], references: [id], onDelete: Cascade)
   User     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -175,6 +182,7 @@ model Bonus {
   price         Float?
   visitNo       Int?
   type          BONUS_TYPE
+  
   cardId        String
   Card          Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
   UserBonus     UserBonus[]
@@ -185,11 +193,11 @@ model UserBonus {
   isUsed     Boolean   @default(false)
   createdAt  DateTime  @default(now())
   usedAt     DateTime?
+
   userId     String
   userCardId String
   bonusId    String
   waiterId   String?
-
   Bonus    Bonus     @relation(fields: [bonusId], references: [id], onDelete: Cascade)
   UserCard UserCard  @relation(fields: [userCardId], references: [id], onDelete: Cascade)
   User     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -205,7 +213,6 @@ model Notification {
 
   userId     String?
   employeeId String?
-
   User     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   Employee Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }
@@ -223,6 +230,7 @@ model Transaction {
   amount       Float
   type         TRANSACTION_TYPE
   createdAt    DateTime         @default(now())
+
   restaurantId String?
   userId       String?
   Restaurant   Restaurant?      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -245,8 +253,8 @@ model BugReport {
   reason      String
   description String?
   createdAt   DateTime @default(now())
+  
   userId      String
-
   User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 

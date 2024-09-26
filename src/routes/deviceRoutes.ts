@@ -4,11 +4,12 @@ import { authenticateToken } from "../middlewares/authenticateToken";
 import { authorize } from "../middlewares/authorization";
 const deviceRouter = express.Router();
 
-deviceRouter.post(
-  "/",
+deviceRouter.post("/", deviceController.create);
+deviceRouter.put(
+  "/:userId/user",
   authenticateToken(),
   authorize("USER"),
-  deviceController.create
+  deviceController.update
 );
 
 export = deviceRouter;
