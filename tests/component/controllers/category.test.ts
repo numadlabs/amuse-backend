@@ -46,7 +46,7 @@ describe("Category APIs", () => {
 
     it("should fail if requester is not RESTAURANT_OWNER", async () => {
       const manager = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 
@@ -60,7 +60,7 @@ describe("Category APIs", () => {
     });
 
     it("should successfully create new category", async () => {
-      const owner = await testHelpers.createEmployee(null, "RESTAURANT_OWNER");
+      const owner = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
 
       const response = await supertest(app)
         .post(`/api/categories`)

@@ -5,7 +5,7 @@ export const updateUserInfoSchema = z
     nickname: z
       .string()
       .trim()
-      .max(30, "Nickname must be at most 30 characters.")
+      .max(30, "The nickname must contain at most 30 characters.")
       .optional(),
     countryId: z
       .string()
@@ -18,7 +18,7 @@ export const updateUserInfoSchema = z
             val!
           ),
         {
-          message: "Invalid UUID",
+          message: "Invalid id format.",
         }
       )
       .optional(),
@@ -33,7 +33,7 @@ export const updateUserInfoSchema = z
             val > 1900 &&
             val < new Date().getFullYear()),
         {
-          message: "Invalid birth year",
+          message: "Invalid birth year.",
         }
       )
       .optional(),
@@ -45,14 +45,14 @@ export const updateUserInfoSchema = z
         (val) =>
           val === null || (typeof val === "number" && val >= 1 && val <= 12),
         {
-          message: "Invalid birth month",
+          message: "Invalid birth month.",
         }
       )
       .optional(),
     profilePicture: z
       .string()
       .trim()
-      .max(1, "Profile picture must be at most 1 characters.")
+      .max(1, "The profile picture must be at most 1 character long.")
       .optional(),
   })
   .strict("Unexpected field detected.");

@@ -31,7 +31,7 @@ describe("Restaurant APIs", () => {
 
     it("should fail if requester is not authorized(ROLE)", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 
@@ -68,10 +68,7 @@ describe("Restaurant APIs", () => {
     });
 
     it("should fail if requester is not authorized(ROLE)", async () => {
-      const waiter = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_WAITER"
-      );
+      const waiter = await testHelpers.createEmployee({}, "RESTAURANT_WAITER");
 
       const response = await supertest(app)
         .post("/api/restaurants")
@@ -82,7 +79,7 @@ describe("Restaurant APIs", () => {
     });
 
     it("should successfully create restaurant", async () => {
-      const owner = await testHelpers.createEmployee(null, "RESTAURANT_OWNER");
+      const owner = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
       (uploadToS3 as jest.Mock).mockResolvedValue({});
       const filePath = path.join(__dirname, "../assets/logo.jpg");
       const category = await testHelpers.createCategory();
@@ -127,7 +124,7 @@ describe("Restaurant APIs", () => {
     it("should fail if requester is not authorized(ROLE)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const waiter = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_WAITER"
       );
 
@@ -251,7 +248,7 @@ describe("Restaurant APIs", () => {
     it("should fail if requester is not authorized(ROLE)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const waiter = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_WAITER"
       );
 

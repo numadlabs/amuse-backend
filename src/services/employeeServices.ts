@@ -30,7 +30,7 @@ export const employeeServices = {
       throw new CustomError("Could not the the role to the given one.", 400);
 
     const emailCheck = await employeeRepository.getByEmail(data.email);
-    if (emailCheck)
+    if (emailCheck && emailCheck.isActive)
       throw new CustomError("Email has already been registed.", 400);
 
     const creator = await employeeRepository.getById(creatorId);
@@ -80,7 +80,7 @@ export const employeeServices = {
       );
 
     const emailCheck = await employeeRepository.getByEmail(data.email);
-    if (emailCheck)
+    if (emailCheck && emailCheck.isActive)
       throw new CustomError("Email has already been registed.", 400);
 
     const password =
@@ -121,7 +121,7 @@ export const employeeServices = {
   login: async (email: string, password: string) => {
     const employee = await employeeRepository.getByEmail(email);
     if (!employee) throw new CustomError("Employee not found.", 400);
-    if (!employee.restaurantId)
+    if (!employee.isActive)
       throw new CustomError(
         "Please make sure you are added to a restaurant.",
         400
@@ -278,36 +278,36 @@ export const employeeServices = {
     return employee;
   },
   removeFromTeam: async (id: string, issuerId: string) => {
-    const checkExists = await employeeRepository.getById(id);
-    if (!checkExists) throw new CustomError("Invalid employeeId.", 400);
-    if (!checkExists.restaurantId)
+    const employeeToRemove = await employeeRepository.getById(id);
+    if (!employeeToRemove) throw new CustomError("Invalid employeeId.", 400);
+    if (!employeeToRemove.restaurantId)
       throw new CustomError("Employee does not belong to any restaurant.", 400);
 
     const issuer = await employeeServices.checkIfEligible(
       issuerId,
-      checkExists.restaurantId
+      employeeToRemove.restaurantId
     );
     if (
       issuer.role === "RESTAURANT_MANAGER" &&
-      checkExists.role === "RESTAURANT_OWNER"
+      employeeToRemove.role === "RESTAURANT_OWNER"
     )
       throw new CustomError(
-        "You are not allowed to remove employee with RESTAURANT_OWNER role.",
+        "You are not allowed to remove employee with owner role.",
         400
       );
 
     if (
       issuer.role === "RESTAURANT_MANAGER" &&
-      checkExists.role === "RESTAURANT_MANAGER"
+      employeeToRemove.role === "RESTAURANT_MANAGER"
     )
       throw new CustomError(
-        "You are not allowed to remove employee with RESTAURANT_OWNER role.",
+        "You are not allowed to remove employee with manager role.",
         400
       );
 
-    const employee = await employeeRepository.update(id, {
-      restaurantId: null,
-    });
+    employeeToRemove.isActive = false;
+    employeeToRemove.deletedAt = new Date();
+    const employee = await employeeRepository.update(id, employeeToRemove);
 
     return employee;
   },

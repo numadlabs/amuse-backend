@@ -39,7 +39,7 @@ describe("Card APIs", () => {
     it("should fail if requester is not authorized(ROLE)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const manager = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_MANAGER"
       );
       const filePath = path.join(__dirname, "../assets/NFT.png");
@@ -156,7 +156,7 @@ describe("Card APIs", () => {
     it("should fail if requester is not authorized(ROLE)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
       const waiter = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_WAITER"
       );
 

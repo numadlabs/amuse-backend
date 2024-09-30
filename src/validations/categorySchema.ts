@@ -5,7 +5,7 @@ export const categorySchema = z
     name: z
       .string()
       .trim()
-      .min(1, "Category must be at least 5 characters.")
-      .max(50, "Category must be at most 50 characters."),
+      .min(1, "The category name must contain at least 5 characters.")
+      .max(50, "The category name must contain at most 50 characters."),
   })
   .strict("Unexpected field detected.");

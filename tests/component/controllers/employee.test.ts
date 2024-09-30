@@ -1,4 +1,4 @@
-import { faker } from "@faker-js/faker";
+import { fa, faker } from "@faker-js/faker";
 import { testHelpers } from "../helpers/testHelpers";
 import supertest from "supertest";
 import app from "../../../src/app";
@@ -33,7 +33,7 @@ describe("Employee APIs", () => {
     it("should fail if requester is not authorized(ROLE)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const waiter = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_WAITER"
       );
 
@@ -69,6 +69,56 @@ describe("Employee APIs", () => {
       expect(response.body.success).toBe(false);
     });
 
+    it("should fail if email has already been registered", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const alreadyExistingEmployee = await testHelpers.createEmployee(
+        { email: faker.internet.email().toLowerCase() },
+        "RESTAURANT_WAITER"
+      );
+      (sendEmail as jest.Mock).mockResolvedValue({ accepted: true });
+
+      const response = await supertest(app)
+        .post("/api/employees")
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
+        .send({
+          email: alreadyExistingEmployee.employee.email,
+          fullname: faker.company.name(),
+          role: "RESTAURANT_WAITER",
+          restaurantId: restaurant.data.id,
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(sendEmail).toHaveBeenCalledTimes(0);
+    });
+
+    it("should successfully create an employee if the existing employee with the same email has already been deleted", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const alreadyExistingEmployee = await testHelpers.createEmployee(
+        {
+          email: faker.internet.email().toLowerCase(),
+          deletedAt: new Date(),
+          isActive: false,
+        },
+        "RESTAURANT_WAITER"
+      );
+      (sendEmail as jest.Mock).mockResolvedValue({ accepted: true });
+
+      const response = await supertest(app)
+        .post("/api/employees")
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
+        .send({
+          email: alreadyExistingEmployee.employee.email,
+          fullname: faker.company.name(),
+          role: "RESTAURANT_WAITER",
+          restaurantId: restaurant.data.id,
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(sendEmail).toHaveBeenCalledTimes(1);
+    });
+
     it("should successfully create an employee", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       (sendEmail as jest.Mock).mockResolvedValue({ accepted: true });
@@ -95,10 +145,7 @@ describe("Employee APIs", () => {
     });
 
     it("should fail on invalid email", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
 
       const response = await supertest(app).post("/api/employees/login").send({
         email: faker.internet.email(),
@@ -110,10 +157,7 @@ describe("Employee APIs", () => {
     });
 
     it("should fail on invalid password", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
 
       const response = await supertest(app).post("/api/employees/login").send({
         email: employee.employee.email,
@@ -125,10 +169,7 @@ describe("Employee APIs", () => {
     });
 
     it("should fail if employee does not belong to any restaurant", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
 
       const response = await supertest(app).post("/api/employees/login").send({
         email: employee.employee.email,
@@ -139,10 +180,39 @@ describe("Employee APIs", () => {
       expect(response.body.success).toBe(false);
     });
 
+    it("should fail if employee has been deleted", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const alreadyExistingEmployee = await testHelpers.createEmployee(
+        {
+          email: faker.internet.email(),
+          isActive: false,
+          deletedAt: new Date(),
+        },
+        "RESTAURANT_WAITER"
+      );
+      (sendEmail as jest.Mock).mockResolvedValue({ accepted: true });
+
+      const response = await supertest(app)
+        .post("/api/employees/login")
+        .set("Authorization", `Bearer ${restaurant.ownerAccessToken}`)
+        .send({
+          email: alreadyExistingEmployee.employee.email,
+          fullname: faker.company.name(),
+          role: "RESTAURANT_WAITER",
+          restaurantId: restaurant.data.id,
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+      expect(sendEmail).toHaveBeenCalledTimes(0);
+    });
+
     it("should successfully login an employee", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        {
+          restaurantId: restaurant.data.id,
+        },
         "RESTAURANT_OWNER"
       );
 
@@ -190,10 +260,7 @@ describe("Employee APIs", () => {
     });
 
     it("should successfully send an OTP", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
       (sendEmail as jest.Mock).mockResolvedValue({ accepted: true });
 
       const response = await supertest(app)
@@ -255,10 +322,7 @@ describe("Employee APIs", () => {
     });
 
     it("should successfully check an OTP", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
       const verificationCode = faker.number.int({ min: 1000, max: 9999 });
       (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
         verificationCode: generateVerificationToken(verificationCode, "1h"),
@@ -326,10 +390,7 @@ describe("Employee APIs", () => {
     });
 
     it("should successfully change password", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
       const verificationCode = faker.number.int({ min: 1000, max: 9999 });
       (emailOtpRepository.getByEmail as jest.Mock).mockResolvedValue({
         verificationCode: generateVerificationToken(verificationCode, "1h"),
@@ -380,10 +441,7 @@ describe("Employee APIs", () => {
     });
 
     it("should fail on wrong password", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
       const wrongPassword = generatePassword();
       expect(employee.password).not.toBe(wrongPassword);
 
@@ -399,10 +457,7 @@ describe("Employee APIs", () => {
     });
 
     it("should successfully check password", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
 
       const response = await supertest(app)
         .post("/api/employees/check-password")
@@ -449,10 +504,7 @@ describe("Employee APIs", () => {
     });
 
     it("should fail on wrong password", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
       const wrongPassword = generatePassword();
       expect(employee.password).not.toBe(wrongPassword);
 
@@ -469,10 +521,7 @@ describe("Employee APIs", () => {
     });
 
     it("should successfully change password", async () => {
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
 
       const response = await supertest(app)
         .put("/api/employees/changePassword")
@@ -506,7 +555,7 @@ describe("Employee APIs", () => {
     it("should fail if requester is not authorized(ROLE)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const waiter = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_WAITER"
       );
 
@@ -522,7 +571,7 @@ describe("Employee APIs", () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const differentRestaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_MANAGER"
       );
 
@@ -537,7 +586,7 @@ describe("Employee APIs", () => {
     it("should successfully return list of restaurant's employees", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_MANAGER"
       );
 
@@ -558,7 +607,7 @@ describe("Employee APIs", () => {
 
     it("should fail if requester is not authenticated", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 
@@ -572,7 +621,7 @@ describe("Employee APIs", () => {
 
     it("should fail if requester is not authorized(ROLE)", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
       const user = await testHelpers.createUserWithMockedOtp();
@@ -587,7 +636,7 @@ describe("Employee APIs", () => {
 
     it("should successfully return an employee", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 
@@ -607,7 +656,7 @@ describe("Employee APIs", () => {
 
     it("should fail if requester is not authenticated", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 
@@ -623,7 +672,7 @@ describe("Employee APIs", () => {
 
     it("should fail if requester is not authorized(ROLE)", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
       const user = await testHelpers.createUserWithMockedOtp();
@@ -641,11 +690,11 @@ describe("Employee APIs", () => {
 
     it("should fail if requester is not authorized(ID)", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
       const differentEmployee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_OWNER"
       );
 
@@ -662,7 +711,7 @@ describe("Employee APIs", () => {
 
     it("should successfully update an employee", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 
@@ -686,7 +735,7 @@ describe("Employee APIs", () => {
     it("should fail if requester is not authenticated", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_MANAGER"
       );
 
@@ -703,7 +752,7 @@ describe("Employee APIs", () => {
     it("should fail if requester is not authorized(ROLE)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_WAITER"
       );
 
@@ -721,7 +770,7 @@ describe("Employee APIs", () => {
     it("should fail if requester is not authorized(RESTAURANTID)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_MANAGER"
       );
       const differentRestaurant = await testHelpers.createRestaurantWithOwner();
@@ -740,7 +789,7 @@ describe("Employee APIs", () => {
     it("should successfully update employee's role", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_MANAGER"
       );
 
@@ -764,7 +813,7 @@ describe("Employee APIs", () => {
     it("should fail if requester is not authenticated", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_MANAGER"
       );
 
@@ -779,7 +828,7 @@ describe("Employee APIs", () => {
     it("should fail if requester is not authorized(ROLE)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_WAITER"
       );
 
@@ -794,7 +843,7 @@ describe("Employee APIs", () => {
     it("should fail if requester is not authorized(RESTAURANTID)", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_MANAGER"
       );
       const differentRestaurant = await testHelpers.createRestaurantWithOwner();
@@ -810,7 +859,7 @@ describe("Employee APIs", () => {
     it("should successfully remove employee from the restaurant", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(
-        restaurant.data.id,
+        { restaurantId: restaurant.data.id },
         "RESTAURANT_MANAGER"
       );
 

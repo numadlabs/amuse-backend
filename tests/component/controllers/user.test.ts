@@ -45,10 +45,7 @@ describe("User APIs", () => {
 
     it("should fail if requester is not authorized", async () => {
       const user = await testHelpers.createUserWithMockedOtp();
-      const employee = await testHelpers.createEmployee(
-        null,
-        "RESTAURANT_OWNER"
-      );
+      const employee = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
 
       const response = await supertest(app)
         .put(`/api/users/${user.user.id}`)
@@ -166,7 +163,7 @@ describe("User APIs", () => {
 
     it("should fail if requester is not authorized", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
       const verificationCode = faker.number.int({ min: 1000, max: 9999 });
@@ -279,7 +276,7 @@ describe("User APIs", () => {
 
     it("should fail if requester is not authorized", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 
@@ -358,7 +355,7 @@ describe("User APIs", () => {
 
     it("should fail if requester is not authorized(ROLE)", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 
@@ -392,7 +389,7 @@ describe("User APIs", () => {
 
     it("should fail if requester is not authorized", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 
@@ -440,7 +437,7 @@ describe("User APIs", () => {
     });
 
     it("should successfully return the users' distinct locations", async () => {
-      const owner = await testHelpers.createEmployee(null, "RESTAURANT_OWNER");
+      const owner = await testHelpers.createEmployee({}, "RESTAURANT_OWNER");
 
       const response = await supertest(app)
         .get(`/api/users/locations`)
@@ -468,7 +465,7 @@ describe("User APIs", () => {
     it("should fail if requester is not authorized", async () => {
       const userId = faker.string.uuid();
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
 

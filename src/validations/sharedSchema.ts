@@ -4,32 +4,44 @@ import { BONUS_TYPE, ROLES } from "../types/db/enums";
 export const idSchema = z
   .object({ id: z.string().trim().uuid() })
   .strict("Unexpected field detected.");
+
 export const userIdSchema = z
   .object({ userId: z.string().trim().uuid() })
   .strict("Unexpected field detected.");
+
 export const userCardIdSchema = z
   .object({ userCardId: z.string().trim().uuid() })
   .strict("Unexpected field detected.");
+
 export const restaurantIdSchema = z
   .object({ restaurantId: z.string().trim().uuid() })
   .strict("Unexpected field detected.");
+
 export const bonusIdSchema = z
   .object({ bonusId: z.string().trim().uuid() })
   .strict("Unexpected field detected.");
+
 export const cardIdSchema = z
   .object({ cardId: z.string().trim().uuid() })
   .strict("Unexpected field detected.");
+
 export const userTierIdSchema = z
   .object({ userTierId: z.string().trim().uuid() })
   .strict("Unexpected field detected.");
+
 export const employeeIdSchema = z
   .object({ employeeId: z.string().trim().uuid() })
   .strict("Unexpected field detected.");
+
 export const bonusTypeSchema = z
-  .object({ type: z.nativeEnum(BONUS_TYPE) })
+  .object(
+    { type: z.nativeEnum(BONUS_TYPE) },
+    { message: "Invalid bonus type." }
+  )
   .strict("Unexpected field detected.");
+
 export const roleSchema = z
-  .object({ role: z.nativeEnum(ROLES) })
+  .object({ role: z.nativeEnum(ROLES) }, { message: "Invalid role." })
   .strict("Unexpected field detected.");
 
 export const paginationSchema = z.object({
@@ -39,7 +51,7 @@ export const paginationSchema = z.object({
     .regex(/^\d+$/)
     .transform(Number)
     .refine((val) => val > 0, {
-      message: "Page must be a positive number.",
+      message: "The page must be a positive number.",
     })
     .optional(),
   limit: z
@@ -48,7 +60,7 @@ export const paginationSchema = z.object({
     .regex(/^\d+$/)
     .transform(Number)
     .refine((val) => val > 0, {
-      message: "Limit must be a positive number.",
+      message: "The limit must be a positive number.",
     })
     .optional(),
 });
@@ -58,8 +70,8 @@ export const dashboardSchema = z
     location: z
       .string()
       .trim()
-      .min(1, "Location must be at least 1 character.")
-      .max(30, "Location must be at most 30 characters.")
+      .min(1, "The location must be at least 1 character long.")
+      .max(30, "The location must be at most 30 characters long.")
       .optional(),
     dayNo: z
       .string()
@@ -67,7 +79,7 @@ export const dashboardSchema = z
       .regex(/^\d+$/)
       .transform(Number)
       .refine((val) => val > 0, {
-        message: "Day number must be a positive number",
+        message: "The day number must be a positive number.",
       })
       .optional(),
   })
@@ -81,7 +93,8 @@ export const timeSchema = z.object({
     .regex(/^\d+$/)
     .transform(Number)
     .refine((val) => val > 0 && val <= 7, {
-      message: "pageSize must be a positive number",
+      message:
+        "The day number of the week must be a higher than or equal to 1 and lower than or equal to 7",
     }),
 });
 
@@ -92,8 +105,8 @@ export const queryFilterSchema = z
     search: z
       .string()
       .trim()
-      .min(1, "Search must be at least 1 character.")
-      .max(50, "Search must be at most 50 characters.")
+      .min(1, "The search parameter must be at least 1 character.")
+      .max(50, "The search parameter must be at most 50 characters.")
       .optional(),
   })
   .strict("Unexpected field detected.");
@@ -103,7 +116,7 @@ export const encryptedDataSchema = z
     encryptedData: z
       .string()
       .trim()
-      .min(5, "Encrypted data must be at least 5 characters.")
-      .max(255, "Encrypted data must be at most 255 characters."),
+      .min(5, "The encrypted data must be at least 5 characters.")
+      .max(255, "The encrypted data must be at most 255 characters."),
   })
   .strict("Unexpected field detected.");

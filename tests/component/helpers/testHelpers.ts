@@ -17,6 +17,8 @@ import { ROLES } from "../../../src/types/db/enums";
 import { db } from "../../../src/utils/db";
 import { userTierRepository } from "../../../src/repository/userTierRepository";
 import generatePassword from "./passwordGenerator";
+import { Updateable } from "kysely";
+import { Employee } from "../../../src/types/db/types";
 
 jest.mock("../../../src/repository/emailOtpRepository");
 
@@ -135,7 +137,7 @@ export const testHelpers = {
 
     return { data: restaurant, ownerAccessToken, card };
   },
-  createEmployee: async (restaurantId: string | null, role: ROLES) => {
+  createEmployee: async (data: Updateable<Employee>, role: ROLES) => {
     const password = generatePassword();
 
     const employee = await employeeRepository.create(db, {
@@ -143,7 +145,8 @@ export const testHelpers = {
       password: await encryptionHelper.encrypt(password),
       fullname: faker.company.name(),
       role: role,
-      restaurantId: restaurantId,
+      restaurantId: null,
+      ...data,
     });
 
     const accessToken = generateAccessToken({

@@ -65,6 +65,7 @@ export type EmailOtp = {
     verificationCode: string;
     isUsed: Generated<boolean>;
     createdAt: Generated<Timestamp>;
+    userAt: Timestamp | null;
 };
 export type Employee = {
     id: Generated<string>;
@@ -75,6 +76,8 @@ export type Employee = {
     createdAt: Generated<Timestamp>;
     email: string;
     isOnboarded: Generated<boolean>;
+    isActive: Generated<boolean>;
+    deletedAt: Timestamp | null;
     restaurantId: string | null;
 };
 export type Notification = {
@@ -137,7 +140,7 @@ export type User = {
     createdAt: Generated<Timestamp>;
     balance: Generated<number>;
     visitCount: Generated<number>;
-    email: string | null;
+    email: string;
     userTierId: string;
     countryId: string | null;
 };

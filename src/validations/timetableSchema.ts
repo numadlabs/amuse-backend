@@ -5,7 +5,7 @@ export const createTimetableSchema = z
     dayNoOfTheWeek: z
       .number()
       .int()
-      .positive("Day number of the week must be positive."),
+      .positive("Day number of the week must be a positive number."),
     opensAt: z.string().trim().time("Invalid time format.").optional(),
     closesAt: z.string().trim().time("Invalid time format.").optional(),
     isOffDay: z.boolean().optional(),
@@ -18,7 +18,7 @@ export const updateTimetableSchema = z
     dayNoOfTheWeek: z
       .number()
       .int()
-      .positive("Day number of the week must be positive.")
+      .positive("Day number of the week must be positive number.")
       .optional(),
     opensAt: z.string().trim().time("Invalid time format.").optional(),
     closesAt: z.string().trim().time("Invalid time format.").optional(),

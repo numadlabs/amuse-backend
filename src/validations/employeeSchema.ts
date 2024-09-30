@@ -7,11 +7,16 @@ export const createEmployeeSchema = z
       .string()
       .trim()
       .toLowerCase()
-      .min(6, "Email must be at least 6 characters.")
-      .max(254, "Email must be at most 254 characters.")
-      .email(),
-    fullname: z.string().trim().min(1).max(30).optional(),
-    role: z.nativeEnum(ROLES),
+      .min(6, "The email must be at least 6 characters long.")
+      .max(255, "The email can be a maximum of 255 characters long.")
+      .email("Invalid email format."),
+    fullname: z
+      .string()
+      .trim()
+      .min(1, "The name must be contain at least 1 character.")
+      .max(30, "The name must be contain at most 30 character.")
+      .optional(),
+    role: z.nativeEnum(ROLES, { message: "Invalid role." }),
     restaurantId: z.string().trim().uuid().optional(),
   })
   .strict("Unexpected field detected.");
@@ -21,8 +26,8 @@ export const updateEmployeeSchema = z
     fullname: z
       .string()
       .trim()
-      .min(1, "First name must be at least 1 character.")
-      .max(50, "First name must be at most 50 characters.")
+      .min(1, "The name must contain at least 1 character.")
+      .max(50, "The name must contain at most 50 characters.")
       .optional(),
   })
   .strict("Unexpected field detected.");
@@ -31,11 +36,11 @@ export const passwordSchema = z
   .object({
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters.")
-      .max(30, "Password must be at most 30 characters.")
+      .min(8, "The password must be at least 8 characters long.")
+      .max(30, "The password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+        "The password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })
   .strict("Unexpected field detected.");

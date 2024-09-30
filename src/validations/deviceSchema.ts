@@ -5,7 +5,7 @@ export const deviceSchema = z
     pushToken: z
       .string()
       .trim()
-      .min(5, "Push token must be at least 5 characters.")
-      .max(100, "Push token must be at most 100 characters."),
+      .min(5, "The push token must consist of at least 5 characters.")
+      .max(100, "The push token must consist of at most 100 characters."),
   })
   .strict("Unexpected field detected.");

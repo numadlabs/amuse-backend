@@ -7,13 +7,13 @@ export const loginSchema = z
       .string()
       .trim()
       .toLowerCase()
-      .min(6, "Email must be at least 6 characters.")
-      .max(254, "Email must be at most 254 characters.")
-      .email(),
+      .min(6, "The email must be at least 6 characters long.")
+      .max(255, "The email can be a maximum of 255 characters long.")
+      .email({ message: "Invalid email format." }),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters.")
-      .max(30, "Password must be at most 30 characters.")
+      .min(8, "The password must be at least 8 characters long.")
+      .max(30, "The password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
@@ -27,9 +27,9 @@ export const emailSchema = z
       .string()
       .trim()
       .toLowerCase()
-      .min(6, "Email must be at least 6 characters.")
-      .max(254, "Email must be at most 254 characters.")
-      .email(),
+      .min(6, "The email must be at least 6 characters long.")
+      .max(255, "The email can be a maximum of 255 characters long.")
+      .email({ message: "Invalid email format." }),
   })
   .strict("Unexpected field detected.");
 
@@ -39,10 +39,14 @@ export const otpSchema = z
       .string()
       .trim()
       .toLowerCase()
-      .min(6, "Email must be at least 6 characters.")
-      .max(254, "Email must be at most 254 characters.")
-      .email(),
-    verificationCode: z.number().int().lt(10000).gt(999),
+      .min(6, "The email must be at least 6 characters long.")
+      .max(255, "The email can be a maximum of 255 characters long.")
+      .email({ message: "Invalid email format." }),
+    verificationCode: z
+      .number()
+      .int()
+      .lt(10000, "The verification code must consist of exactly 4 digits.")
+      .gt(999, "The verification code must consist of exactly 4 digits."),
   })
   .strict("Unexpected field detected.");
 
@@ -52,27 +56,27 @@ export const registerSchema = z
       .string()
       .trim()
       .toLowerCase()
-      .min(6, "Email must be at least 6 characters.")
-      .max(254, "Email must be at most 254 characters.")
-      .email(),
+      .min(6, "The email must be at least 6 characters long.")
+      .max(255, "The email can be a maximum of 255 characters long.")
+      .email({ message: "Invalid email format." }),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters.")
-      .max(30, "Password must be at most 30 characters.")
+      .min(8, "The password must be at least 8 characters long.")
+      .max(30, "The password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+        "The password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     nickname: z
       .string()
       .trim()
-      .min(1, "Nickname must be at least 1 characters.")
-      .max(30, "Nickname must be at most 30 characters."),
+      .min(1, "The nickname must contain at least 1 character.")
+      .max(30, "The nickname must contain at most 30 characters."),
     verificationCode: z
       .number()
       .int()
-      .lt(10000, "Verification code must exactly consist of 4 digits.")
-      .gt(999, "Verification code must exactly consist of 4 digits."),
+      .lt(10000, "The verification code must consist of exactly 4 digits.")
+      .gt(999, "The verification code must consist of exactly 4 digits."),
   })
   .strict("Unexpected field detected.");
 
@@ -86,22 +90,22 @@ export const forgotPasswordSchema = z
       .string()
       .trim()
       .toLowerCase()
-      .min(6, "Email must be at least 6 characters.")
-      .max(254, "Email must be at most 254 characters.")
-      .email(),
+      .min(6, "The email must be at least 6 characters long.")
+      .max(255, "The email can be a maximum of 255 characters long.")
+      .email({ message: "Invalid email format." }),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters.")
-      .max(30, "Password must be at most 30 characters.")
+      .min(8, "The password must be at least 8 characters long.")
+      .max(30, "The password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+        "The password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     verificationCode: z
       .number()
       .int()
-      .lt(10000, "Verification code must exactly consist of 4 digits.")
-      .gt(999, "Verification code must exactly consist of 4 digits."),
+      .lt(10000, "The verification code must consist of exactly 4 digits.")
+      .gt(999, "The verification code must consist of exactly 4 digits."),
   })
   .strict("Unexpected field detected.");
 
@@ -109,19 +113,19 @@ export const changePasswordSchema = z
   .object({
     currentPassword: z
       .string()
-      .min(8, "Password must be at least 8 characters.")
-      .max(30, "Password must be at most 30 characters.")
+      .min(8, "The current password must be at least 8 characters long.")
+      .max(30, "The current password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+        "The password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
     newPassword: z
       .string()
-      .min(8, "Password must be at least 8 characters.")
-      .max(30, "Password must be at most 30 characters.")
+      .min(8, "The new password must be at least 8 characters long.")
+      .max(30, "The new password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+        "The password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })
   .strict("Unexpected field detected.");
@@ -130,11 +134,11 @@ export const checkPasswordSchema = z
   .object({
     currentPassword: z
       .string()
-      .min(8, "Password must be at least 8 characters.")
-      .max(30, "Password must be at most 30 characters.")
+      .min(8, "The current password must be at least 8 characters long.")
+      .max(30, "The current password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+        "The password must contain at least one uppercase letter, one lowercase letter, and one number."
       ),
   })
   .strict("Unexpected field detected.");

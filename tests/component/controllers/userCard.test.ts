@@ -23,7 +23,7 @@ describe("UserCard APIs", () => {
 
     it("should fail if requester is not authorized(ROLE)", async () => {
       const employee = await testHelpers.createEmployee(
-        null,
+        {},
         "RESTAURANT_MANAGER"
       );
       const cardId = faker.string.uuid();
