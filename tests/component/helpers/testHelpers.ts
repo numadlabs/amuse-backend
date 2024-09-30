@@ -1,7 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { emailOtpRepository } from "../../../src/repository/emailOtpRepository";
 import { userServices } from "../../../src/services/userServices";
-import { generateVerificationToken } from "../../../src/utils/jwt";
+import {
+  generateAccessToken,
+  generateVerificationToken,
+} from "../../../src/utils/jwt";
 import path from "path";
 import { restaurantServices } from "../../../src/services/restaurantServices";
 import { restaurantRepository } from "../../../src/repository/restaurantRepository";
@@ -84,9 +87,10 @@ export const testHelpers = {
       role: "RESTAURANT_OWNER",
       restaurantId: restaurant.id,
     });
-    const ownerAccessToken = (
-      await employeeServices.login(owner.email, ownerPassword)
-    ).accessToken;
+    const ownerAccessToken = generateAccessToken({
+      id: owner.id,
+      role: owner.role,
+    });
 
     return { data: restaurant, ownerAccessToken };
   },
@@ -115,9 +119,10 @@ export const testHelpers = {
       role: "RESTAURANT_OWNER",
       restaurantId: restaurant.id,
     });
-    const ownerAccessToken = (
-      await employeeServices.login(owner.email, ownerPassword)
-    ).accessToken;
+    const ownerAccessToken = generateAccessToken({
+      id: owner.id,
+      role: owner.role,
+    });
 
     const cardPayload = {
       benefits: faker.commerce.productDescription(),
@@ -141,8 +146,10 @@ export const testHelpers = {
       restaurantId: restaurantId,
     });
 
-    const accessToken = (await employeeServices.login(employee.email, password))
-      .accessToken;
+    const accessToken = generateAccessToken({
+      id: employee.id,
+      role: employee.role,
+    });
 
     return { employee, password, accessToken };
   },

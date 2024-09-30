@@ -52,7 +52,7 @@ function getErrorMessage(
   err: Error | CustomError | ZodError | MulterError
 ): string {
   if (err instanceof ZodError) {
-    return `Invalid ${err.errors[0].path.join(".")} input`;
+    return `${err.issues[0].message}`;
   }
   return err.message;
 }

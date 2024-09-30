@@ -1,5 +1,5 @@
 import { userRepository } from "../repository/userRepository";
-import { sendEmail } from "../lib/emailHelper";
+import { generateOtpMessage, sendEmail } from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import {
   extractVerification,
@@ -63,7 +63,10 @@ export const userServices = {
     emailOtp.isUsed = true;
     await emailOtpRepository.update(emailOtp.id, emailOtp);
 
-    const { accessToken, refreshToken } = generateTokens(user);
+    const { accessToken, refreshToken } = generateTokens({
+      id: user.id,
+      role: user.role,
+    });
 
     const sanitizedUser = hideSensitiveData(user, ["password"]) as Omit<
       User,
@@ -79,7 +82,10 @@ export const userServices = {
     const isUser = await encryptionHelper.compare(password, user.password);
     if (!isUser) throw new CustomError("Invalid login info.", 400);
 
-    const { accessToken, refreshToken } = generateTokens(user);
+    const { accessToken, refreshToken } = generateTokens({
+      id: user.id,
+      role: user.role,
+    });
 
     const sanitizedUser = hideSensitiveData(user, ["password"]);
 
@@ -99,19 +105,8 @@ export const userServices = {
     );
 
     const result = await db.transaction().execute(async (trx) => {
-      const isSent = await sendEmail(
-        "Amuse Bouche OTP",
-        `Your Amuse Bouche verification code is: ${randomNumber}
-
-This OTP will expire in 5 minutes, please complete the authentication process as soon as possible.
-
-If you didn't request this OTP, please ignore this email.
-
-Best regards,  
-The Amuse Bouche Team
-`,
-        email
-      );
+      const message = generateOtpMessage(randomNumber);
+      const isSent = await sendEmail("Amuse Bouche OTP", message, email);
       if (!isSent.accepted)
         throw new Error("Error has occured while sending the OTP.");
 

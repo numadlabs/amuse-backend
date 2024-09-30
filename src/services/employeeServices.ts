@@ -1,7 +1,11 @@
 import { Insertable, Updateable } from "kysely";
 import { CustomError } from "../exceptions/CustomError";
 import { verificationCodeConstants } from "../lib/constants";
-import { sendEmail } from "../lib/emailHelper";
+import {
+  generateCredententialsMessage,
+  generateOtpMessage,
+  sendEmail,
+} from "../lib/emailHelper";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { employeeRepository } from "../repository/employeeRepository";
 import {
@@ -50,21 +54,10 @@ export const employeeServices = {
     const hashedPassword = await encryptionHelper.encrypt(password);
 
     const result = await db.transaction().execute(async (trx) => {
+      const message = generateCredententialsMessage(data.email, password);
       await sendEmail(
-        "Welcome to Amuse Bouche – Your Login Details",
-        `
-Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
-  
-To get started, please use the following credentials to log in to your account:
-  
-Login Email: ${data.email}
-Password: ${password}
-  
-Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
-  
-Best regards,  
-The Amuse Bouche Team
-  `,
+        "Welcome to Amuse Bouche – Your Login Credentials",
+        message,
         data.email
       );
 
@@ -95,21 +88,10 @@ The Amuse Bouche Team
     const hashedPassword = await encryptionHelper.encrypt(password);
 
     const result = await db.transaction().execute(async (trx) => {
+      const message = generateCredententialsMessage(data.email, password);
       await sendEmail(
-        "Welcome to Amuse Bouche – Your Login Details",
-        `
-Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
-  
-To get started, please use the following credentials to log in to your account:
-  
-Login Email: ${data.email}
-Password: ${password}
-  
-Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
-  
-Best regards,  
-The Amuse Bouche Team
-  `,
+        "Welcome to Amuse Bouche – Your Login Credentials",
+        message,
         data.email
       );
 
@@ -139,6 +121,11 @@ The Amuse Bouche Team
   login: async (email: string, password: string) => {
     const employee = await employeeRepository.getByEmail(email);
     if (!employee) throw new CustomError("Employee not found.", 400);
+    if (!employee.restaurantId)
+      throw new CustomError(
+        "Please make sure you are added to a restaurant.",
+        400
+      );
 
     const isEmployee = await encryptionHelper.compare(
       password,
@@ -146,7 +133,10 @@ The Amuse Bouche Team
     );
 
     if (!isEmployee) throw new CustomError("Invalid login info.", 400);
-    const { accessToken, refreshToken } = generateTokens(employee);
+    const { accessToken, refreshToken } = generateTokens({
+      id: employee.id,
+      role: employee.role,
+    });
 
     const sanitizedEmployee = hideSensitiveData(employee, ["password"]) as Omit<
       Employee,
@@ -166,19 +156,8 @@ The Amuse Bouche Team
     );
 
     const result = await db.transaction().execute(async (trx) => {
-      const isSent = await sendEmail(
-        "Amuse Bouche OTP",
-        `Your Amuse Bouche verification code is: ${randomNumber}
-
-This OTP will expire in 5 minutes, please complete the authentication process as soon as possible.
-
-If you didn't request this OTP, please ignore this email.
-
-Best regards,  
-The Amuse Bouche Team
-`,
-        email
-      );
+      const message = generateOtpMessage(randomNumber);
+      const isSent = await sendEmail("Amuse Bouche OTP", message, email);
       if (!isSent.accepted)
         throw new Error("Error has occured while sending the OTP.");
 

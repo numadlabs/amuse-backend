@@ -62,7 +62,7 @@ app.use(rateLimiter);
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     message: "API - 👋🌎🌍",
-    version: "0.0.2",
+    version: "0.0.1",
   });
 });
 app.use("/api/auth", authRoutes);

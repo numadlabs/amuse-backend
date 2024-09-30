@@ -27,3 +27,32 @@ export async function sendEmail(
 
   return info;
 }
+
+export function generateOtpMessage(verificationCode: number) {
+  const message = `Your Amuse Bouche verification code is: ${verificationCode}.
+
+This one-time password (OTP) will expire in 5 minutes. Please complete the authentication process as soon as possible.
+
+If you did not request this OTP, kindly ignore this email.
+
+Best regards,  
+The Amuse Bouche Team`;
+
+  return message;
+}
+
+export function generateCredententialsMessage(email: string, password: string) {
+  const message = `Welcome to Amuse Bouche! We’re thrilled to have you join our team. Your restaurant owner has invited you to use our platform.
+  
+To get started, please use the following credentials to log in to your account:
+  
+Login Email: ${email}
+Password: ${password}
+  
+Thank you for joining Amuse Bouche. We’re here to support you every step of the way!
+  
+Best regards,  
+The Amuse Bouche Team`;
+
+  return message;
+}

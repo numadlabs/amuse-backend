@@ -69,7 +69,7 @@ describe("Employee APIs", () => {
       expect(response.body.success).toBe(false);
     });
 
-    it("should successfully register an employee", async () => {
+    it("should successfully create an employee", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       (sendEmail as jest.Mock).mockResolvedValue({ accepted: true });
 
@@ -124,7 +124,7 @@ describe("Employee APIs", () => {
       expect(response.body.success).toBe(false);
     });
 
-    it("should successfully login an employee", async () => {
+    it("should fail if employee does not belong to any restaurant", async () => {
       const employee = await testHelpers.createEmployee(
         null,
         "RESTAURANT_OWNER"
@@ -132,10 +132,24 @@ describe("Employee APIs", () => {
 
       const response = await supertest(app).post("/api/employees/login").send({
         email: employee.employee.email,
-        password: employee.password,
+        password: generatePassword(),
       });
 
-      console.log(response.body);
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it("should successfully login an employee", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const employee = await testHelpers.createEmployee(
+        restaurant.data.id,
+        "RESTAURANT_OWNER"
+      );
+
+      const response = await supertest(app).post("/api/employees/login").send({
+        email: employee.employee.email,
+        password: employee.password,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -397,8 +411,6 @@ describe("Employee APIs", () => {
           currentPassword: employee.password,
         });
 
-      console.log(response.body);
-
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
     });
@@ -469,8 +481,6 @@ describe("Employee APIs", () => {
           currentPassword: employee.password,
           newPassword: generatePassword(),
         });
-
-      console.log(response.body);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);

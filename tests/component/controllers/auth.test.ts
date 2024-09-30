@@ -282,10 +282,6 @@ describe("Auth APIs", () => {
       const refreshToken = generateRefreshToken({
         id: faker.string.uuid(),
         role: "USER",
-        email: faker.internet.email(),
-        userTierId: faker.string.uuid(),
-        password: generatePassword(),
-        nickname: faker.internet.userName(),
       });
 
       const response = await request(app).post("/api/auth/refreshToken").send({

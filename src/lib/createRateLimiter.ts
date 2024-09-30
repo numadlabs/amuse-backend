@@ -59,7 +59,6 @@ export function createRateLimiter(options: RateLimiterOptions) {
         throw new CustomError("Too Many Requests", 429);
       }
 
-      // Add X-RateLimit headers
       res.setHeader("X-RateLimit-Limit", limit);
       res.setHeader("X-RateLimit-Remaining", rateLimitInfo.remaining);
       res.setHeader("X-RateLimit-Reset", Math.floor(resetTime / 1000));

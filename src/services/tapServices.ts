@@ -52,7 +52,10 @@ export const tapServices = {
 
     if (!user) throw new CustomError("Invalid userId.", 400);
     if (!waiter || !waiter.restaurantId)
-      throw new CustomError("Invalid employeeId.", 400);
+      throw new CustomError(
+        "Please make sure you are added to a restaurant.",
+        400
+      );
 
     const userSocketId = await redis.get(`socket:${user.id}`);
 
@@ -123,7 +126,7 @@ export const tapServices = {
             });
 
           throw new CustomError(
-            `Please wait ${TAP_LOCK_TIME} hours before scanning again.`,
+            `The user has already checked in today. Please note that they must wait ${TAP_LOCK_TIME} hours from their last check-in before checking in again.`,
             400
           );
         }
