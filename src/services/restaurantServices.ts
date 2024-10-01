@@ -8,6 +8,8 @@ import { timetableRepository } from "../repository/timetableRepository";
 import { employeeRepository } from "../repository/employeeRepository";
 import { parseLatLong } from "../lib/locationParser";
 import { db } from "../utils/db";
+import { auditTrailRepository } from "../repository/auditTrailRepository";
+import { parseChangedFieldsFromObject } from "../lib/parseChangedFieldsFromObject";
 
 export const restaurantServices = {
   create: async (
@@ -17,7 +19,7 @@ export const restaurantServices = {
   ) => {
     const owner = await employeeRepository.getById(ownerId);
     if (!owner) throw new CustomError("Owner not found.", 400);
-    if (owner.restaurantId || owner.isOnboarded)
+    if (owner.restaurantId)
       throw new CustomError("You are not allowed to create restaurant.", 400);
 
     if (!data.googleMapsUrl)
@@ -90,6 +92,12 @@ export const restaurantServices = {
 
     await timetableRepository.create(timetable);
     await employeeRepository.update(ownerId, { restaurantId: restaurant.id });
+    await auditTrailRepository.create(db, {
+      tableName: "RESTAURANT",
+      operation: "INSERT",
+      data: updatedRestaurant,
+      updatedEmployeeId: owner.id,
+    });
 
     return updatedRestaurant;
   },
@@ -136,6 +144,18 @@ export const restaurantServices = {
         data
       );
 
+      const changedData = parseChangedFieldsFromObject(
+        restaurant,
+        updatedRestaurant
+      );
+
+      await auditTrailRepository.create(trx, {
+        tableName: "RESTAURANT",
+        operation: "UPDATE",
+        data: changedData,
+        updatedEmployeeId: issuer.id,
+      });
+
       return updatedRestaurant;
     });
 
@@ -179,6 +199,17 @@ export const restaurantServices = {
       restaurant.id,
       data
     );
+
+    const changedData = parseChangedFieldsFromObject(
+      restaurant,
+      updatedRestaurant
+    );
+    await auditTrailRepository.create(db, {
+      tableName: "RESTAURANT",
+      operation: "UPDATE",
+      data: changedData,
+      updatedEmployeeId: issuer.id,
+    });
 
     return updatedRestaurant;
   },

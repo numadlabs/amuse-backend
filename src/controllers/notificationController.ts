@@ -8,17 +8,16 @@ import { notificationRepository } from "../repository/notificationRepository";
 
 export const notificationController = {
   sendPushNotification: async (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
     try {
       const { message } = notificationSchema.parse(req.body);
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 401);
 
-      const devices = await deviceRepository.get();
-      if (devices.length === 0) throw new CustomError("No devices found.", 400);
-
-      const tickets = await notificationServices.send(devices, message);
+      const tickets = await notificationServices.send(message, req.user.id);
 
       return res.status(200).json({ success: true, data: tickets });
     } catch (e) {

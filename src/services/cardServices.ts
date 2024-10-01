@@ -1,14 +1,15 @@
 import { Insertable, Updateable } from "kysely";
 import { cardRepository } from "../repository/cardRepository";
 import { Card } from "../types/db/types";
-import { deleteFromS3, s3, uploadToS3 } from "../utils/aws";
+import { deleteFromS3, uploadToS3 } from "../utils/aws";
 import { randomUUID } from "crypto";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { CustomError } from "../exceptions/CustomError";
 import { config } from "../config/config";
 import { employeeRepository } from "../repository/employeeRepository";
-import { fi } from "@faker-js/faker";
 import { db } from "../utils/db";
+import { auditTrailRepository } from "../repository/auditTrailRepository";
+import { parseChangedFieldsFromObject } from "../lib/parseChangedFieldsFromObject";
 
 const s3BucketName = config.AWS_S3_BUCKET_NAME;
 
@@ -48,6 +49,13 @@ export const cardServices = {
 
     const updatedCard = await cardRepository.update(db, card.id, card);
 
+    await auditTrailRepository.create(db, {
+      tableName: "CARD",
+      operation: "INSERT",
+      data: updatedCard,
+      updatedEmployeeId: issuer.id,
+    });
+
     return updatedCard;
   },
   update: async (
@@ -80,6 +88,14 @@ export const cardServices = {
       }
 
       const updatedCard = await cardRepository.update(trx, card.id, data);
+
+      const changedData = parseChangedFieldsFromObject(card, updatedCard);
+      await auditTrailRepository.create(db, {
+        tableName: "CARD",
+        operation: "UPDATE",
+        data: changedData,
+        updatedEmployeeId: issuer.id,
+      });
     });
 
     return result;

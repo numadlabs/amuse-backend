@@ -5,6 +5,8 @@ import { CustomError } from "../exceptions/CustomError";
 import { bonusRepository } from "../repository/bonusRepository";
 import { db } from "../utils/db";
 import { employeeServices } from "./employeeServices";
+import { auditTrailRepository } from "../repository/auditTrailRepository";
+import { parseChangedFieldsFromObject } from "../lib/parseChangedFieldsFromObject";
 
 export const bonusServices = {
   create: async (data: Insertable<Bonus>, issuerId: string) => {
@@ -12,7 +14,7 @@ export const bonusServices = {
     const card = await cardRepository.getById(data.cardId);
     if (!card) throw new CustomError("Card not found.", 400);
 
-    const issuer = employeeServices.checkIfEligible(
+    const issuer = await employeeServices.checkIfEligible(
       issuerId,
       card.restaurantId
     );
@@ -27,13 +29,20 @@ export const bonusServices = {
 
     const bonus = await bonusRepository.create(data);
 
+    await auditTrailRepository.create(db, {
+      tableName: "BONUS",
+      operation: "INSERT",
+      data: bonus,
+      updatedEmployeeId: issuer.id,
+    });
+
     return bonus;
   },
   update: async (data: Updateable<Bonus>, id: string, issuerId: string) => {
     const bonus = await bonusRepository.getById(id);
     const card = await cardRepository.getById(bonus.cardId);
 
-    const issuer = employeeServices.checkIfEligible(
+    const issuer = await employeeServices.checkIfEligible(
       issuerId,
       card.restaurantId
     );
@@ -48,6 +57,14 @@ export const bonusServices = {
     }
 
     const updatedBonus = await bonusRepository.update(db, data, id);
+
+    const changedData = parseChangedFieldsFromObject(bonus, updatedBonus);
+    await auditTrailRepository.create(db, {
+      tableName: "BONUS",
+      operation: "UPDATE",
+      data: changedData,
+      updatedEmployeeId: issuer.id,
+    });
 
     return updatedBonus;
   },

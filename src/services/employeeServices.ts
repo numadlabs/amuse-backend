@@ -19,13 +19,15 @@ import { ROLES } from "../types/db/enums";
 import { emailOtpRepository } from "../repository/emailOtpRepository";
 import { hideSensitiveData } from "../lib/hideDataHelper";
 import { db } from "../utils/db";
+import { auditTrailRepository } from "../repository/auditTrailRepository";
+import { generateRandomPassword } from "../lib/generateRandomPassword";
 const crypto = require("crypto");
 
 const MAX = verificationCodeConstants.MAX_VALUE,
   MIN = verificationCodeConstants.MIN_VALUE;
 
 export const employeeServices = {
-  create: async (data: Insertable<Employee>, creatorId: string) => {
+  create: async (data: Insertable<Employee>, issuerId: string) => {
     if (data.role === "SUPER_ADMIN" || data.role === "USER")
       throw new CustomError("Could not the the role to the given one.", 400);
 
@@ -33,14 +35,14 @@ export const employeeServices = {
     if (emailCheck && emailCheck.isActive)
       throw new CustomError("Email has already been registed.", 400);
 
-    const creator = await employeeRepository.getById(creatorId);
-    if (!creator || creator.restaurantId !== data.restaurantId)
+    const issuer = await employeeRepository.getById(issuerId);
+    if (!issuer || issuer.restaurantId !== data.restaurantId)
       throw new CustomError(
         "You are not allowed to create employee for this restaurant.",
         400
       );
 
-    if (creator.role !== "RESTAURANT_OWNER" && data.role === "RESTAURANT_OWNER")
+    if (issuer.role !== "RESTAURANT_OWNER" && data.role === "RESTAURANT_OWNER")
       throw new CustomError("You are not allowed to do this action.", 400);
 
     if (!data.restaurantId)
@@ -49,8 +51,7 @@ export const employeeServices = {
     const restaurant = await restaurantRepository.getById(data.restaurantId);
     if (!restaurant) throw new CustomError("Restaurant not found.", 400);
 
-    const password =
-      crypto.randomBytes(16).toString("base64").slice(0, 16) + "12";
+    const password = generateRandomPassword();
     const hashedPassword = await encryptionHelper.encrypt(password);
 
     const result = await db.transaction().execute(async (trx) => {
@@ -64,12 +65,19 @@ export const employeeServices = {
       data.password = hashedPassword;
       const employee = await employeeRepository.create(trx, data);
 
+      await auditTrailRepository.create(trx, {
+        tableName: "EMPLOYEE",
+        operation: "INSERT",
+        data: employee,
+        updatedEmployeeId: issuer.id,
+      });
+
       return employee;
     });
 
     return result;
   },
-  createAsSuperAdmin: async (data: Insertable<Employee>) => {
+  createAsSuperAdmin: async (data: Insertable<Employee>, issuerId: string) => {
     if (data.role === "SUPER_ADMIN" || data.role === "USER")
       throw new CustomError("Error on the role input.", 400);
 
@@ -83,8 +91,7 @@ export const employeeServices = {
     if (emailCheck && emailCheck.isActive)
       throw new CustomError("Email has already been registed.", 400);
 
-    const password =
-      crypto.randomBytes(16).toString("base64").slice(0, 16) + "12";
+    const password = generateRandomPassword();
     const hashedPassword = await encryptionHelper.encrypt(password);
 
     const result = await db.transaction().execute(async (trx) => {
@@ -97,6 +104,12 @@ export const employeeServices = {
 
       data.password = hashedPassword;
       const employee = await employeeRepository.create(trx, data);
+      await auditTrailRepository.create(trx, {
+        tableName: "EMPLOYEE",
+        operation: "INSERT",
+        data: employee,
+        updatedEmployeeId: issuerId,
+      });
 
       return employee;
     });
@@ -309,6 +322,13 @@ export const employeeServices = {
     employeeToRemove.isActive = false;
     employeeToRemove.deletedAt = new Date();
     const employee = await employeeRepository.update(id, employeeToRemove);
+
+    await auditTrailRepository.create(db, {
+      tableName: "EMPLOYEE",
+      operation: "DELETE",
+      data: employee,
+      updatedEmployeeId: issuer.id,
+    });
 
     return employee;
   },

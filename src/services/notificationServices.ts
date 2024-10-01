@@ -2,9 +2,16 @@ import { Insertable } from "kysely";
 import { Device } from "../types/db/types";
 import { Expo, ExpoPushMessage } from "expo-server-sdk";
 import logger from "../config/winston";
+import { auditTrailRepository } from "../repository/auditTrailRepository";
+import { db } from "../utils/db";
+import { deviceRepository } from "../repository/deviceRepository";
+import { CustomError } from "../exceptions/CustomError";
 
 export const notificationServices = {
-  send: async (devices: Insertable<Device>[], message: string) => {
+  send: async (message: string, issuerId: string) => {
+    const devices = await deviceRepository.get();
+    if (devices.length === 0) throw new CustomError("No devices found.", 400);
+
     const expo = new Expo();
 
     let messages: ExpoPushMessage[] = [];
@@ -34,6 +41,12 @@ export const notificationServices = {
         logger.error(`Error sending push notification: ${error}`);
       }
     }
+
+    await auditTrailRepository.create(db, {
+      operation: "PUSH_NOTIFICATION",
+      data: message,
+      updatedEmployeeId: issuerId,
+    });
 
     return tickets;
   },

@@ -13,6 +13,8 @@ import {
   User,
   UserTier,
 } from "../types/db/types";
+import logger from "../config/winston";
+import { config } from "../config/config";
 
 const country: Insertable<Country>[] = [
   { name: "Afghanistan", alpha3: "AFG", countryCode: "004" },
@@ -1109,6 +1111,9 @@ export async function insertSeed() {
   await db.selectFrom("Device").execute();
   await db.selectFrom("Category").execute();
   await db.selectFrom("EmailOtp").execute();
+  await db.deleteFrom("BugReport").execute();
+  await db.deleteFrom("Notification").execute();
+  await db.deleteFrom("AuditTrail").execute();
 
   await db.insertInto("Country").values(country).returningAll().execute();
   await db.insertInto("Currency").values(currency).returningAll().execute();
@@ -1126,3 +1131,7 @@ export async function insertSeed() {
     .returningAll()
     .execute();
 }
+
+insertSeed().then(() =>
+  logger.info(`Inserted seed data to DB: ${config.NODE_ENV}`)
+);

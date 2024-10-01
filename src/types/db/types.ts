@@ -4,8 +4,16 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-import type { ROLES, BONUS_TYPE, TRANSACTION_TYPE, NOTIFICATION_TYPE } from "./enums";
+import type { ROLES, BONUS_TYPE, TRANSACTION_TYPE, NOTIFICATION_TYPE, AUDIT_TRAIL_TABLES, AUDIT_TRAIL_OPERATIONS } from "./enums";
 
+export type AuditTrail = {
+    id: Generated<string>;
+    tableName: AUDIT_TRAIL_TABLES | null;
+    operation: AUDIT_TRAIL_OPERATIONS;
+    data: unknown | null;
+    createdAt: Generated<Timestamp>;
+    updatedEmployeeId: string;
+};
 export type Bonus = {
     id: Generated<string>;
     name: string;
@@ -170,6 +178,7 @@ export type UserTier = {
     nextTierId: string | null;
 };
 export type DB = {
+    AuditTrail: AuditTrail;
     Bonus: Bonus;
     BugReport: BugReport;
     Card: Card;

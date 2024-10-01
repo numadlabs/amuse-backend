@@ -49,15 +49,20 @@ export const employeeController = {
     }
   },
   createAsSuperAdmin: async (
-    req: Request,
+    req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
     try {
       req.body = createEmployeeSchema.parse(req.body);
       const data: Insertable<Employee> = { ...req.body };
+      if (!req.user)
+        throw new CustomError("Could not retrieve info from the token.", 401);
 
-      const employee = await employeeServices.createAsSuperAdmin(data);
+      const employee = await employeeServices.createAsSuperAdmin(
+        data,
+        req.user.id
+      );
       return res.status(200).json({
         success: true,
         data: employee,

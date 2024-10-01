@@ -20,13 +20,9 @@ import employeeRouter from "./routes/employeeRoutes";
 import userTierRouter from "./routes/userTierRoutes";
 import categoryRouter from "./routes/categoryRoutes";
 import transactionRouter from "./routes/transactionRoutes";
-import { insertSeed } from "./seeders/main";
-import morgan from "morgan";
-import logger from "./config/winston";
 import { rateLimiter } from "./middlewares/rateLimiter";
 import { sizeLimitConstants } from "./lib/constants";
 import countryRouter from "./routes/countryRoutes";
-import { config } from "./config/config";
 import bugReportRouter from "./routes/bugReportRoutes";
 
 const app = express();
@@ -60,12 +56,10 @@ app.use(rateLimiter);
 // );
 
 app.get("/", async (req: Request, res: Response) => {
-  setTimeout(() => {
-    res.status(200).json({
-      message: "API - 👋🌎🌍",
-      version: "0.0.1",
-    });
-  }, 31000);
+  res.status(200).json({
+    message: "API - 👋🌎🌍",
+    version: "0.0.1",
+  });
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -90,8 +84,5 @@ app.use(notFound);
 app.use(errorHandler);
 
 updateCurrencyPrice();
-// insertSeed().then(() =>
-//   logger.info(`Inserted seed data to DB: ${config.NODE_ENV}`)
-// );
 
 export default app;

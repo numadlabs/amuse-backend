@@ -25,7 +25,7 @@ model User {
   createdAt      DateTime @default(now())
   balance        Float    @default(0)
   visitCount     Int      @default(0)
-  email          String  @unique
+  email          String   @unique
 
   userTierId   String
   countryId    String?
@@ -58,17 +58,18 @@ model Employee {
   Restaurant   Restaurant?    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   UserBonus    UserBonus[]
   Notification Notification[]
+  AuditTrail   AuditTrail[]
 
   @@index([email])
 }
 
 model EmailOtp {
-  id               String   @id @default(dbgenerated("gen_random_uuid()"))
+  id               String    @id @default(dbgenerated("gen_random_uuid()"))
   email            String
   verificationCode String
-  isUsed           Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  userAt DateTime?
+  isUsed           Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  userAt           DateTime?
 
   @@index([email])
 }
@@ -225,7 +226,7 @@ model Notification {
 
 model Currency {
   id        String    @id @default(dbgenerated("gen_random_uuid()"))
-  ticker    String @unique
+  ticker    String    @unique
   price     Float     @default(0)
   updatedAt DateTime? @default(now())
 
@@ -268,6 +269,17 @@ model BugReport {
   User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model AuditTrail {
+  id        String                 @id @default(dbgenerated("gen_random_uuid()"))
+  tableName AUDIT_TRAIL_TABLES?
+  operation AUDIT_TRAIL_OPERATIONS
+  data      Json?
+  createdAt DateTime               @default(now())
+
+  updatedEmployeeId String
+  updatedBy         Employee @relation(fields: [updatedEmployeeId], references: [id], onDelete: Cascade)
+}
+
 enum ROLES {
   SUPER_ADMIN
   RESTAURANT_OWNER
@@ -294,4 +306,20 @@ enum NOTIFICATION_TYPE {
   BONUS
   REWARD
   CARD
+}
+
+enum AUDIT_TRAIL_TABLES {
+  RESTAURANT
+  CARD
+  BONUS
+  CATEGORY
+  TIMETABLE
+  EMPLOYEE
+}
+
+enum AUDIT_TRAIL_OPERATIONS {
+  INSERT
+  UPDATE
+  DELETE
+  PUSH_NOTIFICATION
 }
