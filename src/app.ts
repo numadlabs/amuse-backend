@@ -24,6 +24,8 @@ import { rateLimiter } from "./middlewares/rateLimiter";
 import { sizeLimitConstants } from "./lib/constants";
 import countryRouter from "./routes/countryRoutes";
 import bugReportRouter from "./routes/bugReportRoutes";
+import { ipBlacklistMiddleware } from "./middlewares/blacklist";
+import blacklistRouter from "./routes/blacklistingRoutes";
 
 const app = express();
 
@@ -36,7 +38,9 @@ app.use(
   })
 );
 app.use(helmet());
+
 app.use(rateLimiter);
+app.use(ipBlacklistMiddleware);
 
 // const morganFormat = ":method :url :status :response-time ms";
 // app.use(
@@ -79,6 +83,7 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/transactions", transactionRouter);
 app.use("/api/countries", countryRouter);
 app.use("/api/bug-reports", bugReportRouter);
+app.use("/blacklist", blacklistRouter);
 
 app.use(notFound);
 app.use(errorHandler);

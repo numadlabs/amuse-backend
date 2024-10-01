@@ -768,13 +768,6 @@ const transaction: Insertable<Transaction>[] = [
 
 const employee: Insertable<Employee>[] = [
   {
-    fullname: "ADMIN",
-    role: "SUPER_ADMIN",
-    email: "admin@mara.com",
-    password: "$2b$10$dj1djRfiyHAojtEyXQV2UesGg2pwCntU/BoKP.7JV1wuhx9aQfMSu",
-    isOnboarded: true,
-  },
-  {
     role: "RESTAURANT_OWNER",
     email: "owner@fatcat.com",
     password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
