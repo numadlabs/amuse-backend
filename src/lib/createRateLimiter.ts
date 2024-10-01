@@ -25,7 +25,6 @@ export function createRateLimiter(options: RateLimiterOptions) {
     try {
       if (!req.ip && !req.socket.remoteAddress) {
         logger.warn("Client ip not found.");
-        throw new CustomError("Client ip not found.", 400);
       }
 
       const ip: string = req.ip || req.socket.remoteAddress || "unknown";
@@ -48,10 +47,12 @@ export function createRateLimiter(options: RateLimiterOptions) {
           const requestCount = results[2][1];
 
           if (requestCount > limit) {
-            throw new CustomError(
-              "You have exceeded the request limit, please try again in a moment.",
-              429
-            );
+            return res.status(429).json({
+              success: false,
+              data: null,
+              error:
+                "You have exceeded the request limit. Please try again in a few moment.",
+            });
           }
 
           res.setHeader("X-RateLimit-Limit", limit);
@@ -64,7 +65,7 @@ export function createRateLimiter(options: RateLimiterOptions) {
           next();
         });
     } catch (error) {
-      console.error("Rate limiting error:", error);
+      logger.error("Rate limiting error:", error);
       next(error);
     }
   };
