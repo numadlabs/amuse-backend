@@ -4,13 +4,6 @@ import logger from "../config/winston";
 import { config } from "../config/config";
 import { redis } from "../server";
 
-interface RateLimitInfo {
-  limit: number;
-  current: number;
-  remaining: number;
-  resetTime: number;
-}
-
 interface RateLimiterOptions {
   keyPrefix: string;
   limit: number;
@@ -29,46 +22,50 @@ export function createRateLimiter(options: RateLimiterOptions) {
       return next();
     }
 
-    const ip: string = req.ip || req.socket.remoteAddress || "unknown";
-    const key = `${keyPrefix}:${ip}`;
-
     try {
-      const multi = redis.multi();
-      multi.incr(key);
-      multi.expire(key, window);
-      const results = await multi.exec();
-
-      if (!results) {
-        throw new Error("Redis transaction failed");
+      if (!req.ip && !req.socket.remoteAddress) {
+        logger.warn("Client ip not found.");
+        throw new CustomError("Client ip not found.", 400);
       }
 
-      const [incrResult, expireResult] = results;
-      const count = incrResult[1] as number;
-
+      const ip: string = req.ip || req.socket.remoteAddress || "unknown";
+      const key = `${keyPrefix}${ip}`;
       const now = Date.now();
-      const resetTime = Math.ceil(now / 1000) * 1000 + window * 1000;
+      const windowStart = now - window * 1000;
 
-      const rateLimitInfo: RateLimitInfo = {
-        limit,
-        current: count,
-        remaining: Math.max(0, limit - count),
-        resetTime,
-      };
+      await redis
+        .multi()
+        .zadd(key, now, now)
+        .zremrangebyscore(key, "-inf", windowStart)
+        .zcard(key)
+        .pexpire(key, window * 1000)
+        .exec((err, results: any) => {
+          if (err) {
+            logger.error("Rate limiting error:", err);
+            return next(err);
+          }
 
-      if (count > limit) {
-        throw new CustomError(
-          "You have exceeded the request limit. Please try again in a few moments.",
-          429
-        );
-      }
+          const requestCount = results[2][1];
 
-      res.setHeader("X-RateLimit-Limit", limit);
-      res.setHeader("X-RateLimit-Remaining", rateLimitInfo.remaining);
-      res.setHeader("X-RateLimit-Reset", Math.floor(resetTime / 1000));
+          if (requestCount > limit) {
+            throw new CustomError(
+              "You have exceeded the request limit, please try again in a moment.",
+              429
+            );
+          }
 
-      next();
-    } catch (err) {
-      next(err);
+          res.setHeader("X-RateLimit-Limit", limit);
+          res.setHeader(
+            "X-RateLimit-Remaining",
+            Math.max(limit - requestCount, 0)
+          );
+          res.setHeader("X-RateLimit-Reset", Math.ceil(now / 1000) + window);
+
+          next();
+        });
+    } catch (error) {
+      console.error("Rate limiting error:", error);
+      next(error);
     }
   };
 }

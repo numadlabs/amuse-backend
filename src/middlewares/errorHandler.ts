@@ -24,7 +24,7 @@ export function errorHandler(
   const message = getErrorMessage(err);
   const userId = req.user?.id;
 
-  logError(statusCode, message, userId);
+  logError(statusCode, message, userId, err.stack);
 
   const errorResponse: ErrorResponse = {
     success: false,
@@ -57,8 +57,14 @@ function getErrorMessage(
   return err.message;
 }
 
-function logError(statusCode: number, message: string, userId?: string): void {
-  const logData = { message, userId };
+function logError(
+  statusCode: number,
+  message: string,
+  userId?: string,
+  stack?: string
+): void {
+  if (statusCode < 500) stack = undefined;
+  const logData = { message, userId, stack };
 
   if (statusCode >= 500) {
     logger.error(logData);
