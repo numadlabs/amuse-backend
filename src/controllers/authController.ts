@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { userServices } from "../services/userServices";
-import { verifyRefreshToken } from "../utils/jwt";
+import { verifyAccessToken, verifyRefreshToken } from "../utils/jwt";
 import { AuthenticatedRequest } from "../../custom";
 import { CustomError } from "../exceptions/CustomError";
 import { userRepository } from "../repository/userRepository";
 import {
+  accessTokenRequestSchema,
   changePasswordSchema,
   emailSchema,
   forgotPasswordSchema,
@@ -98,7 +99,11 @@ export const authController = {
       next(e);
     }
   },
-  refreshToken: async (req: Request, res: Response, next: NextFunction) => {
+  verifyRefreshToken: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { refreshToken } = refreshTokenSchema.parse(req.body);
 
@@ -179,6 +184,24 @@ export const authController = {
         data: {
           user: user,
         },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  verifyAccessToken: async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { accessToken } = accessTokenRequestSchema.parse(req.body);
+
+      const user = await verifyAccessToken(accessToken);
+
+      return res.status(200).json({
+        success: true,
+        data: { user },
       });
     } catch (e) {
       next(e);

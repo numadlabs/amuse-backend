@@ -80,6 +80,12 @@ export const registerSchema = z
   })
   .strict("Unexpected field detected.");
 
+export const accessTokenStringSchema = z.string().min(1).max(255);
+
+export const accessTokenRequestSchema = z.object({
+  accessToken: z.string().min(1).max(255),
+});
+
 export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1).max(255),
 });

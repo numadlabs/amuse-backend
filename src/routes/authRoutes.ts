@@ -16,7 +16,8 @@ authRoutes.post("/sendOTP", sendOtpRateLimiter, authController.sendOTP);
 authRoutes.post("/checkOTP", checkOtpRateLimiter, authController.checkOTP);
 authRoutes.post("/checkEmail", authController.checkEmail);
 authRoutes.post("/register", registerOtpRateLimiter, authController.register);
-authRoutes.post("/refreshToken", authController.refreshToken);
+authRoutes.post("/refresh-token", authController.verifyRefreshToken);
+authRoutes.post("/access-token", authController.verifyAccessToken);
 authRoutes.put(
   "/forgotPassword",
   forgotPasswordOtpRateLimiter,

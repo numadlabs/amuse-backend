@@ -265,12 +265,12 @@ describe("Auth APIs", () => {
     });
   });
 
-  describe("POST /api/auth/refreshToken", () => {
+  describe("POST /api/auth/refresh-token", () => {
     it("should fail on invalid refreshToken", async () => {
       const invalidToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJjZjlhZWFjLWIxNmMtNDg0Mi05OThkLWJmNzEyZjEyYjUyYSIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzIyOTU0OTUwLCJleHAiOjE3MjI5OTgxNTB9.0a2qwlPzBGBhyNNAFvUkauwjnX7ztJD69-bbVxuXqz8";
 
-      const response = await request(app).post("/api/auth/refreshToken").send({
+      const response = await request(app).post("/api/auth/refresh-token").send({
         refreshToken: invalidToken,
       });
 
@@ -284,7 +284,7 @@ describe("Auth APIs", () => {
         role: "USER",
       });
 
-      const response = await request(app).post("/api/auth/refreshToken").send({
+      const response = await request(app).post("/api/auth/refresh-token").send({
         refreshToken: refreshToken,
       });
 

@@ -1,8 +1,9 @@
 import { NextFunction, Response } from "express";
 import { AuthenticatedRequest, AuthenticatedUser } from "../../custom";
-import jwt from "jsonwebtoken";
 import { config } from "../config/config";
 import { CustomError } from "../exceptions/CustomError";
+import { verifyAccessToken } from "../utils/jwt";
+import { accessTokenStringSchema } from "../validations/authSchema";
 
 export function authenticateToken() {
   return async (
@@ -14,24 +15,17 @@ export function authenticateToken() {
       const jwtAuthSecret = config.JWT_ACCESS_SECRET;
       const authHeader = req.header("Authorization");
       const token = authHeader?.split(" ")[1];
+      const result = accessTokenStringSchema.safeParse(token);
 
       if (!jwtAuthSecret) {
         throw new CustomError("Server configuration error.", 500);
       }
 
-      if (!token) {
+      if (!result.data) {
         throw new CustomError("Authentication required.", 401);
       }
 
-      const user: AuthenticatedUser = await new Promise((resolve, reject) => {
-        jwt.verify(token, jwtAuthSecret, (err, decoded) => {
-          if (err)
-            reject(
-              new CustomError("Either auth token is invalid or expired.", 401)
-            );
-          else resolve(decoded as AuthenticatedUser);
-        });
-      });
+      const user: AuthenticatedUser = await verifyAccessToken(result.data);
 
       req.user = user;
       next();
