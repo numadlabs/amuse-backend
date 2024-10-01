@@ -27,13 +27,13 @@ model User {
   visitCount     Int      @default(0)
   email          String   @unique
 
-  userTierId   String
+  userTierId   String?
   countryId    String?
-  Country      Country?       @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  Country      Country?       @relation(fields: [countryId], references: [id], onDelete: SetNull)
   Notification Notification[]
   Tap          Tap[]
   Transaction  Transaction[]
-  Tier         UserTier       @relation(fields: [userTierId], references: [id])
+  Tier         UserTier?       @relation(fields: [userTierId], references: [id], onDelete: SetNull)
   UserBonus    UserBonus[]
   UserCard     UserCard[]
   Device       Device[]
@@ -82,7 +82,7 @@ model UserTier {
   nextTierId       String?
 
   User           User[]
-  nextTier       UserTier?  @relation("tierHierarchy", fields: [nextTierId], references: [id])
+  nextTier       UserTier?  @relation("tierHierarchy", fields: [nextTierId], references: [id], onDelete: Cascade)
   precedingTiers UserTier[] @relation("tierHierarchy")
 }
 
@@ -111,10 +111,10 @@ model Restaurant {
   rewardAmount  Float    @default(1)
   perkOccurence Int      @default(3)
 
-  categoryId  String
+  categoryId  String?
   Card        Card[]
   Employee    Employee[]
-  Category    Category      @relation(fields: [categoryId], references: [id])
+  Category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   Timetable   Timetable[]
   Transaction Transaction[]
 }
@@ -208,7 +208,7 @@ model UserBonus {
   Bonus      Bonus     @relation(fields: [bonusId], references: [id], onDelete: Cascade)
   UserCard   UserCard  @relation(fields: [userCardId], references: [id], onDelete: Cascade)
   User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Employee   Employee? @relation(fields: [waiterId], references: [id])
+  Employee   Employee? @relation(fields: [waiterId], references: [id], onDelete: SetNull)
 }
 
 model Notification {
@@ -221,7 +221,7 @@ model Notification {
   userId     String?
   employeeId String?
   User       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  Employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
 }
 
 model Currency {
@@ -276,8 +276,8 @@ model AuditTrail {
   data      Json?
   createdAt DateTime               @default(now())
 
-  updatedEmployeeId String
-  updatedBy         Employee @relation(fields: [updatedEmployeeId], references: [id], onDelete: Cascade)
+  updatedEmployeeId String?
+  updatedBy         Employee? @relation(fields: [updatedEmployeeId], references: [id], onDelete: SetNull)
 }
 
 enum ROLES {

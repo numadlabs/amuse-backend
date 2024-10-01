@@ -19,4 +19,13 @@ export const categoryRepository = {
 
     return categories;
   },
+  getById: async (id: string) => {
+    const category = await db
+      .selectFrom("Category")
+      .selectAll()
+      .where("Category.id", "=", id)
+      .executeTakeFirst();
+
+    return category;
+  },
 };

@@ -12,7 +12,7 @@ export type AuditTrail = {
     operation: AUDIT_TRAIL_OPERATIONS;
     data: unknown | null;
     createdAt: Generated<Timestamp>;
-    updatedEmployeeId: string;
+    updatedEmployeeId: string | null;
 };
 export type Bonus = {
     id: Generated<string>;
@@ -110,7 +110,7 @@ export type Restaurant = {
     balance: Generated<number>;
     rewardAmount: Generated<number>;
     perkOccurence: Generated<number>;
-    categoryId: string;
+    categoryId: string | null;
 };
 export type Tap = {
     id: Generated<string>;
@@ -149,7 +149,7 @@ export type User = {
     balance: Generated<number>;
     visitCount: Generated<number>;
     email: string;
-    userTierId: string;
+    userTierId: string | null;
     countryId: string | null;
 };
 export type UserBonus = {

@@ -10,6 +10,7 @@ import { parseLatLong } from "../lib/locationParser";
 import { db } from "../utils/db";
 import { auditTrailRepository } from "../repository/auditTrailRepository";
 import { parseChangedFieldsFromObject } from "../lib/parseChangedFieldsFromObject";
+import { categoryRepository } from "../repository/categoryRepository";
 
 export const restaurantServices = {
   create: async (
@@ -27,6 +28,11 @@ export const restaurantServices = {
     const { latitude, longitude } = parseLatLong(data.googleMapsUrl);
     if (!latitude || !longitude)
       throw new CustomError("Error parsing the latitude and longitude.", 400);
+
+    if (!data.categoryId)
+      throw new CustomError("Please provide a category.", 400);
+    const category = await categoryRepository.getById(data.categoryId);
+    if (!category) throw new CustomError("Invalid category.", 400);
 
     data.latitude = latitude;
     data.longitude = longitude;
