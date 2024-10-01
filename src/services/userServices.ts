@@ -110,8 +110,9 @@ export const userServices = {
       if (!isSent.accepted)
         throw new Error("Error has occured while sending the OTP.");
 
+      await emailOtpRepository.expireAllPreviousOtpsByEmail(trx, email);
       await emailOtpRepository.create(trx, {
-        email: email.toLowerCase(),
+        email: email,
         verificationCode: emailVerificationToken,
       });
     });

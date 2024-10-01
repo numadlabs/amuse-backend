@@ -59,11 +59,13 @@ app.use(rateLimiter);
 //   })
 // );
 
-app.get("/", (req: Request, res: Response) => {
-  res.status(200).json({
-    message: "API - 👋🌎🌍",
-    version: "0.0.1",
-  });
+app.get("/", async (req: Request, res: Response) => {
+  setTimeout(() => {
+    res.status(200).json({
+      message: "API - 👋🌎🌍",
+      version: "0.0.1",
+    });
+  }, 31000);
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

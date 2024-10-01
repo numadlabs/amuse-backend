@@ -56,7 +56,10 @@ export function createRateLimiter(options: RateLimiterOptions) {
       };
 
       if (count > limit) {
-        throw new CustomError("Too Many Requests", 429);
+        throw new CustomError(
+          "You have exceeded the request limit. Please try again in a few moments.",
+          429
+        );
       }
 
       res.setHeader("X-RateLimit-Limit", limit);

@@ -40,4 +40,17 @@ export const emailOtpRepository = {
 
     return emailOtp;
   },
+  expireAllPreviousOtpsByEmail: async (
+    db: Kysely<DB> | Transaction<DB>,
+    email: string
+  ) => {
+    const emailOtps = await db
+      .updateTable("EmailOtp")
+      .set({ isUsed: true })
+      .returningAll()
+      .where("EmailOtp.email", "=", email)
+      .execute();
+
+    return emailOtps;
+  },
 };
