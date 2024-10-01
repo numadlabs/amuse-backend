@@ -37,7 +37,7 @@ export const passwordSchema = z
     password: z
       .string()
       .min(8, "The password must be at least 8 characters long.")
-      .max(30, "The password can be a maximum of 30 characters long.")
+      .max(128, "The password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "The password must contain at least one uppercase letter, one lowercase letter, and one number."

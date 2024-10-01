@@ -2,8 +2,8 @@ import { createRateLimiter } from "../lib/createRateLimiter";
 
 export const rateLimiter = createRateLimiter({
   keyPrefix: "ratelimiter-global",
-  limit: 1000,
-  window: 60,
+  limit: 200,
+  window: 5 * 60,
 });
 
 export const authRateLimiter = createRateLimiter({

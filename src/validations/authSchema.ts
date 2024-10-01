@@ -13,7 +13,7 @@ export const loginSchema = z
     password: z
       .string()
       .min(8, "The password must be at least 8 characters long.")
-      .max(30, "The password can be a maximum of 30 characters long.")
+      .max(128, "The password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number."
@@ -62,7 +62,7 @@ export const registerSchema = z
     password: z
       .string()
       .min(8, "The password must be at least 8 characters long.")
-      .max(30, "The password can be a maximum of 30 characters long.")
+      .max(128, "The password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "The password must contain at least one uppercase letter, one lowercase letter, and one number."
@@ -96,7 +96,7 @@ export const forgotPasswordSchema = z
     password: z
       .string()
       .min(8, "The password must be at least 8 characters long.")
-      .max(30, "The password can be a maximum of 30 characters long.")
+      .max(128, "The password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "The password must contain at least one uppercase letter, one lowercase letter, and one number."
@@ -114,7 +114,7 @@ export const changePasswordSchema = z
     currentPassword: z
       .string()
       .min(8, "The current password must be at least 8 characters long.")
-      .max(30, "The current password can be a maximum of 30 characters long.")
+      .max(128, "The current password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "The password must contain at least one uppercase letter, one lowercase letter, and one number."
@@ -122,7 +122,7 @@ export const changePasswordSchema = z
     newPassword: z
       .string()
       .min(8, "The new password must be at least 8 characters long.")
-      .max(30, "The new password can be a maximum of 30 characters long.")
+      .max(128, "The new password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "The password must contain at least one uppercase letter, one lowercase letter, and one number."
@@ -135,7 +135,7 @@ export const checkPasswordSchema = z
     currentPassword: z
       .string()
       .min(8, "The current password must be at least 8 characters long.")
-      .max(30, "The current password can be a maximum of 30 characters long.")
+      .max(128, "The current password can be a maximum of 30 characters long.")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?!.*\s).+$/,
         "The password must contain at least one uppercase letter, one lowercase letter, and one number."
