@@ -17,6 +17,8 @@ export const ipBlacklistMiddleware = async (
   const clientIP = req.ip || req.socket.remoteAddress || "";
   logger.info(clientIP);
 
+  next();
+
   // try {
   //   const clientIP = req.ip || req.connection.remoteAddress || "";
 
