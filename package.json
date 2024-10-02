@@ -11,7 +11,8 @@
     "migrate:development": "npx prisma migrate dev",
     "migrate:staging": "dotenv -e .env.staging -- npx prisma migrate deploy",
     "migrate:production": "dotenv -e .env.production -- npx prisma migrate deploy",
-    "seed:development": "nodemon src/seeders/main.ts"
+    "seed:development": "nodemon src/seeders/main.ts",
+    "seed:staging": "dotenv -e .env.staging -- nodemon src/seeders/main.ts"
   },
   "author": "gombochir.dev@gmail.com",
   "license": "Proprietary",

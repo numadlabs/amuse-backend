@@ -1127,5 +1127,5 @@ export async function insertSeed() {
 }
 
 insertSeed().then(() =>
-  logger.info(`Inserted seed data to DB: ${config.NODE_ENV}`)
+  logger.info(`Inserted seed data to DB: ${config.PGDATABASE}`)
 );

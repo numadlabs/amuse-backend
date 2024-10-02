@@ -20,6 +20,6 @@ export const sizeLimitConstants = {
 };
 
 //IN NUMBER OF MINUTES
-export const TAP_LOCK_TIME = config.NODE_ENV === "production" ? 24 : 0.01;
+export const TAP_LOCK_TIME = config.NODE_ENV === "production" ? 24 : 0;
 
 export const BOOST_MULTIPLIER = 1.2;

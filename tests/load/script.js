@@ -3,11 +3,11 @@ import { check, sleep } from "k6";
 import ws from "k6/ws";
 import { SharedArray } from "k6/data";
 
-// const URL = "https://amuse-backend-staging-478fc2297634.herokuapp.com";
-// const SOCKETURL = `ws://amuse-backend-staging-478fc2297634.herokuapp.com/socket.io/?EIO=4&transport=websocket`;
+const URL = "https://amuse-backend-staging-478fc2297634.herokuapp.com";
+const SOCKETURL = `ws://amuse-backend-staging-478fc2297634.herokuapp.com/socket.io/?EIO=4&transport=websocket`;
 
-const URL = "http://localhost:3000";
-const SOCKETURL = `ws://localhost:3000/socket.io/?EIO=4&transport=websocket`;
+// const URL = "http://localhost:3000";
+// const SOCKETURL = `ws://localhost:3000/socket.io/?EIO=4&transport=websocket`;
 
 const users = new SharedArray("users data", function () {
   const fileContent = open("./auth-data.json");
@@ -22,8 +22,8 @@ const employees = new SharedArray("employees data", function () {
 });
 
 export const options = {
-  vus: 10,
-  duration: "30s",
+  vus: 20,
+  duration: "2m",
 };
 
 function pause() {
@@ -79,7 +79,7 @@ function generateEmail() {
 
 export default function () {
   const randomNumber = Math.random();
-  if (randomNumber > 0.5) userScenarios.loginAndAddCardAndTap;
+  if (randomNumber > 0.5) userScenarios.loginAndAddCardAndTap();
   else if (randomNumber > 0.35) userScenarios.loginAndFetch();
   else employeeScenarios.loginAndFetchDashboard();
 }
