@@ -17,6 +17,7 @@ export const db = new Kysely<DB>({
       user: config.PGUSER,
       password: config.PGPASSWORD,
       ssl: isSslEnabled,
+      max: 100,
     }),
   }),
 });

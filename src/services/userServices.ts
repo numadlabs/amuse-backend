@@ -77,10 +77,18 @@ export const userServices = {
   },
   login: async (email: string, password: string) => {
     const user = await userRepository.getByEmail(email);
-    if (!user) throw new CustomError("User not found.", 400);
+    if (!user)
+      throw new CustomError(
+        "Oops! We couldn't log you in. Please double-check your email and password and try again.",
+        400
+      );
 
     const isUser = await encryptionHelper.compare(password, user.password);
-    if (!isUser) throw new CustomError("Invalid login info.", 400);
+    if (!isUser)
+      throw new CustomError(
+        "Oops! We couldn't log you in. Please double-check your email and password and try again.",
+        400
+      );
 
     const { accessToken, refreshToken } = generateTokens({
       id: user.id,
