@@ -14,21 +14,24 @@ export const ipBlacklistMiddleware = async (
     return next();
   }
 
-  try {
-    const clientIP = req.ip || req.connection.remoteAddress || "";
+  const clientIP = req.ip || req.socket.remoteAddress || "";
+  logger.info(clientIP);
 
-    const isBlacklisted = await redis.sismember(BLACKLIST_SET, clientIP);
-    logger.info(clientIP);
+  // try {
+  //   const clientIP = req.ip || req.connection.remoteAddress || "";
 
-    if (isBlacklisted) {
-      return res
-        .status(403)
-        .json({ error: "Access denied. Your IP is blacklisted." });
-    }
+  //   const isBlacklisted = await redis.sismember(BLACKLIST_SET, clientIP);
+  //   logger.info(clientIP);
 
-    next();
-  } catch (error) {
-    logger.error("Error checking IP blacklist:", error);
-    next();
-  }
+  //   if (isBlacklisted) {
+  //     return res
+  //       .status(403)
+  //       .json({ error: "Access denied. Your IP is blacklisted." });
+  //   }
+
+  //   next();
+  // } catch (error) {
+  //   logger.error("Error checking IP blacklist:", error);
+  //   next();
+  // }
 };
