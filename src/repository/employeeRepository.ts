@@ -8,6 +8,8 @@ export const employeeRepository = {
       .selectFrom("Employee")
       .selectAll()
       .where("Employee.id", "=", id)
+      .where("Employee.isActive", "=", true)
+      .orderBy("Employee.createdAt desc")
       .executeTakeFirst();
 
     return employee;
@@ -51,6 +53,8 @@ export const employeeRepository = {
       .selectFrom("Employee")
       .selectAll()
       .where("Employee.email", "=", email)
+      .where("Employee.isActive", "=", true)
+      .orderBy("Employee.createdAt desc")
       .executeTakeFirst();
 
     return employee;

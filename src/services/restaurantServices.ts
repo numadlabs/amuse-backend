@@ -23,8 +23,6 @@ export const restaurantServices = {
     if (!owner) throw new CustomError("Owner not found.", 400);
     if (owner.restaurantId)
       throw new CustomError("You are not allowed to create restaurant.", 400);
-    if (!owner.isActive)
-      throw new CustomError("You are not allowed to create restaurant.", 400);
 
     if (!data.googleMapsUrl)
       throw new CustomError("Please provide an google maps url.", 400);

@@ -207,6 +207,32 @@ describe("Employee APIs", () => {
       expect(sendEmail).toHaveBeenCalledTimes(0);
     });
 
+    it("should successfully login an employee with existing inactive record", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwner();
+      const inactiveEmployee = await testHelpers.createEmployee(
+        {
+          restaurantId: restaurant.data.id,
+          isActive: false,
+          deletedAt: new Date(),
+        },
+        "RESTAURANT_WAITER"
+      );
+      const employee = await testHelpers.createEmployee(
+        {
+          restaurantId: restaurant.data.id,
+        },
+        "RESTAURANT_MANAGER"
+      );
+
+      const response = await supertest(app).post("/api/employees/login").send({
+        email: employee.employee.email,
+        password: employee.password,
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+
     it("should successfully login an employee", async () => {
       const restaurant = await testHelpers.createRestaurantWithOwner();
       const employee = await testHelpers.createEmployee(

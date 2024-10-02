@@ -119,7 +119,7 @@ export const employeeServices = {
     issuerId: string
   ) => {
     const checkExists = await employeeRepository.getById(id);
-    if (!checkExists) throw new CustomError("Invalid employeeId.", 400);
+    if (!checkExists) throw new CustomError("Invalid employee.", 400);
 
     if (issuerId !== checkExists.id)
       throw new CustomError("You are not allowed to do this action.", 400);
@@ -131,11 +131,6 @@ export const employeeServices = {
   login: async (email: string, password: string) => {
     const employee = await employeeRepository.getByEmail(email);
     if (!employee) throw new CustomError("Employee not found.", 400);
-    if (!employee.isActive)
-      throw new CustomError(
-        "Please make sure you are added to a restaurant.",
-        400
-      );
 
     const isEmployee = await encryptionHelper.compare(
       password,
