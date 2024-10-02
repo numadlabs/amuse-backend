@@ -87,12 +87,12 @@ export default function () {
 export const userScenarios = {
   loginAndAddCardAndTap: () => {
     //LOGIN
-    const userIndex = Math.floor(Math.random() * users.length);
+    const userIndex = Math.floor(Math.random() * 100) + 1;
     const user = requestHelper(
       "/auth/login",
       {
-        email: users[userIndex].email,
-        password: users[userIndex].password,
+        email: `${userIndex}@gmail.com`,
+        password: "Password12",
       },
       "POST",
       null
@@ -191,12 +191,12 @@ export const userScenarios = {
   },
   loginAndFetch: () => {
     //LOGIN
-    const userIndex = Math.floor(Math.random() * users.length);
+    const userIndex = Math.floor(Math.random() * users.length) + 1;
     const user = requestHelper(
       "/auth/login",
       {
-        email: users[userIndex].email,
-        password: users[userIndex].password,
+        email: `${userIndex}@gmail.com`,
+        password: "Password12",
       },
       "POST",
       null

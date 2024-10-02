@@ -852,7 +852,7 @@ export async function insertSeed() {
   for (let i = 1; i <= 100; i++) {
     user.push({
       email: `${i}@gmail.com`,
-      password: "Password12",
+      password: "$2a$10$KEGOMfobWRqrUd5q0/GegutaDrsNgG46w1D5UYIfIpiormJ4dHzaq",
       userTierId: "b2207e15-18ca-4a90-9fd0-88186443f2bd",
       nickname: `#${i} tester`,
     });
