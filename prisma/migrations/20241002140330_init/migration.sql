@@ -10,6 +10,12 @@ CREATE TYPE "TRANSACTION_TYPE" AS ENUM ('WITHDRAW', 'DEPOSIT', 'PURCHASE', 'REWA
 -- CreateEnum
 CREATE TYPE "NOTIFICATION_TYPE" AS ENUM ('TAP', 'BONUS', 'REWARD', 'CARD');
 
+-- CreateEnum
+CREATE TYPE "AUDIT_TRAIL_TABLES" AS ENUM ('RESTAURANT', 'CARD', 'BONUS', 'CATEGORY', 'TIMETABLE', 'EMPLOYEE');
+
+-- CreateEnum
+CREATE TYPE "AUDIT_TRAIL_OPERATIONS" AS ENUM ('INSERT', 'UPDATE', 'DELETE', 'PUSH_NOTIFICATION');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
@@ -22,8 +28,8 @@ CREATE TABLE "User" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "visitCount" INTEGER NOT NULL DEFAULT 0,
-    "email" TEXT,
-    "userTierId" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "userTierId" TEXT,
     "countryId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -39,6 +45,8 @@ CREATE TABLE "Employee" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "email" TEXT NOT NULL,
     "isOnboarded" BOOLEAN NOT NULL DEFAULT false,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "deletedAt" TIMESTAMP(3),
     "restaurantId" TEXT,
 
     CONSTRAINT "Employee_pkey" PRIMARY KEY ("id")
@@ -51,6 +59,7 @@ CREATE TABLE "EmailOtp" (
     "verificationCode" TEXT NOT NULL,
     "isUsed" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userAt" TIMESTAMP(3),
 
     CONSTRAINT "EmailOtp_pkey" PRIMARY KEY ("id")
 );
@@ -90,7 +99,7 @@ CREATE TABLE "Restaurant" (
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "rewardAmount" DOUBLE PRECISION NOT NULL DEFAULT 1,
     "perkOccurence" INTEGER NOT NULL DEFAULT 3,
-    "categoryId" TEXT NOT NULL,
+    "categoryId" TEXT,
 
     CONSTRAINT "Restaurant_pkey" PRIMARY KEY ("id")
 );
@@ -228,6 +237,32 @@ CREATE TABLE "Country" (
     CONSTRAINT "Country_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "BugReport" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "deviceModel" TEXT NOT NULL,
+    "appVersion" TEXT NOT NULL,
+    "osVersion" TEXT NOT NULL,
+    "reason" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "BugReport_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AuditTrail" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "tableName" "AUDIT_TRAIL_TABLES",
+    "operation" "AUDIT_TRAIL_OPERATIONS" NOT NULL,
+    "data" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedEmployeeId" TEXT,
+
+    CONSTRAINT "AuditTrail_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -235,34 +270,55 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE INDEX "User_email_idx" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Employee_email_key" ON "Employee"("email");
+CREATE INDEX "Employee_email_idx" ON "Employee"("email");
 
 -- CreateIndex
-CREATE INDEX "Employee_email_idx" ON "Employee"("email");
+CREATE INDEX "EmailOtp_email_idx" ON "EmailOtp"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Device_pushToken_key" ON "Device"("pushToken");
 
 -- CreateIndex
+CREATE INDEX "Device_pushToken_idx" ON "Device"("pushToken");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "UserCard_cardId_userId_key" ON "UserCard"("cardId", "userId");
 
--- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "Country"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "Currency_ticker_key" ON "Currency"("ticker");
+
+-- CreateIndex
+CREATE INDEX "Currency_ticker_idx" ON "Currency"("ticker");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Country_name_key" ON "Country"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Country_alpha3_key" ON "Country"("alpha3");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Country_countryCode_key" ON "Country"("countryCode");
+
+-- CreateIndex
+CREATE INDEX "Country_name_alpha3_countryCode_idx" ON "Country"("name", "alpha3", "countryCode");
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_userTierId_fkey" FOREIGN KEY ("userTierId") REFERENCES "UserTier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_countryId_fkey" FOREIGN KEY ("countryId") REFERENCES "Country"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_userTierId_fkey" FOREIGN KEY ("userTierId") REFERENCES "UserTier"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Employee" ADD CONSTRAINT "Employee_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserTier" ADD CONSTRAINT "UserTier_nextTierId_fkey" FOREIGN KEY ("nextTierId") REFERENCES "UserTier"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "UserTier" ADD CONSTRAINT "UserTier_nextTierId_fkey" FOREIGN KEY ("nextTierId") REFERENCES "UserTier"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Device" ADD CONSTRAINT "Device_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Restaurant" ADD CONSTRAINT "Restaurant_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Restaurant" ADD CONSTRAINT "Restaurant_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Timetable" ADD CONSTRAINT "Timetable_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -301,10 +357,16 @@ ALTER TABLE "UserBonus" ADD CONSTRAINT "UserBonus_waiterId_fkey" FOREIGN KEY ("w
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Notification" ADD CONSTRAINT "Notification_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "Employee"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_employeeId_fkey" FOREIGN KEY ("employeeId") REFERENCES "Employee"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "BugReport" ADD CONSTRAINT "BugReport_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuditTrail" ADD CONSTRAINT "AuditTrail_updatedEmployeeId_fkey" FOREIGN KEY ("updatedEmployeeId") REFERENCES "Employee"("id") ON DELETE SET NULL ON UPDATE CASCADE;
