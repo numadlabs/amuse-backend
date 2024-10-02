@@ -67,6 +67,7 @@ export const employeeRepository = {
         "Employee.isOnboarded",
       ])
       .where("Employee.restaurantId", "=", restaurantId)
+      .where("Employee.isActive", "=", true)
       .execute();
 
     return employee;
