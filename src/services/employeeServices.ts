@@ -35,18 +35,15 @@ export const employeeServices = {
     if (emailCheck && emailCheck.isActive)
       throw new CustomError("Email has already been registed.", 400);
 
-    const issuer = await employeeRepository.getById(issuerId);
-    if (!issuer || issuer.restaurantId !== data.restaurantId)
-      throw new CustomError(
-        "You are not allowed to create employee for this restaurant.",
-        400
-      );
-
-    if (issuer.role !== "RESTAURANT_OWNER" && data.role === "RESTAURANT_OWNER")
-      throw new CustomError("You are not allowed to do this action.", 400);
-
     if (!data.restaurantId)
       throw new CustomError("Please provide a restaurantId.", 400);
+
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      data.restaurantId
+    );
+    if (issuer.role !== "RESTAURANT_OWNER" && data.role === "RESTAURANT_OWNER")
+      throw new CustomError("You are not allowed to do this action.", 400);
 
     const restaurant = await restaurantRepository.getById(data.restaurantId);
     if (!restaurant) throw new CustomError("Restaurant not found.", 400);
@@ -230,28 +227,29 @@ export const employeeServices = {
     const employee = await employeeRepository.getById(employeeId);
     if (!employee) throw new CustomError("Employee does not exist.", 400);
 
+    if (!employee.isActive)
+      throw new CustomError("You have been removed from this team.", 400);
     if (!employee.restaurantId)
       throw new CustomError("You are not authorized to do this action.", 400);
-
     if (employee.restaurantId !== restaurantId)
       throw new CustomError("You are not authorized to do this action.", 400);
 
     return employee;
   },
   updateRole: async (role: ROLES, id: string, issuerId: string) => {
+    const employeeToUpdate = await employeeRepository.getById(id);
+    if (!employeeToUpdate || !employeeToUpdate.restaurantId)
+      throw new CustomError("Please select an valid employee.", 400);
     if (role === "SUPER_ADMIN" || role === "USER")
       throw new CustomError(
         "Could not update the employees role into the given one.",
         400
       );
 
-    const checkExists = await employeeRepository.getById(id);
-    if (!checkExists) throw new CustomError("Invalid employeeId.", 400);
-
-    const issuer = await employeeRepository.getById(issuerId);
-    if (!issuer || issuer.restaurantId !== checkExists.restaurantId)
-      throw new CustomError("You are not allowed to do this action.", 400);
-
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      employeeToUpdate.restaurantId
+    );
     if (issuer.role !== "RESTAURANT_OWNER" && role === "RESTAURANT_OWNER")
       throw new CustomError("You are not allowed to do this action.", 400);
 

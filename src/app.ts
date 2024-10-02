@@ -39,7 +39,7 @@ app.use(
 );
 app.use(helmet());
 
-// app.use(rateLimiter);
+app.use(rateLimiter);
 // app.use(ipBlacklistMiddleware);
 
 // const morganFormat = ":method :url :status :response-time ms";

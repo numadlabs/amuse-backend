@@ -10,6 +10,7 @@ import { employeeRepository } from "../repository/employeeRepository";
 import { db } from "../utils/db";
 import { auditTrailRepository } from "../repository/auditTrailRepository";
 import { parseChangedFieldsFromObject } from "../lib/parseChangedFieldsFromObject";
+import { employeeServices } from "./employeeServices";
 
 const s3BucketName = config.AWS_S3_BUCKET_NAME;
 
@@ -22,13 +23,10 @@ export const cardServices = {
     const restaurant = await restaurantRepository.getById(data.restaurantId);
     if (!restaurant) throw new CustomError("Invalid restaurantId", 400);
 
-    const issuer = await employeeRepository.getById(issuerId);
-    if (!issuer) throw new CustomError("Invalid issuerId", 400);
-    if (issuer.restaurantId !== data.restaurantId)
-      throw new CustomError(
-        "You are not authorized to create card for this restaurant",
-        400
-      );
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      restaurant.id
+    );
 
     const cardCheck = await cardRepository.getByRestaurantId(data.restaurantId);
     if (cardCheck.length > 0)
@@ -67,13 +65,10 @@ export const cardServices = {
     const card = await cardRepository.getById(id);
     if (!card) throw new CustomError("Invalid cardId", 400);
 
-    const issuer = await employeeRepository.getById(issuerId);
-    if (!issuer) throw new CustomError("Invalid issuerId", 400);
-    if (issuer.restaurantId !== card.restaurantId)
-      throw new CustomError(
-        "You are not authorized to create card for this restaurant",
-        400
-      );
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      card.restaurantId
+    );
 
     const result = await db.transaction().execute(async (trx) => {
       if (file && card.nftImageUrl) {

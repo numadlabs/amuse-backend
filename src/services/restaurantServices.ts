@@ -11,6 +11,7 @@ import { db } from "../utils/db";
 import { auditTrailRepository } from "../repository/auditTrailRepository";
 import { parseChangedFieldsFromObject } from "../lib/parseChangedFieldsFromObject";
 import { categoryRepository } from "../repository/categoryRepository";
+import { employeeServices } from "./employeeServices";
 
 export const restaurantServices = {
   create: async (
@@ -21,6 +22,8 @@ export const restaurantServices = {
     const owner = await employeeRepository.getById(ownerId);
     if (!owner) throw new CustomError("Owner not found.", 400);
     if (owner.restaurantId)
+      throw new CustomError("You are not allowed to create restaurant.", 400);
+    if (!owner.isActive)
       throw new CustomError("You are not allowed to create restaurant.", 400);
 
     if (!data.googleMapsUrl)
@@ -117,12 +120,10 @@ export const restaurantServices = {
     if (!restaurant)
       throw new CustomError("No restaurant found with the given id.", 400);
 
-    const issuer = await employeeRepository.getById(issuerId);
-    if (issuer?.restaurantId !== restaurant.id)
-      throw new CustomError(
-        "You are not allowed to create for this restaurant.",
-        400
-      );
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      restaurant.id
+    );
 
     if (data.googleMapsUrl) {
       const { latitude, longitude } = parseLatLong(data.googleMapsUrl);
@@ -187,18 +188,10 @@ export const restaurantServices = {
     if (!restaurant)
       throw new CustomError("No restaurant found with the given id.", 400);
 
-    const issuer = await employeeRepository.getById(issuerId);
-    if (issuer?.restaurantId !== restaurant.id)
-      throw new CustomError(
-        "You are not allowed to create for this restaurant.",
-        400
-      );
-
-    if (data.rewardAmount && data.rewardAmount <= 0)
-      throw new CustomError("Invalid rewardAmount.", 400);
-
-    if (data.perkOccurence && data.perkOccurence < 1)
-      throw new CustomError("Invalid perkOccurence.", 400);
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      restaurant.id
+    );
 
     const updatedRestaurant = await restaurantRepository.update(
       db,
