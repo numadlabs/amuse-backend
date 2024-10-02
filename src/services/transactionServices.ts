@@ -22,7 +22,10 @@ export const transactionServices = {
     const amount = data.amount / (currencies.btcPrice * currencies.tickerPrice);
 
     if (data.restaurantId) {
-      const restaurant = await restaurantRepository.getById(data.restaurantId);
+      const restaurant = await restaurantRepository.getById(
+        db,
+        data.restaurantId
+      );
       if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
       restaurant.balance += amount;
@@ -51,7 +54,10 @@ export const transactionServices = {
     const amount = data.amount / (currencies.btcPrice * currencies.tickerPrice);
 
     if (data.restaurantId) {
-      const restaurant = await restaurantRepository.getById(data.restaurantId);
+      const restaurant = await restaurantRepository.getById(
+        db,
+        data.restaurantId
+      );
       if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
       if (restaurant.balance < amount)
         throw new CustomError("Insufficient balance.", 400);

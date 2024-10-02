@@ -385,8 +385,8 @@ const country: Insertable<Country>[] = [
 ];
 
 const currency: Insertable<Currency>[] = [
-  { ticker: "BTC", price: 64403 },
-  { ticker: "EUR", price: 0.9178 },
+  { ticker: "BTC", price: 60778.22672328948 },
+  { ticker: "EUR", price: 0.9029 },
 ];
 
 const user: Insertable<User>[] = [];
@@ -488,7 +488,7 @@ const restaurant: Insertable<Restaurant>[] = [
       "https://www.google.com/maps/place/FAT+CAT+Downtown/@50.0811535,14.4207876,16z/data=!4m10!1m2!2m1!1sFAT+CAT!3m6!1s0x470b955b7e812c07:0x5d15b4ab301988cb!8m2!3d50.0811995!4d14.4285571!15sCgdGQVQgQ0FUWgkiB2ZhdCBjYXSSARRoYW1idXJnZXJfcmVzdGF1cmFudOABAA!16s%2Fg%2F11rsh51hd8?entry=ttu",
     latitude: 50.084178107862094,
     longitude: 14.424225962886798,
-    balance: 0.05,
+    balance: 0.054668,
     rewardAmount: 1,
     perkOccurence: 3,
     categoryId: "a60e9c84-ea9e-4b1b-b69f-bd8bb44d29d3",
@@ -499,7 +499,7 @@ const restaurant: Insertable<Restaurant>[] = [
 const transaction: Insertable<Transaction>[] = [
   {
     type: "DEPOSIT",
-    amount: 0.05,
+    amount: 0.054668,
     txid: "3a0b28909a47b6421dc2ed486a7bc7b7555ee88a94373b629f7eee5043ab1718",
     restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
   },
@@ -578,7 +578,7 @@ const card: Insertable<Card>[] = [
   {
     id: "d0c9ff27-88db-45e5-92dc-67917dd3d68f",
     nftUrl:
-      "https://basescan.org/token/0x1dE409fC7613C234655f566A2969dD8a862E38B4?a=75127",
+      "https://basescan.org/token/0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
     nftImageUrl: "6da21786-c93a-4b1a-bb44-921ed69a87eb",
     instruction:
       "Show your Amuse Bouche QR code to check in and unlock rewards with each visit.",
@@ -849,22 +849,22 @@ export async function insertSeed() {
   await db.deleteFrom("Notification").execute();
   await db.deleteFrom("AuditTrail").execute();
 
-  for (let i = 1; i <= 100; i++) {
-    user.push({
-      email: `${i}@gmail.com`,
-      password: "$2a$10$KEGOMfobWRqrUd5q0/GegutaDrsNgG46w1D5UYIfIpiormJ4dHzaq",
-      userTierId: "b2207e15-18ca-4a90-9fd0-88186443f2bd",
-      nickname: `#${i} tester`,
-    });
-  }
+  // for (let i = 1; i <= 100; i++) {
+  //   user.push({
+  //     email: `${i}@gmail.com`,
+  //     password: "$2a$10$KEGOMfobWRqrUd5q0/GegutaDrsNgG46w1D5UYIfIpiormJ4dHzaq",
+  //     userTierId: "b2207e15-18ca-4a90-9fd0-88186443f2bd",
+  //     nickname: `#${i} tester`,
+  //   });
+  // }
 
   await db.insertInto("Country").values(country).returningAll().execute();
   await db.insertInto("Currency").values(currency).returningAll().execute();
   await db.insertInto("UserTier").values(userTier).returningAll().execute();
-  await db.insertInto("User").values(user).returningAll().execute();
+  // await db.insertInto("User").values(user).returningAll().execute();
   await db.insertInto("Category").values(category).returningAll().execute();
   await db.insertInto("Restaurant").values(restaurant).returningAll().execute();
-  await db.insertInto("Employee").values(employee).returningAll().execute();
+  // await db.insertInto("Employee").values(employee).returningAll().execute();
   await db.insertInto("Timetable").values(timetable).returningAll().execute();
   await db.insertInto("Card").values(card).returningAll().execute();
   // await db.insertInto("Bonus").values(bonus).returningAll().execute();

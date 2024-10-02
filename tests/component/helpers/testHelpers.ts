@@ -89,6 +89,7 @@ export const testHelpers = {
       role: "RESTAURANT_OWNER",
       restaurantId: restaurant.id,
     });
+    if (!owner) throw new Error("Test error.");
     const ownerAccessToken = generateAccessToken({
       id: owner.id,
       role: owner.role,
@@ -121,6 +122,7 @@ export const testHelpers = {
       role: "RESTAURANT_OWNER",
       restaurantId: restaurant.id,
     });
+    if (!owner) throw new Error("Test error.");
     const ownerAccessToken = generateAccessToken({
       id: owner.id,
       role: owner.role,
@@ -148,6 +150,8 @@ export const testHelpers = {
       restaurantId: null,
       ...data,
     });
+
+    if (!employee) throw new Error("Test error.");
 
     const accessToken = generateAccessToken({
       id: employee.id,

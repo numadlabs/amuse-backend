@@ -6,6 +6,7 @@ import { userCardServices } from "../../../src/services/userCardServices";
 import { tapServices } from "../../../src/services/tapServices";
 import { tapRepository } from "../../../src/repository/tapRepository";
 import { faker } from "@faker-js/faker";
+import { db } from "../../../src/utils/db";
 
 describe("Tap APIs", () => {
   describe("POST /api/taps/generate", () => {
@@ -121,6 +122,7 @@ describe("Tap APIs", () => {
         });
 
       const restaurant = await restaurantRepository.getById(
+        db,
         createdRestaurant.data.id
       );
       expect(restaurant.balance < createdRestaurant.data.balance);

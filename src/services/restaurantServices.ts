@@ -114,7 +114,7 @@ export const restaurantServices = {
     file: Express.Multer.File,
     issuerId: string
   ) => {
-    const restaurant = await restaurantRepository.getById(id);
+    const restaurant = await restaurantRepository.getById(db, id);
     if (!restaurant)
       throw new CustomError("No restaurant found with the given id.", 400);
 
@@ -167,7 +167,7 @@ export const restaurantServices = {
     return result;
   },
   delete: async (id: string) => {
-    const restaurant = await restaurantRepository.getById(id);
+    const restaurant = await restaurantRepository.getById(db, id);
     if (!restaurant)
       throw new CustomError("No restaurant found with the given id.", 400);
 
@@ -182,7 +182,7 @@ export const restaurantServices = {
     data: Updateable<Restaurant>,
     issuerId: string
   ) => {
-    const restaurant = await restaurantRepository.getById(id);
+    const restaurant = await restaurantRepository.getById(db, id);
     if (!restaurant)
       throw new CustomError("No restaurant found with the given id.", 400);
 

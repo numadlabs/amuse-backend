@@ -83,7 +83,10 @@ export const tapRepository = {
 
     return taps;
   },
-  getLatestTapByUserId: async (userId: string) => {
+  getLatestTapByUserId: async (
+    db: Kysely<DB> | Transaction<DB>,
+    userId: string
+  ) => {
     const tap = await db
       .selectFrom("Tap")
       .innerJoin("UserCard", "UserCard.id", "Tap.userCardId")

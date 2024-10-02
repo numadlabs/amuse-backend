@@ -16,6 +16,7 @@ export const userCardServices = {
     const createdUserCard = await userCardReposity.create(userId, cardId);
 
     const restaurant = await restaurantRepository.getById(
+      db,
       isValidCard.restaurantId
     );
     await notificationRepository.create(db, {

@@ -15,7 +15,7 @@ export const restaurantRepository = {
 
     return restaurant;
   },
-  getById: async (id: string) => {
+  getById: async (db: Kysely<DB> | Transaction<DB>, id: string) => {
     const restaurant = await db
       .selectFrom("Restaurant")
       .where("Restaurant.id", "=", id)

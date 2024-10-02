@@ -58,6 +58,7 @@ export const userBonusServices = {
       await userRepository.update(trx, user.id, user);
 
       const restaurant = await restaurantRepository.getById(
+        trx,
         userCard.restaurantId
       );
       restaurant.balance += bonusPrice;
@@ -126,7 +127,10 @@ export const userBonusServices = {
         400
       );
 
-    const restaurant = await restaurantRepository.getById(waiter.restaurantId);
+    const restaurant = await restaurantRepository.getById(
+      db,
+      waiter.restaurantId
+    );
 
     userBonus.isUsed = true;
     userBonus.usedAt = new Date();
@@ -172,7 +176,7 @@ export const userBonusServices = {
 
     let followingBonus;
     if (bonuses.length > 0) {
-      const restaurant = await restaurantRepository.getById(restaurantId);
+      const restaurant = await restaurantRepository.getById(db, restaurantId);
       let index =
         Math.floor(userCard.visitCount / restaurant.perkOccurence) %
         bonuses.length;
@@ -199,11 +203,15 @@ export const userBonusServices = {
       throw new CustomError("You are not allowed to do this action.", 400);
 
     const bonuses = await bonusRepository.getByCardId(
+      db,
       userCard.cardId,
       "RECURRING"
     );
     const card = await cardRepository.getById(userCard.cardId);
-    const restaurant = await restaurantRepository.getById(card.restaurantId);
+    const restaurant = await restaurantRepository.getById(
+      db,
+      card.restaurantId
+    );
 
     let followingBonus;
     if (bonuses.length > 0) {

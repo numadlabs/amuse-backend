@@ -37,7 +37,11 @@ export const bonusRepository = {
 
     return bonus;
   },
-  getByCardId: async (cardId: string, type: BONUS_TYPE) => {
+  getByCardId: async (
+    db: Kysely<DB> | Transaction<DB>,
+    cardId: string,
+    type: BONUS_TYPE
+  ) => {
     const bonus = await db
       .selectFrom("Bonus")
       .where("Bonus.cardId", "=", cardId)
@@ -76,6 +80,7 @@ export const bonusRepository = {
     return bonus;
   },
   getByRestaurantIdAndVisitNo: async (
+    db: Kysely<DB> | Transaction<DB>,
     restaurantId: string,
     visitNo: number
   ) => {
@@ -112,7 +117,10 @@ export const bonusRepository = {
 
     return bonus;
   },
-  getAvailableBonusesByCardId: async (cardId: string) => {
+  getAvailableBonusesByCardId: async (
+    db: Kysely<DB> | Transaction<DB>,
+    cardId: string
+  ) => {
     const bonuses = await db
       .selectFrom("Bonus")
       .selectAll()

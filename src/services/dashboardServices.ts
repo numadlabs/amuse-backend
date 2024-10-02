@@ -6,6 +6,7 @@ import { tapRepository } from "../repository/tapRepository";
 import { transactionRepository } from "../repository/transactionRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userCardReposity } from "../repository/userCardRepository";
+import { db } from "../utils/db";
 import { employeeServices } from "./employeeServices";
 
 export const dashboardServices = {
@@ -16,7 +17,7 @@ export const dashboardServices = {
     location: string
   ) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
-    const restaurant = await restaurantRepository.getById(restaurantId);
+    const restaurant = await restaurantRepository.getById(db, restaurantId);
 
     const endDate = new Date();
     const startDate = calculateStartDate(dayNo, restaurant.createdAt);
@@ -37,7 +38,7 @@ export const dashboardServices = {
   ) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
 
-    const restaurant = await restaurantRepository.getById(restaurantId);
+    const restaurant = await restaurantRepository.getById(db, restaurantId);
 
     const endDate = new Date();
     const startDate = calculateStartDate(dayNo, restaurant.createdAt);
@@ -87,7 +88,7 @@ export const dashboardServices = {
   ) => {
     await employeeServices.checkIfEligible(employeeId, restaurantId);
 
-    const restaurant = await restaurantRepository.getById(restaurantId);
+    const restaurant = await restaurantRepository.getById(db, restaurantId);
 
     const endDate = new Date();
     const startDate = calculateStartDate(dayNo, restaurant.createdAt);

@@ -59,7 +59,10 @@ export const tapServices = {
 
     const userSocketId = await redis.get(`socket:${user.id}`);
 
-    const restaurant = await restaurantRepository.getById(waiter.restaurantId);
+    const restaurant = await restaurantRepository.getById(
+      db,
+      waiter.restaurantId
+    );
     if (!restaurant) throw new CustomError("Invalid restaurantId.", 400);
 
     const currencies = await currencyRepository.getByTickerWithBtc("EUR");
@@ -107,7 +110,7 @@ export const tapServices = {
         throw error;
       }
 
-      const tapCheck = await tapRepository.getLatestTapByUserId(user.id);
+      const tapCheck = await tapRepository.getLatestTapByUserId(trx, user.id);
       if (tapCheck) {
         const currentTime = new Date();
         const timeDifference =
@@ -135,15 +138,17 @@ export const tapServices = {
       let bonus = null;
       let hasRecurringBonus = true;
       const availableBonuses =
-        await bonusRepository.getAvailableBonusesByCardId(userCard.cardId);
+        await bonusRepository.getAvailableBonusesByCardId(trx, userCard.cardId);
       if (availableBonuses.length > 0) {
         const singleBonus = await bonusRepository.getByRestaurantIdAndVisitNo(
+          trx,
           restaurant.id,
           userCard.visitCount
         );
 
         if (!singleBonus) {
           const recurringBonuses = await bonusRepository.getByCardId(
+            trx,
             userCard.cardId,
             "RECURRING"
           );

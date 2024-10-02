@@ -33,7 +33,7 @@ export const employeeServices = {
 
     const emailCheck = await employeeRepository.getByEmail(data.email);
     if (emailCheck && emailCheck.isActive)
-      throw new CustomError("Email has already been registed.", 400);
+      throw new CustomError("Email has already been registered.", 400);
 
     if (!data.restaurantId)
       throw new CustomError("Please provide a restaurantId.", 400);
@@ -45,7 +45,10 @@ export const employeeServices = {
     if (issuer.role !== "RESTAURANT_OWNER" && data.role === "RESTAURANT_OWNER")
       throw new CustomError("You are not allowed to do this action.", 400);
 
-    const restaurant = await restaurantRepository.getById(data.restaurantId);
+    const restaurant = await restaurantRepository.getById(
+      db,
+      data.restaurantId
+    );
     if (!restaurant) throw new CustomError("Restaurant not found.", 400);
 
     const password = generateRandomPassword();

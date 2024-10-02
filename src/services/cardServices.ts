@@ -20,7 +20,10 @@ export const cardServices = {
     file: Express.Multer.File,
     issuerId: string
   ) => {
-    const restaurant = await restaurantRepository.getById(data.restaurantId);
+    const restaurant = await restaurantRepository.getById(
+      db,
+      data.restaurantId
+    );
     if (!restaurant) throw new CustomError("Invalid restaurantId", 400);
 
     const issuer = await employeeServices.checkIfEligible(
@@ -85,7 +88,7 @@ export const cardServices = {
       const updatedCard = await cardRepository.update(trx, card.id, data);
 
       const changedData = parseChangedFieldsFromObject(card, updatedCard);
-      await auditTrailRepository.create(db, {
+      await auditTrailRepository.create(trx, {
         tableName: "CARD",
         operation: "UPDATE",
         data: changedData,

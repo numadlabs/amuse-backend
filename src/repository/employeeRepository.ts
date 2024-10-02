@@ -30,9 +30,7 @@ export const employeeRepository = {
         "Employee.passwordUpdateAt",
         "Employee.isOnboarded",
       ])
-      .executeTakeFirstOrThrow(
-        () => new Error("Could not create the employee.")
-      );
+      .executeTakeFirst();
 
     return employee;
   },
