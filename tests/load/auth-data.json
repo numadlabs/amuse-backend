@@ -276,12 +276,6 @@
     },
     {
       "role": "RESTAURANT_WAITER",
-      "email": "waiter@fatcat.com",
-      "password": "Password12",
-      "restaurantId": "fecc7b97-bdbb-4d37-9790-963a56e26490"
-    },
-    {
-      "role": "RESTAURANT_WAITER",
       "email": "staff@fatcat.com",
       "password": "Password12",
       "restaurantId": "fecc7b97-bdbb-4d37-9790-963a56e26490"

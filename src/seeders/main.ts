@@ -396,7 +396,6 @@ const user: Insertable<User>[] = [
     nickname: "tester",
     role: "USER",
     profilePicture: null,
-
     createdAt: "2024-08-28T09:48:35.808Z",
     balance: 0.0,
     visitCount: 0,
@@ -779,12 +778,14 @@ const employee: Insertable<Employee>[] = [
     email: "manager@fatcat.com",
     password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
+    isOnboarded: true,
   },
   {
     role: "RESTAURANT_WAITER",
     email: "staff@fatcat.com",
     password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
+    isOnboarded: true,
   },
 ];
 
@@ -1111,7 +1112,7 @@ export async function insertSeed() {
   await db.insertInto("Country").values(country).returningAll().execute();
   await db.insertInto("Currency").values(currency).returningAll().execute();
   await db.insertInto("UserTier").values(userTier).returningAll().execute();
-  // await db.insertInto("User").values(user).returningAll().execute();
+  await db.insertInto("User").values(user).returningAll().execute();
   await db.insertInto("Category").values(category).returningAll().execute();
   await db.insertInto("Restaurant").values(restaurant).returningAll().execute();
   await db.insertInto("Employee").values(employee).returningAll().execute();

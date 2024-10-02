@@ -289,6 +289,8 @@ export const employeeServices = {
     if (!employeeToRemove) throw new CustomError("Invalid employeeId.", 400);
     if (!employeeToRemove.restaurantId)
       throw new CustomError("Employee does not belong to any restaurant.", 400);
+    if (employeeToRemove.id === issuerId)
+      throw new CustomError("You cannot remove yourself from the team.", 400);
 
     const issuer = await employeeServices.checkIfEligible(
       issuerId,
