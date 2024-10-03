@@ -20,12 +20,11 @@ import employeeRouter from "./routes/employeeRoutes";
 import userTierRouter from "./routes/userTierRoutes";
 import categoryRouter from "./routes/categoryRoutes";
 import transactionRouter from "./routes/transactionRoutes";
-import { rateLimiter } from "./middlewares/rateLimiter";
 import { sizeLimitConstants } from "./lib/constants";
 import countryRouter from "./routes/countryRoutes";
 import bugReportRouter from "./routes/bugReportRoutes";
-import { ipBlacklistMiddleware } from "./middlewares/blacklist";
 import blacklistRouter from "./routes/blacklistingRoutes";
+const { version } = require("../package.json");
 
 const app = express();
 
@@ -39,7 +38,7 @@ app.use(
 );
 app.use(helmet());
 
-app.use(rateLimiter);
+// app.use(rateLimiter);
 // app.use(ipBlacklistMiddleware);
 
 // const morganFormat = ":method :url :status :response-time ms";
@@ -62,7 +61,7 @@ app.use(rateLimiter);
 app.get("/", async (req: Request, res: Response) => {
   res.status(200).json({
     message: "API - 👋🌎🌍",
-    version: "0.0.1",
+    version: `${version}`,
   });
 });
 app.use("/api/auth", authRoutes);

@@ -120,3 +120,13 @@ export const encryptedDataSchema = z
       .max(255, "The encrypted data must be at most 255 characters."),
   })
   .strict("Unexpected field detected.");
+
+export const rateLimiterEmailSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(6, "The email must be at least 6 characters long.")
+    .max(255, "The email can be a maximum of 255 characters long.")
+    .email({ message: "Invalid email format." }),
+});
