@@ -1,6 +1,6 @@
 {
   "name": "amuse-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Amuse Bouche Backend",
   "main": "index.js",
   "scripts": {
