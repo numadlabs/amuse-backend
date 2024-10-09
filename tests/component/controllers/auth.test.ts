@@ -82,6 +82,44 @@ describe("Auth APIs", () => {
     });
   });
 
+  describe("POST /api/auth/google", () => {
+    beforeEach(async () => {
+      jest.clearAllMocks();
+    });
+
+    it("should fail on invalid token format", async () => {
+      const response = await request(app).post("/api/auth/login").send({
+        token: "invalidTokenFormat",
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it("should fail on invalid token", async () => {
+      const response = await request(app)
+        .post("/api/auth/login")
+        .send({
+          token: faker.string.alphanumeric(218),
+        });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it("should fail on expired token", async () => {
+      const expiredToken =
+        "ya29.a0AcM612xvVhrLA13XIz-R7useQEEljnCRvbrzbzRNtZp_tmiwXiCVdE2jmrhczCfOhTVnJu1okKPYBZTgn2JUjsCY1E69FFZ4Zs6jtsw-UgYj7dJyEd1OARxtjt0D1x-Kl-4SqFqzNviLwKGUQ4On_F3wY2JfanKGMf8aCgYKAbYSAQ8SFQHGX2MiO9tVlwHuzprCkuoijyThsQ0170";
+
+      const response = await request(app).post("/api/auth/login").send({
+        token: expiredToken,
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+  });
+
   describe("POST /api/auth/sendOTP", () => {
     beforeEach(async () => {
       jest.clearAllMocks();

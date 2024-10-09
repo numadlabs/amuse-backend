@@ -6,6 +6,7 @@ import { sendEmail } from "../../../src/lib/emailHelper";
 import { emailOtpRepository } from "../../../src/repository/emailOtpRepository";
 import { generateVerificationToken } from "../../../src/utils/jwt";
 import generatePassword from "../helpers/passwordGenerator";
+import logger from "../../../src/config/winston";
 
 jest.mock("../../../src/repository/emailOtpRepository");
 jest.mock("../../../src/lib/emailHelper");
@@ -132,6 +133,8 @@ describe("Employee APIs", () => {
           role: "RESTAURANT_WAITER",
           restaurantId: restaurant.data.id,
         });
+
+      logger.error(response.body);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);

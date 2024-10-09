@@ -1,4 +1,4 @@
-import { Insertable, sql } from "kysely";
+import { Insertable } from "kysely";
 import { encryptionHelper } from "../lib/encryptionHelper";
 import { restaurantRepository } from "../repository/restaurantRepository";
 import { tapRepository } from "../repository/tapRepository";
@@ -9,7 +9,6 @@ import { bonusRepository } from "../repository/bonusRepository";
 import { userBonusRepository } from "../repository/userBonusRepository";
 import { userRepository } from "../repository/userRepository";
 import { currencyRepository } from "../repository/currencyRepository";
-import { userTierRepository } from "../repository/userTierRepository";
 import { employeeRepository } from "../repository/employeeRepository";
 import { transactionRepository } from "../repository/transactionRepository";
 import { notificationRepository } from "../repository/notificationRepository";
@@ -22,6 +21,7 @@ import {
 import logger from "../config/winston";
 import { io, redis } from "../server";
 import { DatabaseError } from "pg";
+import { userCardServices } from "./userCardServices";
 
 const crypto = require("crypto");
 
@@ -68,32 +68,31 @@ export const tapServices = {
     const currencies = await currencyRepository.getByTickerWithBtc("EUR");
     let incrementBtc =
       restaurant.rewardAmount / (currencies.btcPrice * currencies.tickerPrice); // * tier.rewardMultiplier;
+
     // if (user.email && user.countryId && user.birthMonth && user.birthYear)
     //   incrementBtc *= BOOST_MULTIPLIER;
 
-    const userCard = await userCardReposity.getByUserIdRestaurantId(
+    let userCard = await userCardServices.addIfNotExists(
       user.id,
       restaurant.id
     );
 
-    if (!userCard) {
-      if (userSocketId) {
-        io.to(userSocketId).emit("tap-scan", {
-          isOwned: false,
-          isInTapLock: false,
-          data: {
-            restaurantId: restaurant.id,
-          },
-        });
+    // if (userSocketId) {
+    //   io.to(userSocketId).emit("tap-scan", {
+    //     isOwned: false,
+    //     isInTapLock: false,
+    //     data: {
+    //       restaurantId: restaurant.id,
+    //     },
+    //   });
 
-        logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
-      }
+    //   logger.info(`Emitted tap-scan to socket ID of ${userSocketId}`);
+    // }
 
-      throw new CustomError(
-        "Customer does not have a membership card for this restaurant.",
-        400
-      );
-    }
+    // throw new CustomError(
+    //   "Customer does not have a membership card for this restaurant.",
+    //   400
+    // );
 
     const notifications: Insertable<Notification>[] = [];
     const result = await db.transaction().execute(async (trx) => {
@@ -252,6 +251,7 @@ export const tapServices = {
         userCardId: userCard.id,
         userId: user.id,
         amount: incrementBtc,
+        employeeId: waiter.id,
       };
 
       await Promise.all([

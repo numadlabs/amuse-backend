@@ -33,4 +33,17 @@ export const userCardServices = {
     const deletedUserCard = await userCardReposity.delete(userCard.id);
     return deletedUserCard;
   },
+  addIfNotExists: async (userId: string, restaurantId: string) => {
+    const card = await cardRepository.getByRestaurantId(restaurantId);
+    let userCard = await userCardReposity.getByUserIdRestaurantId(
+      userId,
+      restaurantId
+    );
+
+    if (!userCard) {
+      userCard = await userCardReposity.create(userId, card[0].id);
+    }
+
+    return userCard;
+  },
 };

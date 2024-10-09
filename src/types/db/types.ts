@@ -118,6 +118,7 @@ export type Tap = {
     tappedAt: Generated<Timestamp>;
     userId: string;
     userCardId: string;
+    employeeId: string | null;
 };
 export type Timetable = {
     id: Generated<string>;

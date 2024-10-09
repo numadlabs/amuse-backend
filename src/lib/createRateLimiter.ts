@@ -21,9 +21,9 @@ export function createRateLimiterByEmail(options: RateLimiterOptions) {
     res: Response,
     next: NextFunction
   ) {
-    // if (config.NODE_ENV !== "production") {
-    //   return next();
-    // }
+    if (config.NODE_ENV === "test") {
+      return next();
+    }
 
     try {
       // if (!req.ip && !req.socket.remoteAddress) {

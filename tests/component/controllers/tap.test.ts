@@ -68,8 +68,8 @@ describe("Tap APIs", () => {
       expect(response.body.success).toBe(false);
     });
 
-    it("should fail if requester does not own the card", async () => {
-      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard();
+    it("should successfully add userCard and redeem a tap, if user does not own the card", async () => {
+      const restaurant = await testHelpers.createRestaurantWithOwnerAndCard(1);
       const user = await testHelpers.createUserWithMockedOtp();
       const encryptedData = await tapServices.generate(user.userId);
 
@@ -80,8 +80,8 @@ describe("Tap APIs", () => {
           encryptedData: encryptedData,
         });
 
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
     });
 
     it("should successfully redeem a tap on restaurant with 0 balance", async () => {
