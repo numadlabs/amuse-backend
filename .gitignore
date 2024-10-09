@@ -3,4 +3,5 @@ node_modules
 .env.prod
 .env.*
 .DS_STORE
+dist
 # Keep environment variables out of version control

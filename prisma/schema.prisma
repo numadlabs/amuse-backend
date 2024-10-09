@@ -16,7 +16,7 @@ datasource db {
 
 model User {
   id             String   @id @default(dbgenerated("gen_random_uuid()"))
-  password       String
+  password       String?
   nickname       String
   role           ROLES    @default(USER)
   profilePicture String?

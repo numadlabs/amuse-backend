@@ -139,7 +139,7 @@ export type Transaction = {
 };
 export type User = {
     id: Generated<string>;
-    password: string;
+    password: string | null;
     nickname: string;
     role: Generated<ROLES>;
     profilePicture: string | null;

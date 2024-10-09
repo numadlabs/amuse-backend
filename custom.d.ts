@@ -8,6 +8,12 @@ export interface AuthenticatedUser {
   exp: number;
 }
 
-export interface AuthenticatedRequest extends Request {
+interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser;
+}
+
+declare global {
+  namespace Express {
+    interface User extends AuthenticatedUser {}
+  }
 }

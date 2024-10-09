@@ -90,6 +90,10 @@ export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1).max(255),
 });
 
+export const googleTokenSchema = z.object({
+  token: z.string().min(150).max(300),
+});
+
 export const forgotPasswordSchema = z
   .object({
     email: z

@@ -24,7 +24,7 @@ import { sizeLimitConstants } from "./lib/constants";
 import countryRouter from "./routes/countryRoutes";
 import bugReportRouter from "./routes/bugReportRoutes";
 import blacklistRouter from "./routes/blacklistingRoutes";
-// const { version } = require("../package.json");
+const { version } = require("../package.json");
 
 const app = express();
 
@@ -61,7 +61,7 @@ app.use(helmet());
 app.get("/", async (req: Request, res: Response) => {
   res.status(200).json({
     message: "API - 👋🌎🌍",
-    version: `1.0.0`,
+    version: `${version}`,
   });
 });
 app.use("/api/auth", authRoutes);

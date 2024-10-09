@@ -30,4 +30,6 @@ authRoutes.put(
   authController.changePassword
 );
 
+authRoutes.post("/google", authController.signInByGoogle);
+
 export = authRoutes;

@@ -30,6 +30,7 @@ const envSchema = z.object({
   BITCOIN_API_KEY: z.string(),
   CURRENCY_API_URL: z.string(),
   REDIS_CONNECTION_STRING: z.string(),
+  OAUTH_GOOGLE_URL: z.string(),
 });
 
 let env = envSchema.safeParse(process.env);

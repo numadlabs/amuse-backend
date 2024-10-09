@@ -75,9 +75,44 @@ export const userServices = {
 
     return { user: sanitizedUser, accessToken, refreshToken };
   },
+  createUserIfNotExists: async (nickname: string, email: string) => {
+    const user = await userRepository.getByEmail(email);
+    if (user) {
+      const tokens = generateTokens({
+        id: user.id,
+        role: user.role,
+      });
+      const sanitizedUser = hideSensitiveData(user, ["password"]);
+
+      return {
+        user: sanitizedUser,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      };
+    }
+
+    const userTier = await userTierRepository.getStartingTier();
+    const createdUser = await userRepository.create({
+      email: email,
+      password: null,
+      nickname: nickname,
+      userTierId: userTier.id,
+    });
+    const tokens = generateTokens({
+      id: createdUser.id,
+      role: createdUser.role,
+    });
+    const sanitizedUser = hideSensitiveData(createdUser, ["password"]);
+
+    return {
+      user: sanitizedUser,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
+  },
   login: async (email: string, password: string) => {
     const user = await userRepository.getByEmail(email);
-    if (!user)
+    if (!user || !user.password)
       throw new CustomError(
         "Oops! We couldn't log you in. Please double-check your email and password and try again.",
         400
@@ -272,7 +307,7 @@ export const userServices = {
     newPassword: string
   ) => {
     const user = await userRepository.getUserById(id);
-    if (!user) throw new CustomError("User not found.", 400);
+    if (!user || !user.password) throw new CustomError("User not found.", 400);
 
     const isMatchingPassword = await encryptionHelper.compare(
       currentPassword,

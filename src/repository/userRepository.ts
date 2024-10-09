@@ -82,6 +82,7 @@ export const userRepository = {
       .insertInto("User")
       .values(data)
       .returningAll()
+      .onConflict((oc) => oc.column("email").doNothing())
       .executeTakeFirstOrThrow(() => new Error("Could not create the user."));
 
     return user;

@@ -9,11 +9,13 @@ import {
   changePasswordSchema,
   emailSchema,
   forgotPasswordSchema,
+  googleTokenSchema,
   loginSchema,
   otpSchema,
   refreshTokenSchema,
   registerSchema,
 } from "../validations/authSchema";
+import { getGoogleUserInfo } from "../lib/oauthHelper";
 
 export const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
@@ -205,6 +207,32 @@ export const authController = {
       });
     } catch (e) {
       next(e);
+    }
+  },
+  signInByGoogle: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { token } = googleTokenSchema.parse(req.body);
+
+      const googleUser = await getGoogleUserInfo(token);
+      if (!googleUser) throw new CustomError("Invalid Google token.", 400);
+
+      const result = await userServices.createUserIfNotExists(
+        googleUser.name!,
+        googleUser.email!
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          user: result.user,
+          auth: {
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
+          },
+        },
+      });
+    } catch (error) {
+      next(error);
     }
   },
 };

@@ -864,7 +864,7 @@ export async function insertSeed() {
   // await db.insertInto("User").values(user).returningAll().execute();
   await db.insertInto("Category").values(category).returningAll().execute();
   await db.insertInto("Restaurant").values(restaurant).returningAll().execute();
-  // await db.insertInto("Employee").values(employee).returningAll().execute();
+  await db.insertInto("Employee").values(employee).returningAll().execute();
   await db.insertInto("Timetable").values(timetable).returningAll().execute();
   await db.insertInto("Card").values(card).returningAll().execute();
   // await db.insertInto("Bonus").values(bonus).returningAll().execute();

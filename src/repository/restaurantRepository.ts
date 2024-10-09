@@ -21,7 +21,7 @@ export const restaurantRepository = {
       .where("Restaurant.id", "=", id)
       .selectAll()
       .executeTakeFirstOrThrow(
-        () => new CustomError("No restaurant found.", 404)
+        () => new CustomError("No restaurant found.", 400)
       );
 
     return restaurant;
@@ -93,7 +93,7 @@ export const restaurantRepository = {
           `.as("isOpen"),
       ])
       .executeTakeFirstOrThrow(
-        () => new CustomError("No restaurant found.", 404)
+        () => new CustomError("No restaurant found.", 400)
       );
 
     return restaurant;
