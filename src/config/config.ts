@@ -30,13 +30,23 @@ const envSchema = z.object({
   BITCOIN_API_KEY: z.string(),
   CURRENCY_API_URL: z.string(),
   REDIS_CONNECTION_STRING: z.string(),
-  OAUTH_GOOGLE_URL: z.string(),
+  OAUTH_GOOGLE_TOKEN_URL: z.string(),
+  OAUTH_GOOGLE_USER_INFO_URL: z.string(),
+  OAUTH_GOOGLE_WEB_CLIENT_ID: z.string(),
+  OAUTH_GOOGLE_WEB_CLIENT_SECRET: z.string(),
+  OAUTH_GOOGLE_WEB_REDIRECT_URI: z.string(),
+  OAUTH_GOOGLE_IOS_CLIENT_ID: z.string(),
+  OAUTH_GOOGLE_IOS_CLIENT_SECRET: z.string(),
+  OAUTH_GOOGLE_IOS_REDIRECT_URI: z.string(),
+  OAUTH_GOOGLE_ANDROID_CLIENT_ID: z.string(),
+  OAUTH_GOOGLE_ANDROID_CLIENT_SECRET: z.string(),
+  OAUTH_GOOGLE_ANDROID_REDIRECT_URI: z.string(),
 });
 
 let env = envSchema.safeParse(process.env);
 if (!env.success) {
   logger.error(
-    `Invalid environment variables: ${env.error.flatten().fieldErrors}`
+    `Invalid environment variables: ${env.error.issues[0].path}, ${env.error.issues[0].message}`
   );
   process.exit(1);
 }

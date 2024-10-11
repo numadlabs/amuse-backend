@@ -20,11 +20,9 @@ describe("Auth APIs", () => {
     });
 
     it("should fail on invalid email format", async () => {
-      const createdUser = await testHelpers.createUserWithMockedOtp();
-
       const response = await request(app).post("/api/auth/login").send({
         email: "invalidEmailFormat.com",
-        password: createdUser.password,
+        password: generatePassword(),
       });
 
       expect(response.statusCode).toBe(400);
@@ -37,6 +35,19 @@ describe("Auth APIs", () => {
       const response = await request(app).post("/api/auth/login").send({
         email: createdUser.user.email,
         password: "InvalidPasswordFormat",
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it("should fail on unexpected field", async () => {
+      const createdUser = await testHelpers.createUserWithMockedOtp();
+
+      const response = await request(app).post("/api/auth/login").send({
+        email: createdUser.user.email,
+        password: "InvalidPasswordFormat",
+        balance: "Unexpected",
       });
 
       expect(response.statusCode).toBe(400);
@@ -126,6 +137,15 @@ describe("Auth APIs", () => {
     });
 
     it("should fail on invalid email format", async () => {
+      const response = await request(app).post("/api/auth/sendOTP").send({
+        email: "invalidEmailFormat.com",
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    it("should fail on expected field", async () => {
       const response = await request(app).post("/api/auth/sendOTP").send({
         email: "invalidEmailFormat.com",
       });

@@ -118,8 +118,11 @@ export const userServices = {
         400
       );
 
-    const isUser = await encryptionHelper.compare(password, user.password);
-    if (!isUser)
+    const isValidPassword = await encryptionHelper.compare(
+      password,
+      user.password
+    );
+    if (!isValidPassword)
       throw new CustomError(
         "Oops! We couldn't log you in. Please double-check your email and password and try again.",
         400

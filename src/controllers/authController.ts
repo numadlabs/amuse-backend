@@ -9,13 +9,15 @@ import {
   changePasswordSchema,
   emailSchema,
   forgotPasswordSchema,
-  googleTokenSchema,
+  googleAuthCodeSchema,
   loginSchema,
   otpSchema,
   refreshTokenSchema,
   registerSchema,
 } from "../validations/authSchema";
-import { getGoogleUserInfo } from "../lib/oauthHelper";
+import { getGoogleUserInfo, verifyGoogleAuthCode } from "../lib/oauthHelper";
+import logger from "../config/winston";
+import { getGoogleOAuthConfig } from "../lib/getOAuthConfig";
 
 export const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
@@ -211,15 +213,27 @@ export const authController = {
   },
   signInByGoogle: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { token } = googleTokenSchema.parse(req.body);
+      const { code, appType } = googleAuthCodeSchema.parse(req.body);
 
-      const googleUser = await getGoogleUserInfo(token);
-      if (!googleUser) throw new CustomError("Invalid Google token.", 400);
+      const oauthConfig = getGoogleOAuthConfig(appType);
+
+      const isValidToken = await verifyGoogleAuthCode(code, oauthConfig);
+      if (!isValidToken?.accessToken || !isValidToken.idToken)
+        throw new CustomError("Invalid Google token.", 400);
+
+      const googleUser = await getGoogleUserInfo(isValidToken.accessToken);
+      if (!googleUser) throw new CustomError("Invalid Google user info.", 400);
+
+      if (!googleUser.verified_email) {
+        return res.status(403).send("Google account is not verified");
+      }
 
       const result = await userServices.createUserIfNotExists(
         googleUser.name!,
         googleUser.email!
       );
+
+      logger.info("Successfully signed in user by Google OAuth");
 
       return res.status(200).json({
         success: true,
