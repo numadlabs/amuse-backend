@@ -9,15 +9,14 @@ import {
   changePasswordSchema,
   emailSchema,
   forgotPasswordSchema,
-  googleAuthCodeSchema,
+  googleOAuthSchema,
   loginSchema,
   otpSchema,
   refreshTokenSchema,
   registerSchema,
 } from "../validations/authSchema";
-import { getGoogleUserInfo, verifyGoogleAuthCode } from "../lib/oauthHelper";
+import { verifyGoogleOauthIdToken } from "../lib/oauthHelper";
 import logger from "../config/winston";
-import { getGoogleOAuthConfig } from "../lib/getOAuthConfig";
 
 export const authController = {
   login: async (req: Request, res: Response, next: NextFunction) => {
@@ -213,24 +212,21 @@ export const authController = {
   },
   signInByGoogle: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { code, appType } = googleAuthCodeSchema.parse(req.body);
+      const { idToken } = googleOAuthSchema.parse(req.body);
 
-      const oauthConfig = getGoogleOAuthConfig(appType);
+      const isValidToken = await verifyGoogleOauthIdToken(idToken);
+      if (!isValidToken) throw new CustomError("Invalid Google idToken.", 400);
 
-      const isValidToken = await verifyGoogleAuthCode(code, oauthConfig);
-      if (!isValidToken?.accessToken || !isValidToken.idToken)
-        throw new CustomError("Invalid Google token.", 400);
-
-      const googleUser = await getGoogleUserInfo(isValidToken.accessToken);
-      if (!googleUser) throw new CustomError("Invalid Google user info.", 400);
-
-      if (!googleUser.verified_email) {
-        return res.status(403).send("Google account is not verified");
-      }
+      const payload = isValidToken.getPayload();
+      if (!payload?.email || !payload.name || !payload.email_verified)
+        throw new CustomError(
+          "Either email/name not provided or email is not verified.",
+          400
+        );
 
       const result = await userServices.createUserIfNotExists(
-        googleUser.name!,
-        googleUser.email!
+        payload.name,
+        payload.email
       );
 
       logger.info("Successfully signed in user by Google OAuth");

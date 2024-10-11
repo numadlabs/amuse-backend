@@ -64,6 +64,7 @@ app.get("/", async (req: Request, res: Response) => {
     version: `${version}`,
   });
 });
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/restaurants", restaurantRoutes);

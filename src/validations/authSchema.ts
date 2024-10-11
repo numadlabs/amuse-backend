@@ -90,9 +90,8 @@ export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1).max(255),
 });
 
-export const googleAuthCodeSchema = z.object({
-  code: z.string().min(50).max(150),
-  appType: z.string().min(3).max(10),
+export const googleOAuthSchema = z.object({
+  idToken: z.string().min(750).max(1500),
 });
 
 export const forgotPasswordSchema = z

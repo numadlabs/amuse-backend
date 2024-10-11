@@ -1,63 +1,24 @@
-import axios, { AxiosError } from "axios";
 import logger from "../config/winston";
 import { config } from "../config/config";
-import { GoogleOAuthConfig } from "./getOAuthConfig";
+import { OAuth2Client } from "google-auth-library";
 
-export async function verifyGoogleAuthCode(
-  authCode: string,
-  oauthConfig: GoogleOAuthConfig
-) {
+export async function verifyGoogleOauthIdToken(idToken: string) {
   try {
-    const tokenResponse = await axios.post(
-      config.OAUTH_GOOGLE_TOKEN_URL,
-      {
-        code: authCode,
-        client_id: oauthConfig.OAUTH_CLIENT_ID,
-        client_secret: oauthConfig.OAUTH_CLIENT_SECRET,
-        redirect_uri: oauthConfig.OAUTH_REDIRECT_URI,
-        grant_type: "authorization_code",
-      },
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
-    logger.info(
-      `Google verify google auth token response: ${tokenResponse.data}`
-    );
-    logger.info(
-      `Google verify google auth token response status: ${tokenResponse.status}`
-    );
+    const client = new OAuth2Client();
+    const CLIENT_IDs = [
+      config.OAUTH_GOOGLE_WEB_CLIENT_ID,
+      config.OAUTH_GOOGLE_IOS_CLIENT_ID,
+      config.OAUTH_GOOGLE_ANDROID_CLIENT_ID,
+    ];
 
-    const { access_token, id_token } = tokenResponse.data;
+    const ticket = await client.verifyIdToken({
+      idToken: idToken,
+      audience: CLIENT_IDs,
+    });
 
-    return { accessToken: access_token, idToken: id_token };
+    return ticket;
   } catch (e) {
-    logger.warn(`Error on google authorization code verification req: ${e}`);
-  }
-}
-
-export async function getGoogleUserInfo(accessToken: string) {
-  try {
-    const userInfoResponse = await axios.get(
-      config.OAUTH_GOOGLE_USER_INFO_URL,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    logger.info(`Google get user info response: ${userInfoResponse.data}`);
-    logger.info(
-      `Google verify google auth token response status: ${userInfoResponse.status}`
-    );
-
-    const userInfo = userInfoResponse.data;
-
-    return userInfo;
-  } catch (e) {
-    logger.warn(`Error on google get user info req: ${e}`);
+    logger.warn(`Google OAuth idToken verification error: ${e}`);
+    return false;
   }
 }
