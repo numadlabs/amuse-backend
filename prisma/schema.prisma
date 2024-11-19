@@ -38,6 +38,7 @@ model User {
   UserCard     UserCard[]
   Device       Device[]
   BugReport    BugReport[]
+  Order        Order[]
 
   @@index([email])
 }
@@ -60,6 +61,7 @@ model Employee {
   Notification Notification[]
   AuditTrail   AuditTrail[]
   Tap          Tap[]
+  Order        Order[]
 
   @@index([email])
 }
@@ -118,6 +120,7 @@ model Restaurant {
   Category    Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   Timetable   Timetable[]
   Transaction Transaction[]
+  Product    Product[]
 }
 
 model Category {
@@ -282,6 +285,132 @@ model AuditTrail {
 
   updatedEmployeeId String?
   updatedBy         Employee? @relation(fields: [updatedEmployeeId], references: [id], onDelete: SetNull)
+}
+
+//Added Models for restaurant menu and payment
+
+
+model Product {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  name        String
+  description String
+  price       Float
+  imageUrl    String?
+  productCategoryId  String?
+  status  PRODUCT_STATUS @default(AVAILABLE)
+  createdAt   DateTime @default(now())
+
+  restaurantId String
+
+  Restaurant  Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  Category ProductCategory? @relation(fields: [productCategoryId], references: [id], onDelete: SetNull)
+
+  OrderItem OrderItem[]
+}
+
+model ProductCategory {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  name        String @unique
+  createdAt   DateTime @default(now())
+
+  Product      Product[]
+}
+
+model Order {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  status      ORDER_STATUS @default(PENDING)
+  subtotal   Float @default(0)
+  tax       Float?
+  serviceCharge Float?
+  discount    Float?
+  total      Float @default(0)
+  notes      String?
+  tableNumber Int?
+  createdAt   DateTime @default(now())
+
+  userId String
+  employeeId String?
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Employee Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  OrderItem OrderItem[]
+  Payment   Payment[]
+}
+
+model OrderItem {
+  id          String   @id @default(dbgenerated("gen_random_uuid()"))
+  quantity    Int
+  price       Float
+  subtotal   Float
+  createdAt   DateTime @default(now())
+
+  productId String
+  orderId String?
+  Order   Order?  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  Product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id                String          @id @default(dbgenerated("gen_random_uuid()"))
+  invoiceNo         String          @unique
+  status            PAYMENT_STATUS   @default(REQUESTED)
+  orderId           String
+  errorDesc         String?
+  provider          PAYMENT_METHOD @default(QPAY)
+  totalAmount       Float
+  providerInvoiceNo String?
+  rewardReceived    Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @default(now())
+
+  order  Order  @relation(fields: [orderId], references: [id])
+}
+
+model PaymentLog {
+  id                    String @id @default(dbgenerated("gen_random_uuid()"))
+  invoiceNo             String
+  success               Int?
+  errorCode             String?
+  errorDesc             String?
+  cardNumber            String?
+  providerResponseCode  String?
+  providerResponseDesc  String?
+
+  @@map("PaymentLog")
+}
+
+enum ORDER_STATUS {
+  PENDING
+  SERVED
+  CANCELLED
+}
+
+enum PAYMENT_STATUS {
+  REQUESTED
+  APPROVED
+  DECLINED
+}
+
+enum PAYMENT_METHOD {
+  QPAY
+  CARD
+  METAMASK
+}
+
+enum EBARIMT_RECEIVER_TYPE {
+  CITIZEN
+  ORGINIZATION
+}
+
+enum PRODUCT_STATUS {
+  SOLD_OUT
+  AVAILABLE
+  INCOMING
+}
+
+enum PRODUCT_SIZE {
+  SMALL
+  MEDIUM
+  LARGE
 }
 
 enum ROLES {

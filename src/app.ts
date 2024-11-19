@@ -24,6 +24,9 @@ import { sizeLimitConstants } from "./lib/constants";
 import countryRouter from "./routes/countryRoutes";
 import bugReportRouter from "./routes/bugReportRoutes";
 import blacklistRouter from "./routes/blacklistingRoutes";
+import productRouter from "./routes/productRoutes";
+import productCategoryRouter from "./routes/productCategoryRoutes";
+import orderRouter from "./routes/orderRoutes";
 const { version } = require("../package.json");
 
 const app = express();
@@ -84,6 +87,9 @@ app.use("/api/transactions", transactionRouter);
 app.use("/api/countries", countryRouter);
 app.use("/api/bug-reports", bugReportRouter);
 app.use("/blacklist", blacklistRouter);
+app.use("/api/product", productRouter);
+app.use("/api/product-category", productCategoryRouter);
+app.use("/api/order/", orderRouter);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -7,6 +7,8 @@ import {
   Country,
   Currency,
   Employee,
+  Product,
+  ProductCategory,
   Restaurant,
   Timetable,
   Transaction,
@@ -494,6 +496,22 @@ const restaurant: Insertable<Restaurant>[] = [
     categoryId: "a60e9c84-ea9e-4b1b-b69f-bd8bb44d29d3",
     logo: "1714ebf9-a45a-4793-a7fc-86523815f7e6",
   },
+  {
+    id: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    name: "DG Restaurant",
+    description:
+      "Experience the heart of Prague at DG's Burgers & Craft Beer, where delicious gourmet burgers meet a curated selection of craft beers. Located in a lively, modern setting, it’s the perfect spot for a casual meal with friends or a night out. Come for the food, stay for the vibrant atmosphere.",
+    location: "Ulaanbaatar, Mongolia, Emerald Residence",
+    googleMapsUrl:
+      "https://www.google.com/maps/place/Emerald+Residence/@47.9060485,106.9335014,17z/data=!4m6!3m5!1s0x5d96922c3c3e7e47:0x47967a54597e4f5e!8m2!3d47.9060485!4d106.9359801!16s%2Fg%2F11c1t55h1d!5m1!1e1?entry=ttu&g_ep=EgoyMDI0MTExMy4xIKXMDSoASAFQAw%3D%3D",
+    latitude: 47.9060485,
+    longitude: 106.9335014,
+    balance: 0,
+    rewardAmount: 0,
+    perkOccurence: 0,
+    categoryId: "a60e9c84-ea9e-4b1b-b69f-bd8bb44d29d3",
+    logo: "1714ebf9-a45a-4793-a7fc-86523815f7e6",
+  },
 ];
 
 const transaction: Insertable<Transaction>[] = [
@@ -525,6 +543,13 @@ const employee: Insertable<Employee>[] = [
     email: "staff@fatcat.com",
     password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
     restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
+    isOnboarded: true,
+  },
+  {
+    role: "RESTAURANT_OWNER",
+    email: "owner@duki.com",
+    password: "$2a$10$PPHHrwYv0w81d/yhsVu0j.OF8o4y.YQ0fGDo5PL5RRmatr1lymr5y",
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
     isOnboarded: true,
   },
 ];
@@ -572,6 +597,48 @@ const timetable: Insertable<Timetable>[] = [
     opensAt: "07:00",
     closesAt: "23:00",
   },
+  {
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    dayNoOfTheWeek: 1,
+    opensAt: "07:00",
+    closesAt: "23:00",
+  },
+  {
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    dayNoOfTheWeek: 2,
+    opensAt: "07:00",
+    closesAt: "23:00",
+  },
+  {
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    dayNoOfTheWeek: 3,
+    opensAt: "07:00",
+    closesAt: "23:00",
+  },
+  {
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    dayNoOfTheWeek: 4,
+    opensAt: "07:00",
+    closesAt: "23:00",
+  },
+  {
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    dayNoOfTheWeek: 5,
+    opensAt: "07:00",
+    closesAt: "00:00",
+  },
+  {
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    dayNoOfTheWeek: 6,
+    opensAt: "07:00",
+    closesAt: "00:00",
+  },
+  {
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    dayNoOfTheWeek: 7,
+    opensAt: "07:00",
+    closesAt: "23:00",
+  },
 ];
 
 const card: Insertable<Card>[] = [
@@ -584,6 +651,44 @@ const card: Insertable<Card>[] = [
       "Show your Amuse Bouche QR code to check in and unlock rewards with each visit.",
     benefits: "Earn Bitcoin for every visit.",
     restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
+  },
+];
+
+const productCategory: Insertable<ProductCategory>[] = [
+  {
+    id: "85dcdda3-65bf-4604-9fc2-0866aebe1528",
+    name: "DRINK",
+  },
+  {
+    id: "46f06659-ddf8-4baf-8b71-7865338f6c14",
+    name: "DESSERT",
+  },
+  {
+    id: "631b8c15-524a-468c-9c73-bc449f505092",
+    name: "FOOD",
+  },
+];
+
+const product: Insertable<Product>[] = [
+  {
+    id: "d7579fa8-9084-4112-bfb1-5373361e5e06",
+    name: "Bazo",
+    description: "Bazo loves candies.",
+    price: 100.0,
+    imageUrl: "da913cea-a152-435a-bec0-cb094d88fd81",
+    status: "AVAILABLE",
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    productCategoryId: "85dcdda3-65bf-4604-9fc2-0866aebe1528",
+  },
+  {
+    id: "ae85fdd0-a47a-457a-8c61-728d2fdee98d",
+    name: "Dalai",
+    description: "Dalai loves candies.",
+    price: 50.0,
+    imageUrl: "474f9191-be66-46d8-816e-8abb930be4f0",
+    status: "AVAILABLE",
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+    productCategoryId: "85dcdda3-65bf-4604-9fc2-0866aebe1528",
   },
 ];
 
@@ -848,6 +953,12 @@ export async function insertSeed() {
   await db.deleteFrom("BugReport").execute();
   await db.deleteFrom("Notification").execute();
   await db.deleteFrom("AuditTrail").execute();
+  await db.deleteFrom("Product").execute();
+  await db.deleteFrom("ProductCategory").execute();
+  await db.deleteFrom("Order").execute();
+  await db.deleteFrom("OrderItem").execute();
+  await db.deleteFrom("Payment").execute();
+  await db.deleteFrom("PaymentLog").execute();
 
   // for (let i = 1; i <= 100; i++) {
   //   user.push({
@@ -873,8 +984,13 @@ export async function insertSeed() {
     .values(transaction)
     .returningAll()
     .execute();
+  await db
+    .insertInto("ProductCategory")
+    .values(productCategory)
+    .returningAll()
+    .execute();
+  await db.insertInto("Product").values(product).returningAll().execute();
 }
-
 insertSeed().then(() =>
   logger.info(`Inserted seed data to DB: ${config.PGDATABASE}`)
 );
