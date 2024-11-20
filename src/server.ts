@@ -9,7 +9,15 @@ import logger from "./config/winston";
 const server = createServer(app);
 const io = new Server(server);
 
-const redis = new Redis(config.REDIS_CONNECTION_STRING);
+const redis = new Redis(config.REDIS_CONNECTION_STRING, {
+  retryStrategy: (times) => {
+    return Math.min(times * 50, 2000);
+  },
+  maxRetriesPerRequest: 5,
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 const pubClient = redis.duplicate();
 const subClient = pubClient.duplicate();
 io.adapter(createAdapter(pubClient, subClient));
