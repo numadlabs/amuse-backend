@@ -4,7 +4,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   : ColumnType<T, T | undefined, T>;
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
-import type { ROLES, BONUS_TYPE, TRANSACTION_TYPE, NOTIFICATION_TYPE, AUDIT_TRAIL_TABLES, AUDIT_TRAIL_OPERATIONS } from "./enums";
+import type { ORDER_STATUS, PAYMENT_STATUS, PAYMENT_METHOD, EBARIMT_RECEIVER_TYPE, PRODUCT_STATUS, PRODUCT_SIZE, ROLES, BONUS_TYPE, TRANSACTION_TYPE, NOTIFICATION_TYPE, AUDIT_TRAIL_TABLES, AUDIT_TRAIL_OPERATIONS } from "./enums";
 
 export type AuditTrail = {
     id: Generated<string>;
@@ -96,6 +96,68 @@ export type Notification = {
     createdAt: Generated<Timestamp>;
     userId: string | null;
     employeeId: string | null;
+};
+export type Order = {
+    id: Generated<string>;
+    status: Generated<ORDER_STATUS>;
+    subtotal: Generated<number>;
+    tax: number | null;
+    serviceCharge: number | null;
+    discount: number | null;
+    total: Generated<number>;
+    notes: string | null;
+    tableNumber: number | null;
+    createdAt: Generated<Timestamp>;
+    userId: string;
+    employeeId: string | null;
+};
+export type OrderItem = {
+    id: Generated<string>;
+    quantity: number;
+    price: number;
+    subtotal: number;
+    createdAt: Generated<Timestamp>;
+    productId: string;
+    orderId: string | null;
+};
+export type Payment = {
+    id: Generated<string>;
+    invoiceNo: string;
+    status: Generated<PAYMENT_STATUS>;
+    orderId: string;
+    errorDesc: string | null;
+    provider: Generated<PAYMENT_METHOD>;
+    totalAmount: number;
+    providerInvoiceNo: string | null;
+    rewardReceived: Generated<boolean>;
+    createdAt: Generated<Timestamp>;
+    updatedAt: Generated<Timestamp>;
+};
+export type PaymentLog = {
+    id: Generated<string>;
+    invoiceNo: string;
+    success: number | null;
+    errorCode: string | null;
+    errorDesc: string | null;
+    cardNumber: string | null;
+    providerResponseCode: string | null;
+    providerResponseDesc: string | null;
+};
+export type Product = {
+    id: Generated<string>;
+    name: string;
+    description: string;
+    price: number;
+    imageUrl: string | null;
+    productCategoryId: string | null;
+    status: Generated<PRODUCT_STATUS>;
+    createdAt: Generated<Timestamp>;
+    restaurantId: string;
+};
+export type ProductCategory = {
+    id: Generated<string>;
+    name: string;
+    createdAt: Generated<Timestamp>;
 };
 export type Restaurant = {
     id: Generated<string>;
@@ -190,6 +252,12 @@ export type DB = {
     EmailOtp: EmailOtp;
     Employee: Employee;
     Notification: Notification;
+    Order: Order;
+    OrderItem: OrderItem;
+    Payment: Payment;
+    PaymentLog: PaymentLog;
+    Product: Product;
+    ProductCategory: ProductCategory;
     Restaurant: Restaurant;
     Tap: Tap;
     Timetable: Timetable;

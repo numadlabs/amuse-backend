@@ -1,3 +1,38 @@
+export const ORDER_STATUS = {
+    PENDING: "PENDING",
+    SERVED: "SERVED",
+    CANCELLED: "CANCELLED"
+} as const;
+export type ORDER_STATUS = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
+export const PAYMENT_STATUS = {
+    REQUESTED: "REQUESTED",
+    APPROVED: "APPROVED",
+    DECLINED: "DECLINED"
+} as const;
+export type PAYMENT_STATUS = (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS];
+export const PAYMENT_METHOD = {
+    QPAY: "QPAY",
+    CARD: "CARD",
+    METAMASK: "METAMASK"
+} as const;
+export type PAYMENT_METHOD = (typeof PAYMENT_METHOD)[keyof typeof PAYMENT_METHOD];
+export const EBARIMT_RECEIVER_TYPE = {
+    CITIZEN: "CITIZEN",
+    ORGINIZATION: "ORGINIZATION"
+} as const;
+export type EBARIMT_RECEIVER_TYPE = (typeof EBARIMT_RECEIVER_TYPE)[keyof typeof EBARIMT_RECEIVER_TYPE];
+export const PRODUCT_STATUS = {
+    SOLD_OUT: "SOLD_OUT",
+    AVAILABLE: "AVAILABLE",
+    INCOMING: "INCOMING"
+} as const;
+export type PRODUCT_STATUS = (typeof PRODUCT_STATUS)[keyof typeof PRODUCT_STATUS];
+export const PRODUCT_SIZE = {
+    SMALL: "SMALL",
+    MEDIUM: "MEDIUM",
+    LARGE: "LARGE"
+} as const;
+export type PRODUCT_SIZE = (typeof PRODUCT_SIZE)[keyof typeof PRODUCT_SIZE];
 export const ROLES = {
     SUPER_ADMIN: "SUPER_ADMIN",
     RESTAURANT_OWNER: "RESTAURANT_OWNER",
