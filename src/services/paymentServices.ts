@@ -13,23 +13,44 @@ import { PAYMENT_STATUS } from "../types/db/enums";
 import { userRepository } from "../repository/userRepository";
 import { paymentLogRepository } from "../repository/paymentLogRepository";
 import { randomUUID } from "crypto";
+import { orderServices } from "./orderServices";
+import { orderRepository } from "../repository/orderRepository";
 
 enum PAYMENT_RESPONSE_CODES {
   PAID = "PAID",
   DECLINED = "DECLINED",
 }
 export const paymentServices = {
-  createInvoice: async (invoice: any) => {
+  createInvoice: async (orderId: string) => {
+    const { order } = await orderServices.getOrderById(orderId);
+    if (!order) {
+      throw new CustomError("Order not found.", 404);
+    }
+    const existingPayment = await paymentRepository.getPaymentByOrderId(
+      order.id
+    );
+    if (existingPayment) {
+      if (
+        existingPayment.status === "DECLINED" ||
+        existingPayment.status === "REQUESTED"
+      ) {
+        await paymentRepository.delete(existingPayment.id);
+      } else {
+        throw new CustomError("Payment is already done.", 400);
+      }
+    }
+
     const invoiceNo = randomUUID();
-    const { code, ...restInvoice } = invoice;
-    const payment = await paymentRepository.create({
-      invoiceNo,
-      ...restInvoice,
-    });
+    const data: Insertable<Payment> = {
+      totalAmount: order.total,
+      orderId: order.id,
+      invoiceNo: invoiceNo,
+    };
+
+    const payment = await paymentRepository.create(data);
 
     const paymentParams = await generate({
-      invoiceNo,
-      ...restInvoice,
+      ...data,
       amount: payment.totalAmount,
     });
 
@@ -41,12 +62,24 @@ export const paymentServices = {
     }
     return { ...paymentParams, invoiceNo: `${invoiceNo}` };
   },
-  verifyInvoice: async (verificationData: any) => {
+  verifyInvoice: async (orderId: string, issuerId: string) => {
     // TODO optimize verification steps
-    const { invoiceNo } = verificationData;
-    const payment = await paymentRepository.getPaymentByInvoiceNo(
-      `${invoiceNo}`
-    );
+    const order = await orderRepository.getById(orderId);
+    if (!order) throw new CustomError("Order not found.", 404);
+
+    if (order.userId !== issuerId) {
+      throw new CustomError(
+        "You are not authorized to confirm this payment.",
+        403
+      );
+    }
+
+    const payment = await paymentRepository.getPaymentByOrderId(orderId);
+    if (!payment) throw new CustomError("Payment not found.", 404);
+    const invoiceNo = payment.invoiceNo;
+    const provider = "QPAY";
+    if (!invoiceNo) throw new CustomError("Invoice not found.", 404);
+
     const paymentLog = await paymentLogRepository.create({
       invoiceNo: `${invoiceNo}`,
     });

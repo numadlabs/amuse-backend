@@ -78,7 +78,7 @@ export async function generate(transactionData) {
     const response = await axios.post(URL, body, { headers });
     const invoiceData = response.data;
     return {
-      providerInvoiceNo: invoiceData.id,
+      providerInvoiceNo: invoiceData.invoice_id,
       ...invoiceData,
     };
   } catch (e) {
@@ -93,7 +93,7 @@ export async function verify({ invoiceNo }) {
   const URL = `${QPAY_V2_URL}/payment/check`;
   const body = {
     object_type: "INVOICE",
-    object_id: paymentInfo.invoiceNo,
+    object_id: paymentInfo.providerInvoiceNo,
     offset: {
       page_number: 1,
       page_limit: 100,
