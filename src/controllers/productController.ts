@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { AuthenticatedRequest } from "../../custom";
 import {
   createProductSchema,
+  productPaginationSchema,
   updateProductSchema,
 } from "../validations/productSchema";
 import { Insertable, Updateable } from "kysely";
@@ -9,6 +10,8 @@ import { Product } from "../types/db/types";
 import { CustomError } from "../exceptions/CustomError";
 import { productServices } from "../services/productServices";
 import { idSchema, restaurantIdSchema } from "../validations/sharedSchema";
+import { db } from "../utils/db";
+import { productRepository } from "../repository/productRepository";
 
 export const productController = {
   createProduct: async (
@@ -109,6 +112,47 @@ export const productController = {
         success: true,
         data: {
           products: products,
+        },
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  getProductsByRestaurantIdFiltered: async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const inputQuery = productPaginationSchema.parse(req.query);
+
+      const page = inputQuery.page || 1;
+      const pageSize = inputQuery.limit || 10;
+      const categoryId = inputQuery.productCategoryId;
+      const offset = (page - 1) * pageSize;
+
+      let query = db
+        .selectFrom("Product")
+        .selectAll()
+        .where("Product.restaurantId", "=", inputQuery.restaurantId)
+        .where("Product.productCategoryId", "=", categoryId)
+        .orderBy("Product.createdAt", "desc")
+        .limit(pageSize)
+        .offset(offset);
+
+      const [products, totalProducts] = await Promise.all([
+        query.execute(),
+        productRepository.count(),
+      ]);
+
+      const totalPages = Math.ceil(totalProducts.count / pageSize);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          products: products,
+          totalPages: totalPages,
+          currentPage: page,
         },
       });
     } catch (e) {

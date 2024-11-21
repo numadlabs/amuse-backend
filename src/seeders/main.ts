@@ -652,6 +652,16 @@ const card: Insertable<Card>[] = [
     benefits: "Earn Bitcoin for every visit.",
     restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
   },
+  {
+    id: "8b9763b7-98f1-42bc-8357-4921599479a1",
+    nftUrl:
+      "https://static-testnet.unisat.io/content/a2703c9f3e84682d9579dd0eea4f79bf8b0c9ebf2fe472f574cb6250a0eeef9bi0",
+    nftImageUrl: "99342815-0cba-431c-86d0-59fc90da265d",
+    instruction:
+      "Show your Amuse Bouche QR code to check in and unlock rewards with each visit.",
+    benefits: "Earn Bitcoin for every visit.",
+    restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
+  },
 ];
 
 const productCategory: Insertable<ProductCategory>[] = [

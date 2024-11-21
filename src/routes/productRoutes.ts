@@ -30,6 +30,7 @@ productRouter.delete(
 );
 
 productRouter.get("/:id", productController.getProductById);
+productRouter.get("/", productController.getProductsByRestaurantIdFiltered);
 
 productRouter.get(
   "/restaurant/:restaurantId",

@@ -62,3 +62,32 @@ export const updateProductSchema = z
     status: z.enum(["AVAILABLE", "SOLD_OUT", "INCOMING"]).optional(),
   })
   .strict("Unexpected field detected.");
+
+export const productPaginationSchema = z.object({
+  restaurantId: z
+    .string({ message: "The restaurant id must be a string." })
+    .trim()
+    .uuid({ message: "The restaurant id must be a valid UUID." }),
+  productCategoryId: z
+    .string({ message: "The product category id must be a string." })
+    .trim()
+    .uuid({ message: "The product category id must be a valid UUID." }),
+  page: z
+    .string()
+    .trim()
+    .regex(/^\d+$/)
+    .transform(Number)
+    .refine((val) => val > 0, {
+      message: "The page must be a positive number.",
+    })
+    .optional(),
+  limit: z
+    .string()
+    .trim()
+    .regex(/^\d+$/)
+    .transform(Number)
+    .refine((val) => val > 0, {
+      message: "The limit must be a positive number.",
+    })
+    .optional(),
+});

@@ -62,4 +62,12 @@ export const productRepository = {
 
     return products;
   },
+  count: async () => {
+    const products = await db
+      .selectFrom("Product")
+      .select(({ fn }) => [fn.count<number>("Product.id").as("count")])
+      .executeTakeFirstOrThrow(() => new Error("Couldn't count the products."));
+
+    return products;
+  },
 };
