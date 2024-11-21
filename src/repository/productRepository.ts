@@ -47,8 +47,23 @@ export const productRepository = {
   getByRestaurantId: async (restaurantId: string) => {
     const products = await db
       .selectFrom("Product")
+      .innerJoin(
+        "ProductCategory",
+        "Product.productCategoryId",
+        "ProductCategory.id"
+      )
+      .select([
+        "Product.id",
+        "Product.name",
+        "Product.price",
+        "Product.imageUrl",
+        "Product.createdAt",
+        "Product.status",
+        "Product.restaurantId",
+        "ProductCategory.id as productCategoryId",
+        "ProductCategory.name as productCategory",
+      ])
       .where("Product.restaurantId", "=", restaurantId)
-      .selectAll()
       .execute();
 
     return products;

@@ -133,7 +133,22 @@ export const productController = {
 
       let query = db
         .selectFrom("Product")
-        .selectAll()
+        .innerJoin(
+          "ProductCategory",
+          "Product.productCategoryId",
+          "ProductCategory.id"
+        )
+        .select([
+          "Product.id",
+          "Product.name",
+          "Product.price",
+          "Product.imageUrl",
+          "Product.createdAt",
+          "Product.status",
+          "Product.restaurantId",
+          "ProductCategory.id as productCategoryId",
+          "ProductCategory.name as productCategory",
+        ])
         .where("Product.restaurantId", "=", inputQuery.restaurantId)
         .where("Product.productCategoryId", "=", categoryId)
         .orderBy("Product.createdAt", "desc")
