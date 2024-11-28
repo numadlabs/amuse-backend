@@ -700,6 +700,42 @@ const product: Insertable<Product>[] = [
     restaurantId: "8ef00dc8-11bc-4ab5-9c97-605c784efa1d",
     productCategoryId: "85dcdda3-65bf-4604-9fc2-0866aebe1528",
   },
+  {
+    id: "89a0e1a0-e2db-493b-b90a-6d813d84370c",
+    name: "Spaghetti",
+    description:
+      "Classic spaghetti with rich marinara sauce, topped with grated cheese and fresh basil. Savor it!",
+    price: 35.0,
+    imageUrl: "9429147e-f5e8-4c01-8d39-f02afa0beccc",
+    createdAt: "2024-11-21T20:06:58.615Z",
+    status: "AVAILABLE",
+    restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
+    productCategoryId: "631b8c15-524a-468c-9c73-bc449f505092",
+  },
+  {
+    id: "0427748f-4657-4f05-b83c-5bb4d2989f9d",
+    name: "Burger",
+    description:
+      "Juicy, flavorful burger with a tender patty, fresh veggies, and a soft, toasted bun. Delicious!",
+    price: 40,
+    imageUrl: "9122f583-2f5c-4fee-ace2-07aad24237be",
+    createdAt: "2024-11-20T23:19:14.948Z",
+    status: "AVAILABLE",
+    restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
+    productCategoryId: "631b8c15-524a-468c-9c73-bc449f505092",
+  },
+  {
+    id: "b2978d18-bd69-472a-9f74-c8c72495e0e8",
+    name: "Pancakes",
+    description:
+      "Fluffy, golden pancakes stacked high, perfect for breakfast with syrup, butter, or fruit toppings.",
+    price: 30,
+    imageUrl: "dea6c64a-50a1-4f73-b918-356d978b569d",
+    createdAt: "2024-11-20T23:19:02.643Z",
+    status: "AVAILABLE",
+    restaurantId: "fecc7b97-bdbb-4d37-9790-963a56e26490",
+    productCategoryId: "631b8c15-524a-468c-9c73-bc449f505092",
+  },
 ];
 
 // const bonus: Insertable<Bonus>[] = [

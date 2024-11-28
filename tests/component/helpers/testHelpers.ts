@@ -18,7 +18,9 @@ import { db } from "../../../src/utils/db";
 import { userTierRepository } from "../../../src/repository/userTierRepository";
 import generatePassword from "./passwordGenerator";
 import { Updateable } from "kysely";
-import { Employee } from "../../../src/types/db/types";
+import { Employee, Product } from "../../../src/types/db/types";
+import { productCategoryRepository } from "../../../src/repository/productCategoryRepository";
+import { productRepository } from "../../../src/repository/productRepository";
 
 jest.mock("../../../src/repository/emailOtpRepository");
 
@@ -166,5 +168,38 @@ export const testHelpers = {
     });
 
     return category;
+  },
+  createProductCategory: async () => {
+    const productCategory = await productCategoryRepository.create({
+      name: faker.commerce.department(),
+    });
+
+    return productCategory;
+  },
+  createProduct: async (data: Partial<Updateable<Product>> = {}) => {
+    const productCategory = data.productCategoryId
+      ? await productCategoryRepository.getById(data.productCategoryId)
+      : await productCategoryRepository.create({
+          name: faker.commerce.department(),
+        });
+
+    const restaurant = data.restaurantId
+      ? { data: { id: data.restaurantId } }
+      : await testHelpers.createRestaurantWithOwner();
+
+    const productPayload = {
+      name: faker.commerce.productName(),
+      description: faker.commerce.productDescription(),
+      price: faker.number.int({ min: 1, max: 100 }),
+      productCategoryId: productCategory?.id,
+      imageUrl: faker.string.uuid(),
+      restaurantId: restaurant.data.id,
+    };
+
+    const product = await productRepository.create(productPayload);
+
+    if (!product) throw new Error("Failed to create test product");
+
+    return { product: product, restaurant, productCategory };
   },
 };

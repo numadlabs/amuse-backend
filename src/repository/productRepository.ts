@@ -12,7 +12,11 @@ export const productRepository = {
 
     return product;
   },
-  update: async (id: string, data: Updateable<Product>) => {
+  update: async (
+    db: Kysely<DB> | Transaction<DB>,
+    id: string,
+    data: Updateable<Product>
+  ) => {
     const product = await db
       .updateTable("Product")
       .set(data)
@@ -56,6 +60,7 @@ export const productRepository = {
         "Product.id",
         "Product.name",
         "Product.price",
+        "Product.description",
         "Product.imageUrl",
         "Product.createdAt",
         "Product.status",

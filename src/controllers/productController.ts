@@ -143,6 +143,7 @@ export const productController = {
           "Product.name",
           "Product.price",
           "Product.imageUrl",
+          "Product.description",
           "Product.createdAt",
           "Product.status",
           "Product.restaurantId",

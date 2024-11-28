@@ -5,6 +5,10 @@ import { CustomError } from "../exceptions/CustomError";
 import { productRepository } from "../repository/productRepository";
 import { deleteFromS3, uploadToS3 } from "../utils/aws";
 import { randomUUID } from "crypto";
+import { auditTrailRepository } from "../repository/auditTrailRepository";
+import { db } from "../utils/db";
+import { employeeServices } from "./employeeServices";
+import { parseChangedFieldsFromObject } from "../lib/parseChangedFieldsFromObject";
 
 export const productServices = {
   create: async (
@@ -28,8 +32,15 @@ export const productServices = {
       await uploadToS3(`product/${randomKey}`, file);
 
       product.imageUrl = randomKey;
-      updatedProduct = await productRepository.update(product.id, product);
+      updatedProduct = await productRepository.update(db, product.id, product);
     }
+
+    await auditTrailRepository.create(db, {
+      tableName: "PRODUCT",
+      operation: "INSERT",
+      data: updatedProduct,
+      updatedEmployeeId: owner.id,
+    });
 
     return updatedProduct;
   },
@@ -39,28 +50,49 @@ export const productServices = {
     file: Express.Multer.File,
     issuerId: string
   ) => {
-    const issuer = await employeeRepository.getById(issuerId);
-    if (!issuer) throw new CustomError("Issuer not found.", 400);
-    if (!issuer.restaurantId)
-      throw new CustomError("You are not allowed to update products.", 400);
-
     const product = await productRepository.getById(id);
     if (!product) throw new CustomError("Product not found.", 400);
 
-    if (issuer.restaurantId !== product.restaurantId)
-      throw new CustomError("You are not allowed to update this product.", 400);
+    const issuer = await employeeServices.checkIfEligible(
+      issuerId,
+      product.restaurantId
+    );
 
-    const updatedProduct = await productRepository.update(id, data);
+    // const updatedProduct = await productRepository.update(id, data);
 
-    if (file) {
-      const randomKey = randomUUID();
-      await uploadToS3(`product/${randomKey}`, file);
+    // if (file) {
+    //   const randomKey = randomUUID();
+    //   await uploadToS3(`product/${randomKey}`, file);
 
-      product.imageUrl = randomKey;
-      await productRepository.update(id, product);
-    }
+    //   product.imageUrl = randomKey;
+    //   await productRepository.update(id, product);
+    // }
 
-    return updatedProduct;
+    const result = await db.transaction().execute(async (trx) => {
+      if (file && product.imageUrl) {
+        await deleteFromS3(`product/${product.imageUrl}`);
+      }
+
+      if (file) {
+        const randomKey = randomUUID();
+        await uploadToS3(`product/${randomKey}`, file);
+
+        data.imageUrl = randomKey;
+      }
+      const updatedProduct = await productRepository.update(trx, id, data);
+      const changedData = parseChangedFieldsFromObject(product, updatedProduct);
+
+      await auditTrailRepository.create(trx, {
+        tableName: "PRODUCT",
+        operation: "UPDATE",
+        data: changedData,
+        updatedEmployeeId: issuer.id,
+      });
+
+      return updatedProduct;
+    });
+
+    return result;
   },
   delete: async (id: string, issuerId: string) => {
     const issuer = await employeeRepository.getById(issuerId);
